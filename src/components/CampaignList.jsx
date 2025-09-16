@@ -1,29 +1,126 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe } from 'lucide-react';
+import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { campaignService } from '../lib/supabase';
 import { cn } from '../utils/cn';
 
-export function CampaignList({ campaigns, onEdit, onDelete }) {
+export function CampaignList({ user }) {
+  const [campaigns, setCampaigns] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
+  const navigate = useNavigate();
 
+  // Load campaigns from Supabase on mount
+  useEffect(() => {
+    loadCampaigns();
+  }, []);
+
+  const loadCampaigns = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await campaignService.getAllCampaigns();
+      setCampaigns(data);
+    } catch (error) {
+      console.error('Error loading campaigns:', error);
+      setError('Failed to load campaigns. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (campaign) => {
+    navigate(`/edit/${campaign.id}`, { state: { campaign } });
+  };
+
+  const handleDelete = async (campaignId) => {
+    if (window.confirm('Are you sure you want to delete this campaign?')) {
+      try {
+        await campaignService.deleteCampaign(campaignId);
+        setCampaigns(prev => prev.filter(c => c.id !== campaignId));
+      } catch (error) {
+        console.error('Error deleting campaign:', error);
+        alert('Error deleting campaign. Please try again.');
+      }
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="text-center py-16">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
+        <p className="text-gray-600">Loading your campaigns...</p>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+        <div className="flex items-center gap-3">
+          <AlertCircle className="w-6 h-6 text-red-600" />
+          <div>
+            <h3 className="font-medium text-red-800">Error loading campaigns</h3>
+            <p className="text-red-600">{error}</p>
+            <Button 
+              onClick={loadCampaigns}
+              variant="outline"
+              size="sm"
+              className="mt-3"
+            >
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
   if (campaigns.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl flex items-center justify-center">
-          <Globe className="w-8 h-8 text-gray-400" />
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl mb-6">
+          <Sparkles className="w-10 h-10 text-blue-600" />
         </div>
-        <h3 className="text-xl font-semibold text-gray-600 mb-2">No campaigns yet</h3>
-        <p className="text-gray-500">Create your first campaign to get started!</p>
+        <h2 className="text-3xl font-bold text-gray-900 mb-4">
+          Ready to create your first campaign?
+        </h2>
+        <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+          Start building amazing campaigns! Add URLs, organize with tags, 
+          configure RSS feed categories, and track everything in one place.
+        </p>
+        <Button 
+          onClick={() => navigate('/new')}
+          size="lg"
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300"
+        >
+          <Plus className="w-5 h-5 mr-2" />
+          Create Your First Campaign
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent mb-6">
-        Your Campaigns ({campaigns.length})
-      </h2>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          Your Campaigns ({campaigns.length})
+        </h2>
+        <Button 
+          onClick={() => navigate('/new')}
+          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          New Campaign
+        </Button>
+      </div>
       
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {campaigns.map((campaign) => (
@@ -59,7 +156,7 @@ export function CampaignList({ campaigns, onEdit, onDelete }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onEdit(campaign)}
+                  onClick={() => handleEdit(campaign)}
                   className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
                 >
                   <Edit3 className="w-4 h-4" />
@@ -67,7 +164,7 @@ export function CampaignList({ campaigns, onEdit, onDelete }) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onDelete(campaign.id)}
+                  onClick={() => handleDelete(campaign.id)}
                   className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
                 >
                   <Trash2 className="w-4 h-4" />

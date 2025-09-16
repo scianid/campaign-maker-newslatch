@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Textarea } from '../ui/Textarea';
 import { MultiSelect } from '../ui/MultiSelect';
 import { Badge } from '../ui/Badge';
-import { Plus, X, Save, Edit3 } from 'lucide-react';
+import { Plus, X, Save, Edit3, ArrowLeft } from 'lucide-react';
+import { campaignService } from '../lib/supabase';
 
 const RSS_CATEGORIES = [
   'news',
@@ -17,27 +19,58 @@ const RSS_CATEGORIES = [
   'health'
 ];
 
-export function CampaignForm({ campaign, onSave, onCancel }) {
+export function CampaignForm({ user }) {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const location = useLocation();
+  const isEdit = Boolean(id);
+  const campaign = location.state?.campaign;
+
   const [formData, setFormData] = useState({
-    name: campaign?.name || '',
-    url: campaign?.url || '',
-    tags: campaign?.tags || [],
-    description: campaign?.description || '',
-    rssCategories: campaign?.rssCategories || ['all']
+    name: '',
+    url: '',
+    tags: [],
+    description: '',
+    rssCategories: ['all']
   });
 
   const [newTag, setNewTag] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    if (isEdit && campaign) {
+      setFormData({
+        name: campaign.name || '',
+        url: campaign.url || '',
+        tags: campaign.tags || [],
+        description: campaign.description || '',
+        rssCategories: campaign.rss_categories || ['all']
+      });
+    }
+  }, [isEdit, campaign]);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.url.trim()) return;
     
-    onSave({
-      ...campaign,
-      ...formData,
-      id: campaign?.id || Date.now(),
-      updatedAt: new Date().toISOString()
-    });
+    try {
+      setLoading(true);
+      
+      if (isEdit && campaign) {
+        // Update existing campaign
+        await campaignService.updateCampaign(campaign.id, formData);
+      } else {
+        // Create new campaign
+        await campaignService.createCampaign(formData);
+      }
+      
+      navigate('/campaigns');
+    } catch (error) {
+      console.error('Error saving campaign:', error);
+      alert('Error saving campaign. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const addTag = () => {
@@ -65,15 +98,27 @@ export function CampaignForm({ campaign, onSave, onCancel }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-      <div className="flex items-center gap-3 mb-8">
-        <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
-          {campaign ? <Edit3 className="w-5 h-5 text-white" /> : <Plus className="w-5 h-5 text-white" />}
-        </div>
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
-          {campaign ? 'Edit Campaign' : 'Create New Campaign'}
-        </h2>
+    <div className="max-w-2xl mx-auto">
+      <div className="mb-6">
+        <Button
+          onClick={() => navigate('/campaigns')}
+          variant="outline"
+          className="mb-4"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Campaigns
+        </Button>
       </div>
+
+      <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+            {isEdit ? <Edit3 className="w-5 h-5 text-white" /> : <Plus className="w-5 h-5 text-white" />}
+          </div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+            {isEdit ? 'Edit Campaign' : 'Create New Campaign'}
+          </h2>
+        </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name Field */}
@@ -184,23 +229,23 @@ export function CampaignForm({ campaign, onSave, onCancel }) {
         <div className="flex gap-3 pt-4">
           <Button 
             type="submit"
+            disabled={loading}
             className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
           >
             <Save className="w-4 h-4 mr-2" />
-            {campaign ? 'Update Campaign' : 'Create Campaign'}
+            {loading ? 'Saving...' : (isEdit ? 'Update Campaign' : 'Create Campaign')}
           </Button>
-          {onCancel && (
-            <Button 
-              type="button" 
-              variant="outline"
-              onClick={onCancel}
-              className="px-6"
-            >
-              Cancel
-            </Button>
-          )}
+          <Button 
+            type="button" 
+            variant="outline"
+            onClick={() => navigate('/campaigns')}
+            className="px-6"
+          >
+            Cancel
+          </Button>
         </div>
       </form>
+    </div>
     </div>
   );
 }
