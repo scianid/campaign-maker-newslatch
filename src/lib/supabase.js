@@ -86,7 +86,8 @@ export const campaignService = {
         url: campaign.url,
         tags: campaign.tags,
         description: campaign.description,
-        rss_categories: campaign.rssCategories
+        rss_categories: campaign.rssCategories,
+        rss_countries: campaign.rssCountries
       }])
       .select()
       .single()
@@ -105,6 +106,7 @@ export const campaignService = {
         tags: campaign.tags,
         description: campaign.description,
         rss_categories: campaign.rssCategories,
+        rss_countries: campaign.rssCountries,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)

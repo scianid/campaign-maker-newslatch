@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X } from 'lucide-react';
+import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
 import { cn } from '../utils/cn';
+import { getCountryDisplayName } from '../constants/locales';
 
 export function CampaignList({ user }) {
   const [campaigns, setCampaigns] = useState([]);
@@ -12,6 +13,7 @@ export function CampaignList({ user }) {
   const [error, setError] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, campaign: null });
+  const [copiedId, setCopiedId] = useState(null);
   const navigate = useNavigate();
 
   // Load campaigns from Supabase on mount
@@ -56,6 +58,25 @@ export function CampaignList({ user }) {
 
   const handleDeleteCancel = () => {
     setDeleteConfirm({ show: false, campaign: null });
+  };
+
+  const handleCopyId = async (id) => {
+    try {
+      await navigator.clipboard.writeText(id);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000); // Reset after 2 seconds
+    } catch (error) {
+      console.error('Failed to copy ID:', error);
+      // Fallback for browsers that don't support clipboard API
+      const textArea = document.createElement('textarea');
+      textArea.value = id;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }
   };
 
   // Loading state
@@ -132,71 +153,96 @@ export function CampaignList({ user }) {
         </Button>
       </div>
       
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {campaigns.map((campaign) => (
           <div
             key={campaign.id}
             className={cn(
-              "bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 hover:shadow-xl hover:shadow-blue-100/50 hover:border-blue-200",
-              hoveredId === campaign.id && "transform -translate-y-1"
+              "bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 shadow-md shadow-gray-300/40 hover:shadow-xl hover:shadow-gray-400/50 hover:border-gray-300 hover:-translate-y-1",
+              hoveredId === campaign.id && "shadow-lg shadow-gray-400/40"
             )}
             onMouseEnter={() => setHoveredId(campaign.id)}
             onMouseLeave={() => setHoveredId(null)}
           >
             {/* Header */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 truncate text-lg">
-                  {campaign.name}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
-                  <a 
-                    href={campaign.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-sm text-blue-600 hover:text-blue-800 truncate transition-colors"
+            <div>
+              
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-lg text-gray-900 truncate mb-3">
+                    {campaign.name}
+                  </h3>
+                  
+                  <div className="flex items-center gap-2 mb-3">
+                    <ExternalLink className="w-4 h-4 text-gray-400" />
+                    <a 
+                      href={campaign.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-sm text-gray-600 hover:text-blue-600 truncate transition-colors max-w-[200px]"
+                    >
+                      {campaign.url.replace(/^https?:\/\//, '').split('/')[0]}
+                    </a>
+                  </div>
+                </div>
+                
+                <div className="flex gap-2 ml-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleEdit(campaign)}
+                    className="h-10 w-10 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
                   >
-                    {campaign.url}
-                  </a>
+                    <Edit3 className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteClick(campaign)}
+                    className="h-10 w-10 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
                 </div>
               </div>
-              
-              <div className="flex gap-2 ml-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEdit(campaign)}
-                  className="h-10 w-10 p-0 hover:bg-blue-50 hover:text-blue-600 text-blue-500 hover:scale-105 transition-all duration-200 rounded-lg"
+
+              {/* Campaign ID - Full Width */}
+              <div className="flex items-center gap-2 mb-4 w-full">
+                <span className="text-xs text-gray-400">ID:</span>
+                <code className="text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded flex-1 truncate">
+                  {campaign.id}
+                </code>
+                <button
+                  onClick={() => handleCopyId(campaign.id)}
+                  className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
+                  title="Copy full campaign ID"
                 >
-                  <Edit3 className="w-5 h-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDeleteClick(campaign)}
-                  className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 text-red-500 hover:scale-105 transition-all duration-200 rounded-lg"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
+                  {copiedId === campaign.id ? (
+                    <Check className="w-3 h-3 text-green-600" />
+                  ) : (
+                    <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                  )}
+                </button>
               </div>
             </div>
 
             {/* Description */}
             {campaign.description && (
-              <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                {campaign.description}
-              </p>
+              <div className="mb-5">
+                <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
+                  {campaign.description}
+                </p>
+              </div>
             )}
 
             {/* Tags */}
             {campaign.tags && campaign.tags.length > 0 && (
-              <div className="mb-4">
+              <div className="mb-5">
                 <div className="flex items-center gap-2 mb-2">
                   <Tag className="w-4 h-4 text-gray-400" />
                   <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tags</span>
                 </div>
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-2">
                   {campaign.tags.slice(0, 3).map((tag, index) => (
                     <Badge key={index} variant="secondary" className="text-xs">
                       {tag}
@@ -211,27 +257,45 @@ export function CampaignList({ user }) {
               </div>
             )}
 
-            {/* RSS Categories */}
-            {campaign.rssCategories && campaign.rssCategories.length > 0 && (
-              <div className="mb-4">
-                <div className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
-                  RSS Categories
+            {/* Countries */}
+            {campaign.rss_countries && campaign.rss_countries.length > 0 && (
+              <div className="mb-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Globe className="w-4 h-4 text-green-500" />
+                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Target Countries</span>
                 </div>
-                <div className="flex flex-wrap gap-1">
-                  {campaign.rssCategories.includes('all') ? (
-                    <Badge className="text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                <div className="flex flex-wrap gap-2">
+                  {campaign.rss_countries.map((countryCode, index) => (
+                    <Badge key={index} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 font-medium px-3 py-1">
+                      {getCountryDisplayName(countryCode)}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* RSS Categories */}
+            {campaign.rss_categories && campaign.rss_categories.length > 0 && (
+              <div className="mb-5">
+                <div className="flex items-center gap-2 mb-2">
+                  <Globe className="w-4 h-4 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">RSS Categories</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {campaign.rss_categories.includes('all') ? (
+                    <Badge className="text-xs bg-blue-600 text-white">
                       All Categories
                     </Badge>
                   ) : (
                     <>
-                      {campaign.rssCategories.slice(0, 2).map((category, index) => (
-                        <Badge key={index} className="text-xs bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+                      {campaign.rss_categories.slice(0, 2).map((category, index) => (
+                        <Badge key={index} className="text-xs bg-blue-600 text-white">
                           {category}
                         </Badge>
                       ))}
-                      {campaign.rssCategories.length > 2 && (
+                      {campaign.rss_categories.length > 2 && (
                         <Badge variant="outline" className="text-xs">
-                          +{campaign.rssCategories.length - 2} more
+                          +{campaign.rss_categories.length - 2} more
                         </Badge>
                       )}
                     </>

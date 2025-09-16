@@ -29,7 +29,7 @@ function Layout({ user, children }) {
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-                  Campaign Maker
+                  NewsLatch Studio
                 </h1>
                 <p className="text-sm text-gray-600">Welcome back, {user.user_metadata?.full_name || user.email}!</p>
               </div>

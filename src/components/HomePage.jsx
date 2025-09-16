@@ -14,7 +14,7 @@ export function HomePage({ user }) {
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-                  Campaign Maker
+                  NewsLatch Studio
                 </h1>
                 <p className="text-sm text-gray-600">Professional Campaign Management</p>
               </div>
@@ -33,7 +33,7 @@ export function HomePage({ user }) {
           </div>
           
           <h1 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-6">
-            Campaign Maker
+            NewsLatch Studio
           </h1>
           
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
@@ -83,7 +83,7 @@ export function HomePage({ user }) {
         <div className="text-center bg-gradient-to-r from-blue-600 to-purple-600 rounded-3xl p-12 text-white shadow-2xl">
           <h2 className="text-3xl font-bold mb-4">Ready to supercharge your campaigns?</h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Create your account and start organizing your marketing campaigns today.
+            Join NewsLatch Studio and start organizing your marketing campaigns today.
           </p>
           <AuthComponent user={user} />
         </div>
@@ -98,7 +98,7 @@ export function HomePage({ user }) {
                 <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl">
                   <Megaphone className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-lg font-bold text-gray-900">Campaign Maker</span>
+                <span className="text-lg font-bold text-gray-900">NewsLatch Studio</span>
               </div>
               <p className="text-gray-600 mb-4">
                 Professional campaign management made simple. Create, organize, and track your marketing campaigns with ease.
@@ -128,7 +128,7 @@ export function HomePage({ user }) {
           
           <div className="border-t border-gray-200 mt-8 pt-8 text-center">
             <p className="text-sm text-gray-600">
-              © 2025 Campaign Maker. Built with ❤️ using React, Tailwind CSS, and Supabase.
+              © 2025 NewsLatch Studio. Built with ❤️ using React, Tailwind CSS, and Supabase.
             </p>
           </div>
         </div>

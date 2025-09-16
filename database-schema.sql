@@ -1,6 +1,17 @@
 -- Campaign Maker Database Schema
 -- Run this SQL in your Supabase SQL Editor
 
+-- Create enum type for RSS categories
+CREATE TYPE category AS ENUM (
+  'news',
+  'entertainment', 
+  'business',
+  'sport',
+  'politics',
+  'technology',
+  'health'
+);
+
 -- Create campaigns table for the Campaign Maker app with user authentication
 CREATE TABLE IF NOT EXISTS campaigns (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -10,6 +21,7 @@ CREATE TABLE IF NOT EXISTS campaigns (
   tags TEXT[] DEFAULT '{}',
   description TEXT,
   rss_categories TEXT[] DEFAULT '{}',
+  rss_countries TEXT[] DEFAULT ARRAY['US'],
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -19,6 +31,7 @@ CREATE INDEX IF NOT EXISTS idx_campaigns_created_at ON campaigns(created_at);
 CREATE INDEX IF NOT EXISTS idx_campaigns_updated_at ON campaigns(updated_at);
 CREATE INDEX IF NOT EXISTS idx_campaigns_name ON campaigns(name);
 CREATE INDEX IF NOT EXISTS idx_campaigns_user_id ON campaigns(user_id);
+CREATE INDEX IF NOT EXISTS idx_campaigns_rss_countries ON campaigns USING GIN(rss_countries);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE campaigns ENABLE ROW LEVEL SECURITY;
@@ -51,3 +64,85 @@ CREATE TRIGGER update_campaigns_updated_at
     BEFORE UPDATE ON campaigns 
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
+
+-- RSS Feeds Table
+-- Create rss_feeds table to store RSS feed sources
+CREATE TABLE IF NOT EXISTS rss_feeds (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  url TEXT NOT NULL UNIQUE,
+  categories TEXT[] DEFAULT '{}',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create indexes for RSS feeds table
+CREATE INDEX IF NOT EXISTS idx_rss_feeds_active ON rss_feeds(is_active);
+CREATE INDEX IF NOT EXISTS idx_rss_feeds_categories ON rss_feeds USING GIN(categories);
+CREATE INDEX IF NOT EXISTS idx_rss_feeds_url ON rss_feeds(url);
+
+-- Enable Row Level Security for RSS feeds
+ALTER TABLE rss_feeds ENABLE ROW LEVEL SECURITY;
+
+-- Create policy for RSS feeds (read-only for authenticated users)
+CREATE POLICY "Authenticated users can view active RSS feeds" ON rss_feeds
+FOR SELECT USING (auth.uid() IS NOT NULL AND is_active = true);
+
+-- Create trigger for RSS feeds updated_at
+CREATE TRIGGER update_rss_feeds_updated_at 
+    BEFORE UPDATE ON rss_feeds 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Categories Table
+-- Create categories table to manage RSS feed categories and their country targeting
+CREATE TABLE IF NOT EXISTS categories (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name VARCHAR(255) NOT NULL UNIQUE,
+  description TEXT,
+  rss_countries TEXT[] DEFAULT '{}',
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Create indexes for categories table
+CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
+CREATE INDEX IF NOT EXISTS idx_categories_active ON categories(is_active);
+CREATE INDEX IF NOT EXISTS idx_categories_rss_countries ON categories USING GIN(rss_countries);
+
+-- Enable Row Level Security for categories
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+
+-- Create policy for categories (read-only for authenticated users)
+CREATE POLICY "Authenticated users can view active categories" ON categories
+FOR SELECT USING (auth.uid() IS NOT NULL AND is_active = true);
+
+-- Create trigger for categories updated_at
+CREATE TRIGGER update_categories_updated_at 
+    BEFORE UPDATE ON categories 
+    FOR EACH ROW 
+    EXECUTE FUNCTION update_updated_at_column();
+
+-- Insert sample categories with country targeting
+INSERT INTO categories (name, description, rss_countries) VALUES
+('news', 'General news and current events', ARRAY['US', 'GB']),
+('technology', 'Technology and innovation news', ARRAY['US', 'GB']),
+('business', 'Business and finance news', ARRAY['US', 'GB']),
+('sport', 'Sport news and updates', ARRAY['US', 'GB']),
+('entertainment', 'Entertainment and celebrity news', ARRAY['US', 'GB']),
+('health', 'Health and medical news', ARRAY['US', 'GB']),
+('politics', 'Political news and analysis', ARRAY['US', 'GB'])
+ON CONFLICT (name) DO NOTHING;
+
+-- Insert some sample RSS feeds
+INSERT INTO rss_feeds (name, url, categories) VALUES
+('BBC News', 'https://feeds.bbci.co.uk/news/rss.xml', ARRAY['news', 'politics']),
+('TechCrunch', 'https://techcrunch.com/feed/', ARRAY['technology', 'business']),
+('ESPN Top Stories', 'https://www.espn.com/espn/rss/news', ARRAY['sport']),
+('Entertainment Weekly', 'https://ew.com/feed/', ARRAY['entertainment']),
+('Reuters Health News', 'https://www.reuters.com/arc/outboundfeeds/rss/category/health/', ARRAY['health', 'news']),
+('CNN Business', 'https://rss.cnn.com/rss/money_latest.rss', ARRAY['business', 'news']),
+('Politico', 'https://www.politico.com/rss/politics08.xml', ARRAY['politics', 'news'])
+ON CONFLICT (url) DO NOTHING;

@@ -5,15 +5,17 @@ import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Textarea } from '../ui/Textarea';
 import { MultiSelect } from '../ui/MultiSelect';
+import { Select } from '../ui/Select';
 import { Badge } from '../ui/Badge';
 import { Plus, X, Save, Edit3, ArrowLeft } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
+import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY } from '../constants/locales';
 
 const RSS_CATEGORIES = [
   'news',
   'entertainment', 
   'business',
-  'sports',
+  'sport',
   'politics',
   'technology',
   'health'
@@ -31,7 +33,8 @@ export function CampaignForm({ user }) {
     url: '',
     tags: [],
     description: '',
-    rssCategories: ['all']
+    rssCategories: ['all'],
+    rssCountries: [DEFAULT_COUNTRY]
   });
 
   const [newTag, setNewTag] = useState('');
@@ -44,7 +47,8 @@ export function CampaignForm({ user }) {
         url: campaign.url || '',
         tags: campaign.tags || [],
         description: campaign.description || '',
-        rssCategories: campaign.rss_categories || ['all']
+        rssCategories: campaign.rss_categories || ['all'],
+        rssCountries: campaign.rss_countries || [DEFAULT_COUNTRY]
       });
     }
   }, [isEdit, campaign]);
@@ -195,6 +199,20 @@ export function CampaignForm({ user }) {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Country Selection */}
+        <div className="space-y-3">
+          <Label className="text-sm font-medium text-gray-700">
+            Target Countries
+          </Label>
+          <MultiSelect
+            options={SUPPORTED_COUNTRIES.map(c => c.code)}
+            value={formData.rssCountries}
+            onChange={(countries) => setFormData(prev => ({ ...prev, rssCountries: countries }))}
+            placeholder="Select countries..."
+            getLabel={(code) => SUPPORTED_COUNTRIES.find(c => c.code === code)?.label || code}
+          />
         </div>
 
         {/* RSS Categories */}
