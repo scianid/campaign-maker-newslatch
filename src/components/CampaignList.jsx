@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
 import { cn } from '../utils/cn';
 
@@ -11,6 +11,7 @@ export function CampaignList({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, campaign: null });
   const navigate = useNavigate();
 
   // Load campaigns from Supabase on mount
@@ -36,16 +37,25 @@ export function CampaignList({ user }) {
     navigate(`/edit/${campaign.id}`, { state: { campaign } });
   };
 
-  const handleDelete = async (campaignId) => {
-    if (window.confirm('Are you sure you want to delete this campaign?')) {
-      try {
-        await campaignService.deleteCampaign(campaignId);
-        setCampaigns(prev => prev.filter(c => c.id !== campaignId));
-      } catch (error) {
-        console.error('Error deleting campaign:', error);
-        alert('Error deleting campaign. Please try again.');
-      }
+  const handleDeleteClick = (campaign) => {
+    setDeleteConfirm({ show: true, campaign });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteConfirm.campaign) return;
+    
+    try {
+      await campaignService.deleteCampaign(deleteConfirm.campaign.id);
+      setCampaigns(prev => prev.filter(c => c.id !== deleteConfirm.campaign.id));
+      setDeleteConfirm({ show: false, campaign: null });
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      alert('Error deleting campaign. Please try again.');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm({ show: false, campaign: null });
   };
 
   // Loading state
@@ -152,22 +162,22 @@ export function CampaignList({ user }) {
                 </div>
               </div>
               
-              <div className="flex gap-1 ml-4">
+              <div className="flex gap-2 ml-4">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleEdit(campaign)}
-                  className="h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600"
+                  className="h-10 w-10 p-0 hover:bg-blue-50 hover:text-blue-600 text-blue-500 hover:scale-105 transition-all duration-200 rounded-lg"
                 >
-                  <Edit3 className="w-4 h-4" />
+                  <Edit3 className="w-5 h-5" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleDelete(campaign.id)}
-                  className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+                  onClick={() => handleDeleteClick(campaign)}
+                  className="h-10 w-10 p-0 hover:bg-red-50 hover:text-red-600 text-red-500 hover:scale-105 transition-all duration-200 rounded-lg"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-5 h-5" />
                 </Button>
               </div>
             </div>
@@ -242,6 +252,50 @@ export function CampaignList({ user }) {
           </div>
         ))}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm.show && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Delete Campaign</h3>
+                <p className="text-sm text-gray-600">This action cannot be undone</p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-gray-700 mb-2">
+                Are you sure you want to delete the campaign:
+              </p>
+              <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg">
+                "{deleteConfirm.campaign?.name}"
+              </p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                onClick={handleDeleteCancel}
+                variant="outline"
+                className="flex-1"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+              <Button
+                onClick={handleDeleteConfirm}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Campaign
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

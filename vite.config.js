@@ -6,6 +6,7 @@ export default defineConfig({
     server: {
         host: "::",
         port: 8080,
+        historyApiFallback: true, // This ensures all routes serve index.html
     },
     plugins: [react()],
     test: {

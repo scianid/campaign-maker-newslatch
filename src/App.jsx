@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthComponent } from './components/AuthComponent';
 import { HomePage } from './components/HomePage';
-import { CampaignDashboard } from './components/CampaignDashboard';
 import { CampaignForm } from './components/CampaignForm';
 import { CampaignList } from './components/CampaignList';
 import { authService } from './lib/supabase';

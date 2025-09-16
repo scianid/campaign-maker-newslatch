@@ -116,7 +116,7 @@ export function HomePage({ user }) {
             </div>
             
             <div>
-              <h4 className="font-semibont text-gray-900 mb-3">Support</h4>
+              <h4 className="font-semibold text-gray-900 mb-3">Support</h4>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>Documentation</li>
                 <li>Help Center</li>
