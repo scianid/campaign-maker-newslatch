@@ -1,106 +1,55 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+// Import our modular utilities
+import { authenticateUser, createAuthenticatedClient } from './auth.ts';
+import { handleCors, createErrorResponse } from './http-utils.ts';
+import { 
+  handleGetRssFeeds as getRssFeeds, 
+  handlePostRssFeeds as postRssFeeds, 
+  handlePutRssFeeds as putRssFeeds, 
+  handleDeleteRssFeeds as deleteRssFeeds 
+} from './handlers.ts';
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return handleCors();
   }
 
   try {
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      {
-        global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
-        },
-      }
-    );
+    // Create authenticated Supabase client
+    const supabaseClient = createAuthenticatedClient(req, createClient);
 
-    // Verify user is authenticated
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
-    
-    if (authError || !user) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized. Please log in.' }),
-        { 
-          status: 401, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
+    // Verify user authentication
+    const authResult = await authenticateUser(supabaseClient);
+    if (!authResult.success) {
+      return createErrorResponse(authResult.error!, '', 401);
     }
 
-    // Handle different HTTP methods
+    // Route to appropriate handler based on HTTP method
     switch (req.method) {
       case 'GET':
-        return await handleGetRssFeeds(supabaseClient);
+        return await getRssFeeds(supabaseClient, req);
+      
+      case 'POST':
+        return await postRssFeeds(supabaseClient, req);
+        
+      case 'PUT':
+        return await putRssFeeds(supabaseClient, req);
+        
+      case 'DELETE':
+        return await deleteRssFeeds(supabaseClient, req);
       
       default:
-        return new Response(
-          JSON.stringify({ error: 'Method not allowed' }),
-          { 
-            status: 405, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
+        return createErrorResponse('Method not allowed', '', 405);
     }
 
   } catch (error) {
     console.error('Edge function error:', error);
-    return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+    return createErrorResponse(
+      'Internal server error',
+      error instanceof Error ? error.message : 'Unknown error'
     );
   }
 });
-
-async function handleGetRssFeeds(supabaseClient: any) {
-  try {
-    // Get all active RSS feeds
-    const { data: rssFeeds, error } = await supabaseClient
-      .from('rss_feeds')
-      .select('*')
-      .eq('is_active', true)
-      .order('name');
-
-    if (error) {
-      throw error;
-    }
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: rssFeeds,
-        count: rssFeeds?.length || 0
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-
-  } catch (error) {
-    console.error('Error fetching RSS feeds:', error);
-    return new Response(
-      JSON.stringify({ 
-        success: false, 
-        error: 'Failed to fetch RSS feeds',
-        details: error.message 
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-  }
-}

@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check } from 'lucide-react';
-import { campaignService } from '../lib/supabase';
+import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, TestTube, Rss } from 'lucide-react';
+import { campaignService, supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
 import { getCountryDisplayName } from '../constants/locales';
 
@@ -76,6 +76,102 @@ export function CampaignList({ user }) {
       document.body.removeChild(textArea);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
+    }
+  };
+
+  // Test RSS feeds for campaign
+  const testRssFeeds = async (campaign) => {
+    try {
+      console.log('🧪 Testing RSS feeds for campaign:', campaign.name, campaign.id);
+      
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('❌ No session found:', sessionError);
+        return;
+      }
+
+      console.log('🔑 Making request with session token...');
+      
+      const response = await fetch(
+        `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?campaignId=${campaign.id}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const result = await response.json();
+      
+      console.log('📡 RSS Feeds Test Result:');
+      console.log('📊 Status:', response.status);
+      console.log('✅ Success:', result.success);
+      console.log('🎯 Campaign Info:', result.campaign);
+      console.log('📈 RSS Feeds Count:', result.count);
+      console.log('📋 RSS Feeds:', result.data);
+      
+      if (result.error) {
+        console.error('❌ Error:', result.error);
+        console.error('🔍 Details:', result.details);
+      }
+      
+    } catch (error) {
+      console.error('💥 Failed to test RSS feeds:', error);
+    }
+  };
+
+  // Test RSS content for campaign
+  const testRssContent = async (campaign) => {
+    try {
+      console.log('📰 Testing RSS content for campaign:', campaign.name, campaign.id);
+      
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !session) {
+        console.error('❌ No session found:', sessionError);
+        return;
+      }
+
+      console.log('🔑 Fetching RSS content...');
+      
+      const response = await fetch(
+        `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?campaignId=${campaign.id}&action=content`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      const result = await response.json();
+      
+      console.log('📰 RSS Content Test Result:');
+      console.log('📊 Status:', response.status);
+      console.log('✅ Success:', result.success);
+      console.log('🎯 Campaign Info:', result.campaign);
+      console.log('📈 Content Items Count:', result.count);
+      console.log('📋 Latest 30 Items:', result.items);
+      
+      if (result.items && result.items.length > 0) {
+        console.log('🔍 Sample Item Structure:');
+        console.log('Title:', result.items[0].title);
+        console.log('Link:', result.items[0].link);
+        console.log('Description:', result.items[0].description?.substring(0, 100) + '...');
+        console.log('Published:', result.items[0].pubDate);
+        console.log('Source:', result.items[0].source);
+        console.log('Categories:', result.items[0].categories);
+      }
+      
+      if (result.error) {
+        console.error('❌ Error:', result.error);
+        console.error('🔍 Details:', result.details);
+      }
+      
+    } catch (error) {
+      console.error('💥 Failed to test RSS content:', error);
     }
   };
 
@@ -187,6 +283,24 @@ export function CampaignList({ user }) {
                 </div>
                 
                 <div className="flex gap-2 ml-4">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => testRssFeeds(campaign)}
+                    className="h-10 w-10 p-0 bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    title="Test RSS Feeds (check console)"
+                  >
+                    <TestTube className="w-5 h-5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => testRssContent(campaign)}
+                    className="h-10 w-10 p-0 bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    title="Test RSS Content (check console)"
+                  >
+                    <Rss className="w-5 h-5" />
+                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"

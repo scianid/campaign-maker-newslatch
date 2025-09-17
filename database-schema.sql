@@ -95,46 +95,7 @@ CREATE TRIGGER update_rss_feeds_updated_at
     FOR EACH ROW 
     EXECUTE FUNCTION update_updated_at_column();
 
--- Categories Table
--- Create categories table to manage RSS feed categories and their country targeting
-CREATE TABLE IF NOT EXISTS categories (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name VARCHAR(255) NOT NULL UNIQUE,
-  description TEXT,
-  rss_countries TEXT[] DEFAULT '{}',
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Create indexes for categories table
-CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
-CREATE INDEX IF NOT EXISTS idx_categories_active ON categories(is_active);
-CREATE INDEX IF NOT EXISTS idx_categories_rss_countries ON categories USING GIN(rss_countries);
-
--- Enable Row Level Security for categories
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-
--- Create policy for categories (read-only for authenticated users)
-CREATE POLICY "Authenticated users can view active categories" ON categories
-FOR SELECT USING (auth.uid() IS NOT NULL AND is_active = true);
-
--- Create trigger for categories updated_at
-CREATE TRIGGER update_categories_updated_at 
-    BEFORE UPDATE ON categories 
-    FOR EACH ROW 
-    EXECUTE FUNCTION update_updated_at_column();
-
--- Insert sample categories with country targeting
-INSERT INTO categories (name, description, rss_countries) VALUES
-('news', 'General news and current events', ARRAY['US', 'GB']),
-('technology', 'Technology and innovation news', ARRAY['US', 'GB']),
-('business', 'Business and finance news', ARRAY['US', 'GB']),
-('sport', 'Sport news and updates', ARRAY['US', 'GB']),
-('entertainment', 'Entertainment and celebrity news', ARRAY['US', 'GB']),
-('health', 'Health and medical news', ARRAY['US', 'GB']),
-('politics', 'Political news and analysis', ARRAY['US', 'GB'])
-ON CONFLICT (name) DO NOTHING;
+-- Note: Categories are handled as enum values, not as a separate table
 
 -- Insert some sample RSS feeds
 INSERT INTO rss_feeds (name, url, categories) VALUES
