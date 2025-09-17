@@ -1,67 +1,74 @@
-
 export function buildPrompt(
     newsArray: Array<{ headline: string; link: string }>,
-    tags: string[]
+    tags: string[],
+    campaignInfo?: { name: string; description: string; url: string; tags: string[] }
 ): string {
+    // Use campaign info if provided, otherwise fallback to generic approach
+    const companyName = campaignInfo?.name || "the business";
+    const companyUrl = campaignInfo?.url || "their website";
+    const companyDesc = campaignInfo?.description || "their services";
+    const companyTags = campaignInfo?.tags || [];
+    
     return `
-  You are given an array of recent news articles (newsArray).
-Each article contains:
+You are an expert AI marketing analyst creating targeted ad placements for lead generation campaigns.
 
-headline (string)
+CAMPAIGN CONTEXT:
+Company/Campaign: ${companyName}
+Website: ${companyUrl}
+Business Description: ${companyDesc}
+Campaign Tags: ${companyTags.join(", ")}
+Target Categories: ${tags.join(", ")}
 
-link (string)
+YOUR MISSION:
+Analyze the provided news articles and create compelling ad placements that connect current events to ${companyName}'s services. Each selected headline should create urgency and drive potential customers to take action.
 
-Your Objective:
+NEWS ANALYSIS OBJECTIVES:
+1. Identify 3-5 headlines most relevant for lead generation related to ${tags.join(", ")}
+2. Connect news events to ${companyName}'s business value proposition
+3. Create compelling ad copy that drives conversions for ${companyUrl}
+4. Focus on urgency, relevance, and clear calls-to-action
 
-Analyze all headlines in newsArray to:
+For each selected headline, create:
+- Viral clickbait optimized for ${companyName}'s target audience
+- Clear connection between the news and ${companyName}'s services
+- Urgency-driven description explaining why prospects need to act NOW
+- Conversion-focused tooltip that drives traffic to ${companyUrl}
 
-Identify up to 3–5 headlines that are most relevant for online lead generation in consumer services, focusing on trends related to ${tags.join(", ")}.
-
-Prioritize articles that show signs of emerging trends (e.g., multiple related headlines, repeated themes, or growing urgency).
-
-Consider both direct matches and indirectly relevant news (e.g., an article about a storm may be relevant for roofing, even if “roofing” isn’t mentioned).
-
-For each chosen headline:
-
-Assign a Relevance Score (0–100).
-
-Rewrite it into a viral, casual clickbait hook optimized for CTR.
-
-Add a short trend label.
-
-Explain urgency in plain language.
-
-Output Format (JSON only):
-
+OUTPUT FORMAT (JSON only):
 {
 "results": [
 {
 "headline": "[Original headline]",
-"clickbait": "[Casual/viral 1-liner]",
+"clickbait": "[Viral clickbait hook for ${companyName}]",
 "link": "[Link from newsArray]",
 "relevance_score": [0-100],
 "trend": "[Short trend label]",
-"description": "[Why this article creates urgency for ${tags.join(", ")}]",
-"tooltip": "[Casual 3–4 sentence explanation driving urgency around ${tags.join(", ")}]"
+"description": "[Why this creates urgency for ${companyName}'s services]",
+"tooltip": "[Conversion-focused explanation connecting news to ${companyName}'s value - drive action toward ${companyUrl}]",
+"ad_placement": "[Complete ad copy targeting ${companyName}'s prospects - include clear CTA]"
 }
 ],
-"trend_summary": "[Short overview of the top 1–2 trends detected across chosen articles]"
+"trend_summary": "[Marketing strategy overview for ${companyName} based on identified trends]",
+"campaign_strategy": "[Specific recommendations for ${companyName} to capitalize on these news trends]"
 }
 
-NewsArray Input:
-
+NEWS ARTICLES TO ANALYZE:
 ${JSON.stringify({ newsArray })}
 
+CRITICAL INSTRUCTIONS:
+1. Response must be ONLY valid JSON - no explanatory text
+2. Focus on ${companyName}'s business needs and target audience
+3. Every result must drive leads toward ${companyUrl}
+4. Create urgency that compels immediate action
+5. Return 3-5 highly relevant results maximum
 
-Final Reminder:
-Now, from the above newsArray, return only 3–5 results in the exact JSON format specified earlier.
-    
-    
+Generate JSON now:
     `;
 }
 
 export async function runGpt(prompt: string): Promise<string> {
     let GPT_API_URL = "https://api.openai.com/v1/chat/completions";
+    // @ts-ignore
     let OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
     console.log('🔑 API Key available:', !!OPENAI_API_KEY);

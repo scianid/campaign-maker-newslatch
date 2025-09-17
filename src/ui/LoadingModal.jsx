@@ -4,7 +4,7 @@ export function LoadingModal({ isOpen, campaignName }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 !m-0" style={{ margin: 0 }}>
       <div className="bg-card-bg rounded-2xl shadow-2xl p-8 max-w-md mx-4">
         <div className="text-center">
           {/* Loading Icon */}
