@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, TestTube, Rss, Search } from 'lucide-react';
+import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, Rss, Search } from 'lucide-react';
 import { campaignService, supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
 import { getCountryDisplayName } from '../constants/locales';
@@ -62,49 +62,6 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
       document.body.removeChild(textArea);
       setCopiedId(id);
       setTimeout(() => setCopiedId(null), 2000);
-    }
-  };
-
-  // Test RSS feeds for campaign
-  const testRssFeeds = async (campaign) => {
-    try {
-      console.log('🧪 Testing RSS feeds for campaign:', campaign.name, campaign.id);
-      
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        console.error('❌ No session found:', sessionError);
-        return;
-      }
-
-      console.log('🔑 Making request with session token...');
-      
-      const response = await fetch(
-        `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?campaignId=${campaign.id}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      const result = await response.json();
-      
-      console.log('📡 RSS Feeds Test Result:');
-      console.log('📊 Status:', response.status);
-      console.log('✅ Success:', result.success);
-      console.log('🎯 Campaign Info:', result.campaign);
-      console.log('📈 RSS Feeds Count:', result.count);
-      console.log('📋 RSS Feeds:', result.data);
-      
-      if (result.error) {
-        console.error('❌ Error:', result.error);
-        console.error('🔍 Details:', result.details);
-      }
-      
-    } catch (error) {
-      console.error('💥 Failed to test RSS feeds:', error);
     }
   };
 
@@ -199,34 +156,6 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
       // Hide loading state
       setLoadingRss(false);
       setLoadingCampaignId(null);
-    }
-  };
-
-  // Test RSS content for campaign (console logging)
-  const testRssContent = async (campaign) => {
-    try {
-      console.log('� Testing RSS content for campaign:', campaign.name, campaign.id);
-      
-      const result = await fetchRssContent(campaign.id);
-      
-      console.log('📰 RSS Content Test Result:');
-      console.log('✅ Success:', result.success);
-      console.log('🎯 Campaign Info:', result.campaign);
-      console.log('📈 Content Items Count:', result.count);
-      console.log('📋 Latest 30 Items:', result.items);
-      
-      if (result.items && result.items.length > 0) {
-        console.log('🔍 Sample Item Structure:');
-        console.log('Title:', result.items[0].title);
-        console.log('Link:', result.items[0].link);
-        console.log('Description:', result.items[0].description?.substring(0, 100) + '...');
-        console.log('Published:', result.items[0].pubDate);
-        console.log('Source:', result.items[0].source);
-        console.log('Categories:', result.items[0].categories);
-      }
-      
-    } catch (error) {
-      console.error('💥 Failed to test RSS content:', error);
     }
   };
 
@@ -433,15 +362,6 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                 
                 {/* Action buttons */}
                 <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => testRssFeeds(campaign)}
-                    className="h-10 w-10 p-0 bg-primary-bg text-purple-400 hover:bg-gray-700 hover:text-purple-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
-                    title="Test RSS Feeds (check console)"
-                  >
-                    <TestTube className="w-5 h-5" />
-                  </Button>
                   <Button
                     variant="ghost"
                     size="sm"
