@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw } from 'lucide-react';
+import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Layout } from './Layout';
@@ -17,6 +17,7 @@ export function AiContentPage({ user }) {
   const [showUnpublished, setShowUnpublished] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
+  const [previewStyles, setPreviewStyles] = useState({}); // Track preview style for each item
   const [filters, setFilters] = useState({
     status: 'published', // 'all', 'published', 'unpublished'
     scoreRange: 'all', // 'all', 'high', 'medium', 'low'
@@ -72,6 +73,9 @@ export function AiContentPage({ user }) {
         sortOrder: filters.sortOrder
       });
 
+      console.log('🔍 Fetching AI items with filters:', filters);
+      console.log('📡 Request URL:', `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?${params}`);
+
       const response = await fetch(
         `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?${params}`,
         {
@@ -88,6 +92,13 @@ export function AiContentPage({ user }) {
       }
 
       const result = await response.json();
+      
+      console.log('📊 API Response:', {
+        success: !result.error,
+        itemsReceived: result.ai_items?.length || 0,
+        totalItems: result.total || 0,
+        currentFilters: filters
+      });
       
       if (result.error) {
         throw new Error(result.error);
@@ -348,6 +359,11 @@ export function AiContentPage({ user }) {
               filters.sortOrder === 'desc') && (
               <span className="text-xs text-gray-500">Default filters (published content)</span>
             )}
+            
+            {/* Debug info - show current filter status and item count */}
+            <div className="ml-auto text-xs text-gray-400">
+              {totalItems} total items • Status: {filters.status}
+            </div>
           </div>
         </div>
 
@@ -523,6 +539,110 @@ export function AiContentPage({ user }) {
 
                     {/* Right Column */}
                     <div className="space-y-4">
+                      {/* Ad Preview Demo */}
+                      {item.ad_placement && typeof item.ad_placement === 'object' && (
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <h4 className="text-sm font-medium text-blue-400">👁️ Ad Preview</h4>
+                            
+                            {/* Preview Style Toggle */}
+                            <div className="flex items-center gap-1 bg-card-bg border border-gray-600 rounded-md p-1">
+                              <button
+                                onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'desktop' }))}
+                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                  (previewStyles[item.id] || 'desktop') === 'desktop'
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                              >
+                                <Monitor className="w-3 h-3" />
+                                Desktop
+                              </button>
+                              <button
+                                onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'mobile' }))}
+                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                  previewStyles[item.id] === 'mobile'
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                              >
+                                <Smartphone className="w-3 h-3" />
+                                Social
+                              </button>
+                            </div>
+                          </div>
+                          
+                          {/* Desktop/Web Ad Style */}
+                          {(previewStyles[item.id] || 'desktop') === 'desktop' && (
+                            <div className="bg-white rounded-lg p-4 border border-gray-300 shadow-md">
+                              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-md p-4 border border-blue-200">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span className="text-white text-sm font-bold">Ad</span>
+                                  </div>
+                                  
+                                  <div className="flex-1 min-w-0">
+                                    <h5 className="font-semibold text-gray-900 text-base mb-2 leading-tight">
+                                      {item.ad_placement.headline}
+                                    </h5>
+                                    <p className="text-gray-700 text-sm mb-3 leading-relaxed">
+                                      {item.ad_placement.body}
+                                    </p>
+                                    
+                                    <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md text-sm transition-colors shadow-sm">
+                                      {item.ad_placement.cta}
+                                    </button>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex justify-between items-center mt-3 pt-2 border-t border-blue-300/30">
+                                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                    Sponsored
+                                  </span>
+                                  <span className="text-xs text-gray-400">
+                                    NewsLatch Campaign
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Mobile/Social Style */}
+                          {previewStyles[item.id] === 'mobile' && (
+                            <div className="bg-white rounded-lg p-3 border border-gray-300 shadow-sm max-w-sm mx-auto">
+                              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                {/* Header */}
+                                <div className="p-3 border-b border-gray-100">
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                      <span className="text-white text-xs font-bold">NL</span>
+                                    </div>
+                                    <div>
+                                      <p className="text-sm font-medium text-gray-900">NewsLatch</p>
+                                      <p className="text-xs text-gray-500">Sponsored</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Content */}
+                                <div className="p-3">
+                                  <h6 className="font-semibold text-gray-900 text-sm mb-2">
+                                    {item.ad_placement.headline}
+                                  </h6>
+                                  <p className="text-gray-700 text-xs mb-3">
+                                    {item.ad_placement.body}
+                                  </p>
+                                  
+                                  <button className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md text-xs">
+                                    {item.ad_placement.cta}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Ad Placement */}
                       {item.ad_placement && (
                         <div>
