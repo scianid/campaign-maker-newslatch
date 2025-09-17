@@ -443,26 +443,40 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                 </div>
               )}
 
-              {/* Categories and Last Updated */}
-              <div className="flex items-center justify-between text-xs text-text-paragraph">
-                <div className="flex items-center gap-4">
-                  {campaign.rss_categories && campaign.rss_categories.length > 0 && (
-                    <div className="flex items-center gap-1">
-                      <Globe className="w-3 h-3" />
-                      <span>
-                        {campaign.rss_categories.includes('all') ? 'All categories' : `${campaign.rss_categories.length} categories`}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                
-                {campaign.updatedAt && (
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-3 h-3" />
-                    <span>Updated {new Date(campaign.updatedAt).toLocaleDateString()}</span>
+              {/* RSS Categories Row */}
+              {campaign.rss_categories && campaign.rss_categories.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Rss className="w-4 h-4 text-blue-500" />
+                  <div className="flex flex-wrap gap-1">
+                    {campaign.rss_categories.includes('all') ? (
+                      <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
+                        All Categories
+                      </Badge>
+                    ) : (
+                      <>
+                        {campaign.rss_categories.slice(0, 4).map((category, index) => (
+                          <Badge key={index} variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600 capitalize">
+                            {highlightText(category, searchTerm)}
+                          </Badge>
+                        ))}
+                        {campaign.rss_categories.length > 4 && (
+                          <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
+                            +{campaign.rss_categories.length - 4}
+                          </Badge>
+                        )}
+                      </>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
+
+              {/* Last Updated */}
+              {campaign.updatedAt && (
+                <div className="flex items-center gap-2 text-xs text-text-paragraph">
+                  <Calendar className="w-3 h-3" />
+                  <span>Updated {new Date(campaign.updatedAt).toLocaleDateString()}</span>
+                </div>
+              )}
             </div>
           </div>
         ))}
