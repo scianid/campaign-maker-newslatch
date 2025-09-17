@@ -54,7 +54,7 @@ Return your response in this exact JSON format:
 Guidelines for tags:
 - Use lowercase, single words or short phrases
 - Include industry terms, product types (e.g., "computer games", "books", "software"), target audience keywords
-- Avoid generic words like "company", "business", "service"
+- Avoid generic words like "company", "business", "service", "online retail", "business", "innovation"
 
 Guidelines for description:
 - Start with what the company does

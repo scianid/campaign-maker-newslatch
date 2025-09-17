@@ -520,7 +520,7 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
-                Delete Campaign
+                Delete
               </Button>
             </div>
           </div>
