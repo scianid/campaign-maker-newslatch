@@ -82,17 +82,6 @@ export function CampaignDashboard({ user }) {
   return (
     <Layout 
       user={user}
-      headerActions={
-        !showForm && !loading && (
-          <Button 
-            onClick={handleNewCampaign}
-            className="bg-highlight text-button-text hover:bg-highlight/90 shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            New Campaign
-          </Button>
-        )
-      }
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
         {/* Loading State */}
