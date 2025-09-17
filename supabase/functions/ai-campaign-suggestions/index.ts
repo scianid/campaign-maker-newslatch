@@ -39,7 +39,7 @@ Deno.serve(async (req: Request) => {
     const prompt = `
 Analyze the company website at "${url}" ${name ? `(company name: "${name}")` : ''} and provide:
 
-1. 12 relevant tags that describe the company's business, industry, target audience, and solutions
+1. 9 relevant tags that describe the company's business, industry, target audience, and solutions
 2. A 3-4 sentence description that explains:
    - What the company does
    - The main problem they solve for their customers

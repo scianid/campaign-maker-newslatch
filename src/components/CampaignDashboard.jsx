@@ -60,14 +60,12 @@ export function CampaignDashboard({ user }) {
   };
 
   const handleDeleteCampaign = async (campaignId) => {
-    if (window.confirm('Are you sure you want to delete this campaign?')) {
-      try {
-        await campaignService.deleteCampaign(campaignId);
-        setCampaigns(prev => prev.filter(c => c.id !== campaignId));
-      } catch (error) {
-        console.error('Error deleting campaign:', error);
-        alert('Error deleting campaign. Please try again.');
-      }
+    try {
+      await campaignService.deleteCampaign(campaignId);
+      setCampaigns(prev => prev.filter(c => c.id !== campaignId));
+    } catch (error) {
+      console.error('Error deleting campaign:', error);
+      alert('Error deleting campaign. Please try again.');
     }
   };
 
