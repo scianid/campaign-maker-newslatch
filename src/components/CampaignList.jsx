@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, TestTube, Rss, Search } from 'lucide-react';
@@ -9,9 +8,8 @@ import { getCountryDisplayName } from '../constants/locales';
 import { RssItemsModal } from '../ui/RssItemsModal';
 import { LoadingModal } from '../ui/LoadingModal';
 
-export function CampaignList({ user }) {
-  const [campaigns, setCampaigns] = useState([]);
-  const [loading, setLoading] = useState(true);
+export function CampaignList({ campaigns = [], onEdit, onDelete }) {
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [hoveredId, setHoveredId] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, campaign: null });
@@ -20,29 +18,14 @@ export function CampaignList({ user }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingRss, setLoadingRss] = useState(false);
   const [loadingCampaignId, setLoadingCampaignId] = useState(null);
-  const navigate = useNavigate();
 
   // Load campaigns from Supabase on mount
   useEffect(() => {
-    loadCampaigns();
+    // Remove the loadCampaigns call since campaigns are passed as props
   }, []);
 
-  const loadCampaigns = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await campaignService.getAllCampaigns();
-      setCampaigns(data);
-    } catch (error) {
-      console.error('Error loading campaigns:', error);
-      setError('Failed to load campaigns. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleEdit = (campaign) => {
-    navigate(`/edit/${campaign.id}`, { state: { campaign } });
+    onEdit(campaign);
   };
 
   const handleDeleteClick = (campaign) => {
@@ -50,11 +33,8 @@ export function CampaignList({ user }) {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!deleteConfirm.campaign) return;
-    
     try {
-      await campaignService.deleteCampaign(deleteConfirm.campaign.id);
-      setCampaigns(prev => prev.filter(c => c.id !== deleteConfirm.campaign.id));
+      await onDelete(deleteConfirm.campaign.id);
       setDeleteConfirm({ show: false, campaign: null });
     } catch (error) {
       console.error('Error deleting campaign:', error);
@@ -251,7 +231,7 @@ export function CampaignList({ user }) {
   };
 
   // Filter campaigns based on search term
-  const filteredCampaigns = campaigns.filter(campaign => {
+  const filteredCampaigns = (campaigns || []).filter(campaign => {
     if (!searchTerm.trim()) return true;
     
     const term = searchTerm.toLowerCase();
@@ -291,22 +271,15 @@ export function CampaignList({ user }) {
   }
 
   // Error state
+  // Error state - parent component handles this now
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
         <div className="flex items-center gap-3">
           <AlertCircle className="w-6 h-6 text-red-600" />
           <div>
-            <h3 className="font-medium text-red-800">Error loading campaigns</h3>
+            <h3 className="font-medium text-red-800">Error loading content</h3>
             <p className="text-red-600">{error}</p>
-            <Button 
-              onClick={loadCampaigns}
-              variant="outline"
-              size="sm"
-              className="mt-3"
-            >
-              Try Again
-            </Button>
           </div>
         </div>
       </div>
@@ -314,7 +287,7 @@ export function CampaignList({ user }) {
   }
 
   // Empty state
-  if (campaigns.length === 0) {
+  if (!campaigns || campaigns.length === 0) {
     return (
       <div className="text-center py-16">
         <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl mb-6">
@@ -345,7 +318,7 @@ export function CampaignList({ user }) {
       {/* Header with Search and New Button */}
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
         <h2 className="text-2xl font-bold text-white">
-          Your Campaigns ({filteredCampaigns.length}{campaigns.length !== filteredCampaigns.length ? ` of ${campaigns.length}` : ''})
+          Your Campaigns ({filteredCampaigns.length}{(campaigns?.length || 0) !== filteredCampaigns.length ? ` of ${campaigns?.length || 0}` : ''})
         </h2>
         <div className="flex gap-3">
           {/* Search Bar */}

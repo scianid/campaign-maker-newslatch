@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { CampaignForm } from './CampaignForm';
 import { CampaignList } from './CampaignList';
+import { AiContentViewer } from './AiContentViewer';
 import { AuthComponent } from './AuthComponent';
 import { Button } from '../ui/Button';
-import { Plus, Megaphone, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, Megaphone, Sparkles, Loader2, AlertCircle, List, Zap } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
 
 export function CampaignDashboard({ user }) {
@@ -12,6 +13,8 @@ export function CampaignDashboard({ user }) {
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeTab, setActiveTab] = useState('campaigns');
+  const [selectedCampaign, setSelectedCampaign] = useState(null);
 
   // Load campaigns from Supabase on mount
   useEffect(() => {
@@ -81,29 +84,28 @@ export function CampaignDashboard({ user }) {
     setEditingCampaign(null);
   };
 
+  const tabs = [
+    { id: 'campaigns', label: 'Campaigns', icon: List },
+    { id: 'ai-content', label: 'AI Content', icon: Zap },
+  ];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
+    <div className="min-h-screen bg-primary-bg">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-40">
+      <header className="bg-primary-bg/95 backdrop-blur-sm border-b border-gray-700/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg">
-                <Megaphone className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-                  Campaign Maker
-                </h1>
-                <p className="text-sm text-gray-600">Welcome back, {user.user_metadata?.full_name || user.email}!</p>
-              </div>
-            </div>
+            <img 
+              src="/toplogo.png" 
+              alt="NewsLatch Studio Logo" 
+              className="h-10 w-auto"
+            />
             
             <div className="flex items-center gap-4">
               {!showForm && !loading && (
                 <Button 
                   onClick={handleNewCampaign}
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="bg-highlight text-button-text hover:bg-highlight/90 shadow-lg hover:shadow-xl transition-all duration-300"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   New Campaign
@@ -116,23 +118,23 @@ export function CampaignDashboard({ user }) {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
         {/* Loading State */}
         {loading && (
           <div className="text-center py-16">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-            <p className="text-gray-600">Loading your campaigns...</p>
+            <div className="w-16 h-16 border-4 border-gray-600 border-t-highlight rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-white">Loading your campaigns...</p>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+          <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-6 mb-8">
             <div className="flex items-center gap-3">
-              <AlertCircle className="w-6 h-6 text-red-600" />
+              <AlertCircle className="w-6 h-6 text-red-400" />
               <div>
-                <h3 className="font-medium text-red-800">Error loading campaigns</h3>
-                <p className="text-red-600">{error}</p>
+                <h3 className="font-medium text-red-400">Error loading campaigns</h3>
+                <p className="text-red-300">{error}</p>
                 <Button 
                   onClick={loadCampaigns}
                   variant="outline"
@@ -160,46 +162,132 @@ export function CampaignDashboard({ user }) {
         {/* List View */}
         {!showForm && !loading && !error && (
           <div>
-            {/* Welcome Section for Empty State */}
-            {campaigns.length === 0 && (
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl mb-6">
-                  <Sparkles className="w-10 h-10 text-blue-600" />
-                </div>
-                <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                  Ready to create your first campaign?
-                </h2>
-                <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-                  Start building amazing campaigns! Add URLs, organize with tags, 
-                  configure RSS feed categories, and track everything in one place.
-                </p>
-                <Button 
-                  onClick={handleNewCampaign}
-                  size="lg"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create Your First Campaign
-                </Button>
+            {/* Tab Navigation */}
+            <div className="mb-8">
+              <div className="border-b border-gray-600/50">
+                <nav className="-mb-px flex space-x-8">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
+                          activeTab === tab.id
+                            ? 'border-highlight text-highlight'
+                            : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-500'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <Icon className="w-4 h-4" />
+                          {tab.label}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </nav>
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'campaigns' && (
+              <div>
+                {/* Welcome Section for Empty State */}
+                {campaigns.length === 0 && (
+                  <div className="text-center mb-12">
+                    <div className="inline-flex items-center justify-center w-20 h-20 bg-card-bg border border-gray-600/50 rounded-3xl mb-6">
+                      <Sparkles className="w-10 h-10 text-highlight" />
+                    </div>
+                    <h2 className="text-3xl font-bold text-white mb-4">
+                      Ready to create your first campaign?
+                    </h2>
+                    <p className="text-lg text-text-paragraph mb-8 max-w-2xl mx-auto">
+                      Start building amazing campaigns! Add URLs, organize with tags, 
+                      configure RSS feed categories, and track everything in one place.
+                    </p>
+                    <Button 
+                      onClick={handleNewCampaign}
+                      size="lg"
+                      className="bg-gradient-to-r from-highlight to-purple-600 hover:from-highlight/90 hover:to-purple-700 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300"
+                    >
+                      <Plus className="w-5 h-5 mr-2" />
+                      Create Your First Campaign
+                    </Button>
+                  </div>
+                )}
+
+                {/* Campaigns List */}
+                <CampaignList 
+                  campaigns={campaigns}
+                  onEdit={handleEditCampaign}
+                  onDelete={handleDeleteCampaign}
+                />
               </div>
             )}
 
-            {/* Campaigns List */}
-            <CampaignList 
-              campaigns={campaigns}
-              onEdit={handleEditCampaign}
-              onDelete={handleDeleteCampaign}
-            />
+            {activeTab === 'ai-content' && (
+              <div>
+                {campaigns.length === 0 ? (
+                  <div className="text-center py-16">
+                    <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-300 mb-2">No campaigns yet</h3>
+                    <p className="text-text-paragraph mb-6">Create a campaign first to generate AI content</p>
+                    <Button onClick={() => setActiveTab('campaigns')} variant="outline">
+                      Go to Campaigns
+                    </Button>
+                  </div>
+                ) : !selectedCampaign ? (
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white mb-4">
+                      Select a campaign to view AI content:
+                    </h3>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {campaigns.map((campaign) => (
+                        <button
+                          key={campaign.id}
+                          onClick={() => setSelectedCampaign(campaign)}
+                          className="text-left p-4 bg-card-bg border border-gray-600/50 rounded-lg hover:border-highlight/50 hover:shadow-md transition-all"
+                        >
+                          <h4 className="font-medium text-white">{campaign.name}</h4>
+                          <p className="text-sm text-text-paragraph mt-1">
+                            {campaign.tags?.length || 0} tags • {campaign.rss_feeds?.length || 0} feeds
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex items-center gap-4 mb-6">
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectedCampaign(null)}
+                        size="sm"
+                      >
+                        ← Back to campaigns
+                      </Button>
+                      <h3 className="text-lg font-semibold text-white">
+                        AI Content for "{selectedCampaign.name}"
+                      </h3>
+                    </div>
+                    <AiContentViewer 
+                      campaignId={selectedCampaign.id}
+                      campaignName={selectedCampaign.name}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
       </main>
 
       {/* Footer */}
-      <footer className="bg-white/50 backdrop-blur-sm border-t border-gray-200/50 mt-20">
+      <footer className="bg-primary-bg/80 backdrop-blur-sm border-t border-gray-700/50 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Built with ❤️ using React, Tailwind CSS, and Supabase
+            <p className="text-sm text-gray-300">
+              Powered by AI-driven news analysis for smarter lead generation
             </p>
           </div>
         </div>

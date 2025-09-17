@@ -3,7 +3,7 @@ import { cn } from '../utils/cn';
 
 export const Button = forwardRef(({ className, variant = 'default', size = 'default', ...props }, ref) => {
   const variants = {
-    default: 'bg-highlight text-white hover:bg-highlight/80',
+    default: 'bg-highlight text-button-text hover:bg-highlight/80',
     outline: 'border border-gray-600 bg-card-bg hover:bg-gray-600 text-white',
     ghost: 'hover:bg-card-bg text-white',
     destructive: 'bg-red-600 text-white hover:bg-red-700'

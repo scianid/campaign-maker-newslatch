@@ -56,6 +56,11 @@ export function RssItemsModal({ isOpen, onClose, rssData, aiAnalysis, campaignNa
                     </div>
                     <div className="text-sm text-text-paragraph mb-3">{item.description}</div>
                     <div className="text-xs text-highlight/80 mb-3 italic">{item.tooltip}</div>
+                    {item.ad_placement && (
+                      <div className="text-sm text-green-400 bg-green-900/20 p-3 rounded mb-3">
+                        <strong>🎯 Ad Copy:</strong> {item.ad_placement}
+                      </div>
+                    )}
                     <a href={item.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 underline text-sm">
                       📖 Read Source Article
                     </a>
@@ -64,8 +69,15 @@ export function RssItemsModal({ isOpen, onClose, rssData, aiAnalysis, campaignNa
               </div>
               {aiAnalysis.trend_summary && (
                 <div className="mt-4 p-4 bg-card-bg rounded-lg">
-                  <div className="text-sm text-text-paragraph">
+                  <div className="text-sm text-text-paragraph mb-3">
                     <strong className="text-highlight">📊 Trend Summary:</strong> {aiAnalysis.trend_summary}
+                  </div>
+                </div>
+              )}
+              {aiAnalysis.campaign_strategy && (
+                <div className="mt-4 p-4 bg-blue-900/20 border border-blue-600/50 rounded-lg">
+                  <div className="text-sm text-blue-300">
+                    <strong className="text-blue-400">🚀 Campaign Strategy:</strong> {aiAnalysis.campaign_strategy}
                   </div>
                 </div>
               )}

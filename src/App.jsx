@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthComponent } from './components/AuthComponent';
 import { HomePage } from './components/HomePage';
 import { CampaignForm } from './components/CampaignForm';
-import { CampaignList } from './components/CampaignList';
+import { CampaignDashboard } from './components/CampaignDashboard';
 import { authService } from './lib/supabase';
 import { Megaphone } from 'lucide-react';
 
@@ -44,7 +44,7 @@ function Layout({ user, children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <p className="text-sm text-gray-300">
-              Built with ❤️ using React, Tailwind CSS, and Supabase
+              Powered by AI-driven news analysis for smarter lead generation
             </p>
           </div>
         </div>
@@ -99,9 +99,7 @@ function App() {
           path="/campaigns" 
           element={
             <ProtectedRoute user={user}>
-              <Layout user={user}>
-                <CampaignList user={user} />
-              </Layout>
+              <CampaignDashboard user={user} />
             </ProtectedRoute>
           } 
         />
@@ -110,9 +108,7 @@ function App() {
           path="/new" 
           element={
             <ProtectedRoute user={user}>
-              <Layout user={user}>
-                <CampaignForm user={user} />
-              </Layout>
+              <CampaignDashboard user={user} />
             </ProtectedRoute>
           } 
         />
@@ -121,9 +117,7 @@ function App() {
           path="/edit/:id" 
           element={
             <ProtectedRoute user={user}>
-              <Layout user={user}>
-                <CampaignForm user={user} />
-              </Layout>
+              <CampaignDashboard user={user} />
             </ProtectedRoute>
           } 
         />

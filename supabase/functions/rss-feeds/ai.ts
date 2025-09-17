@@ -8,7 +8,7 @@ export function buildPrompt(
     const companyUrl = campaignInfo?.url || "their website";
     const companyDesc = campaignInfo?.description || "their services";
     const companyTags = campaignInfo?.tags || [];
-    
+
     return `
 You are an expert AI marketing analyst creating targeted ad placements for lead generation campaigns.
 
@@ -36,20 +36,20 @@ For each selected headline, create:
 
 OUTPUT FORMAT (JSON only):
 {
-"results": [
-{
-"headline": "[Original headline]",
-"clickbait": "[Viral clickbait hook for ${companyName}]",
-"link": "[Link from newsArray]",
-"relevance_score": [0-100],
-"trend": "[Short trend label]",
-"description": "[Why this creates urgency for ${companyName}'s services]",
-"tooltip": "[Conversion-focused explanation connecting news to ${companyName}'s value - drive action toward ${companyUrl}]",
-"ad_placement": "[Complete ad copy targeting ${companyName}'s prospects - include clear CTA]"
-}
-],
-"trend_summary": "[Marketing strategy overview for ${companyName} based on identified trends]",
-"campaign_strategy": "[Specific recommendations for ${companyName} to capitalize on these news trends]"
+    "results": [
+        {
+            "headline": "[Original headline]",
+            "clickbait": "[Viral clickbait hook for ${companyName}]",
+            "link": "[Link from newsArray]",
+            "relevance_score": [0-100],
+            "trend": "[Short trend label]",
+            "description": "[Why this creates urgency for ${companyName}'s services]",
+            "tooltip": "[Conversion-focused explanation connecting news to ${companyName}'s value - drive action toward ${companyUrl}]",
+            "ad_placement": "[Complete ad copy targeting ${companyName}'s prospects - include clear CTA]"
+        }
+    ],
+    "trend_summary": "[Marketing strategy overview for ${companyName} based on identified trends]",
+    "campaign_strategy": "[Specific recommendations for ${companyName} to capitalize on these news trends]"
 }
 
 NEWS ARTICLES TO ANALYZE:
@@ -85,7 +85,7 @@ export async function runGpt(prompt: string): Promise<string> {
     };
 
     console.log('🚀 Making OpenAI API request...');
-    
+
     const res = await fetch(GPT_API_URL, {
         method: "POST",
         headers: {
@@ -96,7 +96,7 @@ export async function runGpt(prompt: string): Promise<string> {
     });
 
     console.log('📡 API Response status:', res.status);
-    
+
     if (!res.ok) {
         const errorText = await res.text();
         console.error('❌ OpenAI API error:', errorText);
@@ -105,7 +105,7 @@ export async function runGpt(prompt: string): Promise<string> {
 
     const data = await res.json();
     console.log('📦 Full API response:', JSON.stringify(data, null, 2));
-    
+
     if (data.error) {
         console.error('❌ OpenAI returned error:', data.error);
         throw new Error(`OpenAI error: ${data.error.message || data.error}`);
@@ -114,10 +114,10 @@ export async function runGpt(prompt: string): Promise<string> {
     const text = data.choices?.[0]?.message?.content || "";
     console.log('📝 GPT Response length:', text.length);
     console.log('🎯 GPT Response preview:', text.substring(0, 200) + '...');
-    
+
     if (!text.trim()) {
         throw new Error('OpenAI returned empty response');
     }
-    
+
     return text;
 }
