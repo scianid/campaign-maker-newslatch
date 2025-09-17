@@ -126,26 +126,46 @@ export async function handleGetRssFeeds(supabaseClient: any, req: Request): Prom
         
         const offset = (page - 1) * limit;
         
+        console.log('🔍 AI Items Filter Debug:', {
+          campaignId,
+          page,
+          limit,
+          status,
+          scoreRange,
+          dateRange,
+          sortBy,
+          sortOrder,
+          offset
+        });
+        
         let query = supabaseClient
           .from('ai_generated_items')
           .select('*', { count: 'exact' })
-          .eq('campaign_id', campaignId)
-          .gt('ttl', 'now()');  // Only get non-expired items
+          .eq('campaign_id', campaignId);
         
         // Apply status filtering
         if (status === 'published') {
           query = query.eq('is_published', true);
+          console.log('📢 Applied published filter');
         } else if (status === 'unpublished') {
           query = query.eq('is_published', false);
+          console.log('📝 Applied unpublished filter');
+        } else {
+          console.log('📄 No status filter applied (showing all)');
         }
         
         // Apply score range filtering
         if (scoreRange === 'high') {
           query = query.gte('relevance_score', 80);
+          console.log('⭐ Applied high score filter (>=80)');
         } else if (scoreRange === 'medium') {
           query = query.gte('relevance_score', 50).lt('relevance_score', 80);
+          console.log('🔶 Applied medium score filter (50-79)');
         } else if (scoreRange === 'low') {
           query = query.lt('relevance_score', 50);
+          console.log('📊 Applied low score filter (<50)');
+        } else {
+          console.log('📊 No score filter applied (all scores)');
         }
         
         // Apply date range filtering
@@ -156,10 +176,12 @@ export async function handleGetRssFeeds(supabaseClient: any, req: Request): Prom
         } else if (dateRange === 'week') {
           const weekAgo = new Date();
           weekAgo.setDate(weekAgo.getDate() - 7);
+          weekAgo.setHours(0, 0, 0, 0);
           query = query.gte('created_at', weekAgo.toISOString());
         } else if (dateRange === 'month') {
           const monthAgo = new Date();
           monthAgo.setMonth(monthAgo.getMonth() - 1);
+          monthAgo.setHours(0, 0, 0, 0);
           query = query.gte('created_at', monthAgo.toISOString());
         }
         
@@ -178,7 +200,14 @@ export async function handleGetRssFeeds(supabaseClient: any, req: Request): Prom
         
         const { data: aiItems, error: aiError, count } = await query;
         
+        console.log('📊 Query Results:', {
+          itemsReturned: aiItems?.length || 0,
+          totalCount: count || 0,
+          error: aiError?.message || 'none'
+        });
+        
         if (aiError) {
+          console.error('❌ Database query error:', aiError);
           return createErrorResponse('Failed to fetch AI items', aiError.message, 500);
         }
         
