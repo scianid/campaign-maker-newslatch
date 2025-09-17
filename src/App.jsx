@@ -4,6 +4,7 @@ import { AuthComponent } from './components/AuthComponent';
 import { HomePage } from './components/HomePage';
 import { CampaignForm } from './components/CampaignForm';
 import { MultiStepCampaignForm } from './components/MultiStepCampaignForm';
+import { EditCampaignForm } from './components/EditCampaignForm';
 import { CampaignDashboard } from './components/CampaignDashboard';
 import { AiContentPage } from './components/AiContentPage';
 import { authService } from './lib/supabase';
@@ -119,7 +120,7 @@ function App() {
           path="/edit/:id" 
           element={
             <ProtectedRoute user={user}>
-              <MultiStepCampaignForm user={user} />
+              <EditCampaignForm user={user} />
             </ProtectedRoute>
           } 
         />

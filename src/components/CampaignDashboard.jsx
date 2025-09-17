@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CampaignForm } from './CampaignForm';
 import { CampaignList } from './CampaignList';
 import { Layout } from './Layout';
@@ -7,6 +8,7 @@ import { Plus, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
 
 export function CampaignDashboard({ user }) {
+  const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState([]);
   const [editingCampaign, setEditingCampaign] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -55,8 +57,7 @@ export function CampaignDashboard({ user }) {
   };
 
   const handleEditCampaign = (campaign) => {
-    setEditingCampaign(campaign);
-    setShowForm(true);
+    navigate(`/edit/${campaign.id}`, { state: { campaign } });
   };
 
   const handleDeleteCampaign = async (campaignId) => {
