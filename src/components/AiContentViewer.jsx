@@ -233,7 +233,12 @@ export function AiContentViewer({ campaignId, campaignName }) {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => copyToClipboard(item.ad_placement, `ad-${item.id}`)}
+                      onClick={() => copyToClipboard(
+                        typeof item.ad_placement === 'string' 
+                          ? item.ad_placement 
+                          : `${item.ad_placement.headline}\n\n${item.ad_placement.body}\n\n${item.ad_placement.cta}`,
+                        `ad-${item.id}`
+                      )}
                       className="h-6 w-6 p-0 text-gray-400 hover:text-gray-300"
                     >
                       {copiedId === `ad-${item.id}` ? 
@@ -242,9 +247,31 @@ export function AiContentViewer({ campaignId, campaignName }) {
                       }
                     </Button>
                   </div>
-                  <p className="text-sm text-green-300 bg-green-900/20 p-3 rounded border-l-2 border-green-600">
-                    {item.ad_placement}
-                  </p>
+                  
+                  {typeof item.ad_placement === 'string' ? (
+                    /* Legacy format - simple text */
+                    <p className="text-sm text-green-300 bg-green-900/20 p-3 rounded border-l-2 border-green-600">
+                      {item.ad_placement}
+                    </p>
+                  ) : (
+                    /* New structured format */
+                    <div className="bg-green-900/20 p-4 rounded border-l-2 border-green-600 space-y-3">
+                      <div>
+                        <h6 className="text-xs font-semibold text-green-400 mb-1">HEADLINE</h6>
+                        <p className="text-sm font-medium text-green-300">{item.ad_placement.headline}</p>
+                      </div>
+                      <div>
+                        <h6 className="text-xs font-semibold text-green-400 mb-1">BODY</h6>
+                        <p className="text-sm text-green-300">{item.ad_placement.body}</p>
+                      </div>
+                      <div>
+                        <h6 className="text-xs font-semibold text-green-400 mb-1">CALL TO ACTION</h6>
+                        <p className="text-sm font-semibold text-green-300 bg-green-800/30 px-3 py-1 rounded inline-block">
+                          {item.ad_placement.cta}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

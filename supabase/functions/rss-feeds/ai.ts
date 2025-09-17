@@ -45,7 +45,11 @@ OUTPUT FORMAT (JSON only):
             "trend": "[Short trend label]",
             "description": "[Why this creates urgency for ${companyName}'s services]",
             "tooltip": "[Conversion-focused explanation connecting news to ${companyName}'s value - drive action toward ${companyUrl}]",
-            "ad_placement": "[Complete ad copy targeting ${companyName}'s prospects - include clear CTA]"
+            "ad_placement": {
+                "headline": "[Compelling ad headline that connects news to ${companyName}]",
+                "body": "[Persuasive ad body text explaining the connection and value proposition]",
+                "cta": "[Clear, action-oriented call-to-action button text]"
+            }
         }
     ],
     "trend_summary": "[Marketing strategy overview for ${companyName} based on identified trends]",
