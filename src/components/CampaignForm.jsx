@@ -53,6 +53,26 @@ export function CampaignForm({ user }) {
     }
   }, [isEdit, campaign]);
 
+  // Format URL to ensure it has a protocol
+  const formatUrl = (url) => {
+    if (!url) return '';
+    
+    const trimmedUrl = url.trim();
+    
+    // If it already has a protocol, return as is
+    if (trimmedUrl.match(/^https?:\/\//i)) {
+      return trimmedUrl;
+    }
+    
+    // If it starts with //, add https:
+    if (trimmedUrl.startsWith('//')) {
+      return `https:${trimmedUrl}`;
+    }
+    
+    // Otherwise, add https://
+    return `https://${trimmedUrl}`;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.url.trim()) return;
@@ -60,12 +80,18 @@ export function CampaignForm({ user }) {
     try {
       setLoading(true);
       
+      // Format the URL to ensure it has a protocol
+      const formattedData = {
+        ...formData,
+        url: formatUrl(formData.url)
+      };
+      
       if (isEdit && campaign) {
         // Update existing campaign
-        await campaignService.updateCampaign(campaign.id, formData);
+        await campaignService.updateCampaign(campaign.id, formattedData);
       } else {
         // Create new campaign
-        await campaignService.createCampaign(formData);
+        await campaignService.createCampaign(formattedData);
       }
       
       navigate('/campaigns');
@@ -98,6 +124,21 @@ export function CampaignForm({ user }) {
     if (e.key === 'Enter') {
       e.preventDefault();
       addTag();
+    }
+  };
+
+  // Handle URL input with automatic protocol addition
+  const handleUrlChange = (e) => {
+    const inputUrl = e.target.value;
+    setFormData(prev => ({ ...prev, url: inputUrl }));
+  };
+
+  // Handle URL blur to format the URL when user leaves the field
+  const handleUrlBlur = (e) => {
+    const inputUrl = e.target.value;
+    if (inputUrl.trim()) {
+      const formattedUrl = formatUrl(inputUrl);
+      setFormData(prev => ({ ...prev, url: formattedUrl }));
     }
   };
 
@@ -149,8 +190,9 @@ export function CampaignForm({ user }) {
             id="url"
             type="url"
             value={formData.url}
-            onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
-            placeholder="https://example.com"
+            onChange={handleUrlChange}
+            onBlur={handleUrlBlur}
+            placeholder="example.com (protocol will be added automatically)"
             className="w-full"
             required
           />
