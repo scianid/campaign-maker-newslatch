@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthComponent } from './components/AuthComponent';
 import { HomePage } from './components/HomePage';
 import { CampaignForm } from './components/CampaignForm';
+import { MultiStepCampaignForm } from './components/MultiStepCampaignForm';
 import { CampaignDashboard } from './components/CampaignDashboard';
 import { AiContentPage } from './components/AiContentPage';
 import { authService } from './lib/supabase';
@@ -109,7 +110,7 @@ function App() {
           path="/new" 
           element={
             <ProtectedRoute user={user}>
-              <CampaignDashboard user={user} />
+              <MultiStepCampaignForm user={user} />
             </ProtectedRoute>
           } 
         />
@@ -118,7 +119,7 @@ function App() {
           path="/edit/:id" 
           element={
             <ProtectedRoute user={user}>
-              <CampaignDashboard user={user} />
+              <MultiStepCampaignForm user={user} />
             </ProtectedRoute>
           } 
         />
