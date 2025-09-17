@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone } from 'lucide-react';
+import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Layout } from './Layout';
@@ -18,6 +18,7 @@ export function AiContentPage({ user }) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
   const [previewStyles, setPreviewStyles] = useState({}); // Track preview style for each item
+  const [expandedDetails, setExpandedDetails] = useState({}); // Track which cards have details expanded
   const [filters, setFilters] = useState({
     status: 'published', // 'all', 'published', 'unpublished'
     scoreRange: 'all', // 'all', 'high', 'medium', 'low'
@@ -141,6 +142,13 @@ export function AiContentPage({ user }) {
     } catch (err) {
       console.error('Failed to copy:', err);
     }
+  };
+
+  const toggleDetails = (itemId) => {
+    setExpandedDetails(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
   };
 
   const formatDate = (dateString) => {
@@ -434,7 +442,7 @@ export function AiContentPage({ user }) {
                     key={item.id}
                     className={`bg-card-bg border rounded-lg p-6 transition-all relative ${
                       item.is_published 
-                        ? 'border-green-600/50 bg-green-900/10 shadow-green-900/20' 
+                        ? 'border-green-600/50 bg-green-900/5 shadow-green-900/20' 
                         : 'border-gray-600/50 hover:border-gray-500/50'
                     } hover:shadow-lg`}
                   >
@@ -460,7 +468,7 @@ export function AiContentPage({ user }) {
                     </div>
 
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-4 pr-24">
+                    <div className="flex items-start justify-between mb-6 pr-24">
                       <div className="flex-1">
                         <h3 className="font-semibold text-white text-xl leading-tight mb-3">
                           {item.headline}
@@ -501,44 +509,8 @@ export function AiContentPage({ user }) {
                       </div>
                     </div>
 
-                  {/* Content Grid */}
-                  <div className="grid md:grid-cols-2 gap-6">
-                    {/* Left Column */}
-                    <div className="space-y-4">
-                      {/* Clickbait */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="text-sm font-medium text-orange-400">💡 Clickbait Hook</h4>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => copyToClipboard(item.clickbait, `clickbait-${item.id}`)}
-                            className="h-6 w-6 p-0 text-gray-400 hover:text-gray-300"
-                          >
-                            {copiedId === `clickbait-${item.id}` ? 
-                              <Check className="w-3 h-3 text-green-400" /> : 
-                              <Copy className="w-3 h-3" />
-                            }
-                          </Button>
-                        </div>
-                        <p className="text-orange-300 font-medium">{item.clickbait}</p>
-                      </div>
-
-                      {/* Description */}
-                      <div>
-                        <h4 className="text-sm font-medium text-blue-400 mb-2">📋 Description</h4>
-                        <p className="text-sm text-text-paragraph">{item.description}</p>
-                      </div>
-
-                      {/* Tooltip */}
-                      <div>
-                        <h4 className="text-sm font-medium text-purple-400 mb-2">💬 Tooltip</h4>
-                        <p className="text-sm text-text-paragraph italic">{item.tooltip}</p>
-                      </div>
-                    </div>
-
-                    {/* Right Column */}
-                    <div className="space-y-4">
+                    {/* Main Content - Always Visible */}
+                    <div className="mb-6">
                       {/* Ad Preview Demo */}
                       {item.ad_placement && typeof item.ad_placement === 'object' && (
                         <div>
@@ -600,7 +572,7 @@ export function AiContentPage({ user }) {
                                     Sponsored
                                   </span>
                                   <span className="text-xs text-gray-400">
-                                    NewsLatch Campaign
+                                    {campaign?.name || 'Campaign'}
                                   </span>
                                 </div>
                               </div>
@@ -615,10 +587,10 @@ export function AiContentPage({ user }) {
                                 <div className="p-3 border-b border-gray-100">
                                   <div className="flex items-center gap-2">
                                     <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                                      <span className="text-white text-xs font-bold">NL</span>
+                                      <span className="text-white text-xs font-bold">{campaign?.name?.substring(0, 2).toUpperCase() || 'AD'}</span>
                                     </div>
                                     <div>
-                                      <p className="text-sm font-medium text-gray-900">NewsLatch</p>
+                                      <p className="text-sm font-medium text-gray-900">{campaign?.name || 'Campaign'}</p>
                                       <p className="text-xs text-gray-500">Sponsored</p>
                                     </div>
                                   </div>
@@ -642,69 +614,136 @@ export function AiContentPage({ user }) {
                           )}
                         </div>
                       )}
+                    </div>
 
-                      {/* Ad Placement */}
-                      {item.ad_placement && (
-                        <div>
-                          <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-sm font-medium text-green-400">🎯 Ad Copy</h4>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => copyToClipboard(
-                                typeof item.ad_placement === 'string' 
-                                  ? item.ad_placement 
-                                  : `${item.ad_placement.headline}\n\n${item.ad_placement.body}\n\n${item.ad_placement.cta}`,
-                                `ad-${item.id}`
-                              )}
-                              className="h-6 w-6 p-0 text-gray-400 hover:text-gray-300"
-                            >
-                              {copiedId === `ad-${item.id}` ? 
-                                <Check className="w-3 h-3 text-green-400" /> : 
-                                <Copy className="w-3 h-3" />
-                              }
-                            </Button>
-                          </div>
-                          
-                          {typeof item.ad_placement === 'string' ? (
-                            <p className="text-sm text-green-300 bg-green-900/20 p-3 rounded border-l-2 border-green-600">
-                              {item.ad_placement}
-                            </p>
-                          ) : (
-                            <div className="bg-green-900/20 p-4 rounded border-l-2 border-green-600 space-y-3">
-                              <div>
-                                <h6 className="text-xs font-semibold text-green-400 mb-1">HEADLINE</h6>
-                                <p className="text-sm font-medium text-green-300">{item.ad_placement.headline}</p>
+                    {/* Details Toggle Button */}
+                    <div className="flex items-center justify-center mb-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleDetails(item.id)}
+                        className="text-gray-400 hover:text-white transition-colors"
+                      >
+                        {expandedDetails[item.id] ? (
+                          <>
+                            <ChevronUp className="w-4 h-4 mr-2" />
+                            Hide Details
+                          </>
+                        ) : (
+                          <>
+                            <ChevronDown className="w-4 h-4 mr-2" />
+                            Show Details
+                          </>
+                        )}
+                      </Button>
+                    </div>
+
+                    {/* Details Section - Collapsible */}
+                    <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                      expandedDetails[item.id] ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
+                    }`}>
+                      <div className="border-t border-gray-600/30 pt-4">
+                        <div className="grid md:grid-cols-2 gap-6">
+                          {/* Left Column */}
+                          <div className="space-y-4">
+                            {/* Clickbait */}
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <h4 className="text-sm font-medium text-orange-400">💡 Clickbait Hook</h4>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => copyToClipboard(item.clickbait, `clickbait-${item.id}`)}
+                                  className="h-6 w-6 p-0 text-gray-400 hover:text-gray-300"
+                                >
+                                  {copiedId === `clickbait-${item.id}` ? 
+                                    <Check className="w-3 h-3 text-green-400" /> : 
+                                    <Copy className="w-3 h-3" />
+                                  }
+                                </Button>
                               </div>
-                              <div>
-                                <h6 className="text-xs font-semibold text-green-400 mb-1">BODY</h6>
-                                <p className="text-sm text-green-300">{item.ad_placement.body}</p>
-                              </div>
-                              <div>
-                                <h6 className="text-xs font-semibold text-green-400 mb-1">CALL TO ACTION</h6>
-                                <p className="text-sm font-semibold text-green-300 bg-green-800/30 px-3 py-1 rounded inline-block">
-                                  {item.ad_placement.cta}
-                                </p>
-                              </div>
+                              <p className="text-orange-300 font-medium">{item.clickbait}</p>
                             </div>
-                          )}
-                        </div>
-                      )}
 
-                      {/* Source Link */}
-                      <div className="pt-3 border-t border-gray-600/30">
-                        <a
-                          href={item.link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300"
-                        >
-                          <ExternalLink className="w-4 h-4" />
-                          View Source Article
-                        </a>
+                            {/* Description */}
+                            <div>
+                              <h4 className="text-sm font-medium text-blue-400 mb-2">📋 Description</h4>
+                              <p className="text-sm text-text-paragraph">{item.description}</p>
+                            </div>
+
+                            {/* Tooltip */}
+                            <div>
+                              <h4 className="text-sm font-medium text-purple-400 mb-2">💬 Tooltip</h4>
+                              <p className="text-sm text-text-paragraph italic">{item.tooltip}</p>
+                            </div>
+                          </div>
+
+                          {/* Right Column */}
+                          <div className="space-y-4">
+                            {/* Ad Placement */}
+                            {item.ad_placement && (
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="text-sm font-medium text-green-400">🎯 Ad Copy</h4>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => copyToClipboard(
+                                      typeof item.ad_placement === 'string' 
+                                        ? item.ad_placement 
+                                        : `${item.ad_placement.headline}\n\n${item.ad_placement.body}\n\n${item.ad_placement.cta}`,
+                                      `ad-${item.id}`
+                                    )}
+                                    className="h-6 w-6 p-0 text-gray-400 hover:text-gray-300"
+                                  >
+                                    {copiedId === `ad-${item.id}` ? 
+                                      <Check className="w-3 h-3 text-green-400" /> : 
+                                      <Copy className="w-3 h-3" />
+                                    }
+                                  </Button>
+                                </div>
+                                
+                                {typeof item.ad_placement === 'string' ? (
+                                  <p className="text-sm text-green-300 bg-green-900/20 p-3 rounded border-l-2 border-green-600">
+                                    {item.ad_placement}
+                                  </p>
+                                ) : (
+                                  <div className="bg-green-900/20 p-4 rounded border-l-2 border-green-600 space-y-3">
+                                    <div>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1">HEADLINE</h6>
+                                      <p className="text-sm font-medium text-green-300">{item.ad_placement.headline}</p>
+                                    </div>
+                                    <div>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1">BODY</h6>
+                                      <p className="text-sm text-green-300">{item.ad_placement.body}</p>
+                                    </div>
+                                    <div>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1">CALL TO ACTION</h6>
+                                      <p className="text-sm font-semibold text-green-300 bg-green-800/30 px-3 py-1 rounded inline-block">
+                                        {item.ad_placement.cta}
+                                      </p>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Source Link */}
+                            <div className="pt-3 border-t border-gray-600/30">
+                              <a
+                                href={item.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300"
+                              >
+                                <ExternalLink className="w-4 h-4" />
+                                View Source Article
+                              </a>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
                 </div>
                 );
               })}
