@@ -34,9 +34,9 @@ export function RssItemsModal({ isOpen, onClose, rssData, aiAnalysis, campaignNa
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="h-8 w-8 p-0 hover:bg-primary-bg text-text-paragraph hover:text-white"
+            className="h-10 w-10 p-0 hover:bg-primary-bg text-text-paragraph hover:text-white ml-4 flex-shrink-0"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </Button>
         </div>
 

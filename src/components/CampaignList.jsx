@@ -581,8 +581,9 @@ export function CampaignList({ user }) {
       {/* RSS Items Modal */}
       <RssItemsModal
         isOpen={rssModal.show}
-        onClose={() => setRssModal({ show: false, data: null, campaignName: '' })}
+        onClose={() => setRssModal({ show: false, data: null, aiAnalysis: null, campaignName: '' })}
         rssData={rssModal.data}
+        aiAnalysis={rssModal.aiAnalysis}
         campaignName={rssModal.campaignName}
       />
 
