@@ -7,6 +7,7 @@ import { campaignService, supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
 import { getCountryDisplayName } from '../constants/locales';
 import { RssItemsModal } from '../ui/RssItemsModal';
+import { LoadingModal } from '../ui/LoadingModal';
 
 export function CampaignList({ user }) {
   const [campaigns, setCampaigns] = useState([]);
@@ -17,6 +18,8 @@ export function CampaignList({ user }) {
   const [copiedId, setCopiedId] = useState(null);
   const [rssModal, setRssModal] = useState({ show: false, data: null, campaignName: '' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [loadingRss, setLoadingRss] = useState(false);
+  const [loadingCampaignId, setLoadingCampaignId] = useState(null);
   const navigate = useNavigate();
 
   // Load campaigns from Supabase on mount
@@ -162,7 +165,10 @@ export function CampaignList({ user }) {
     try {
       console.log('📰 Fetching RSS content for campaign:', campaign.name, campaign.id);
       
-      // Show loading state (you could add a loading modal here)
+      // Show loading state
+      setLoadingRss(true);
+      setLoadingCampaignId(campaign.id);
+      
       const result = await fetchRssContent(campaign.id);
       
       // Show the RSS items in a modal
@@ -178,6 +184,10 @@ export function CampaignList({ user }) {
     } catch (error) {
       console.error('💥 Failed to fetch RSS content:', error);
       alert('Failed to fetch RSS content. Please try again.');
+    } finally {
+      // Hide loading state
+      setLoadingRss(false);
+      setLoadingCampaignId(null);
     }
   };
 
@@ -289,7 +299,8 @@ export function CampaignList({ user }) {
         <Button 
           onClick={() => navigate('/new')}
           size="lg"
-          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300"
+          className="bg-button-primary hover:bg-button-primary/80 text-button-text hover:text-button-text shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300 font-semibold"
+          style={{ color: 'rgb(41, 41, 61)' }}
         >
           <Plus className="w-5 h-5 mr-2" />
           Create Your First Campaign
@@ -302,7 +313,7 @@ export function CampaignList({ user }) {
     <div className="space-y-6">
       {/* Header with Search and New Button */}
       <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold text-white">
           Your Campaigns ({filteredCampaigns.length}{campaigns.length !== filteredCampaigns.length ? ` of ${campaigns.length}` : ''})
         </h2>
         <div className="flex gap-3">
@@ -314,12 +325,12 @@ export function CampaignList({ user }) {
               placeholder="Search campaigns..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white shadow-sm"
+              className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight focus:border-highlight bg-card-bg text-white placeholder-gray-400 shadow-sm"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-gray-600"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -328,7 +339,8 @@ export function CampaignList({ user }) {
           {/* New Campaign Button */}
           <Button 
             onClick={() => navigate('/new')}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap"
+            className="bg-button-primary hover:bg-button-primary/80 text-button-text hover:text-button-text shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap font-semibold"
+            style={{ color: 'rgb(41, 41, 61)' }}
           >
             <Plus className="w-4 h-4 mr-2" />
             New Campaign
@@ -338,14 +350,14 @@ export function CampaignList({ user }) {
       
       {/* Results Info */}
       {searchTerm && (
-        <div className="text-sm text-gray-600">
+        <div className="text-sm text-text-paragraph">
           {filteredCampaigns.length === 0 ? (
             <div className="text-center py-8">
-              <AlertCircle className="w-8 h-8 mx-auto mb-2 text-gray-400" />
-              <p>No campaigns found for "{searchTerm}"</p>
+              <AlertCircle className="w-8 h-8 mx-auto mb-2 text-text-paragraph" />
+              <p className="text-white">No campaigns found for "{searchTerm}"</p>
               <button
                 onClick={() => setSearchTerm('')}
-                className="text-blue-600 hover:text-blue-800 mt-2"
+                className="text-highlight hover:text-highlight/80 mt-2"
               >
                 Clear search
               </button>
@@ -356,45 +368,72 @@ export function CampaignList({ user }) {
         </div>
       )}
 
-      <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-4">
         {filteredCampaigns.map((campaign) => (
           <div
             key={campaign.id}
             className={cn(
-              "bg-white rounded-2xl border border-gray-200 p-6 transition-all duration-300 shadow-md shadow-gray-300/40 hover:shadow-xl hover:shadow-gray-400/50 hover:border-gray-300 hover:-translate-y-1",
-              hoveredId === campaign.id && "shadow-lg shadow-gray-400/40"
+              "bg-card-bg rounded-2xl border border-gray-600/50 p-6 transition-all duration-300 shadow-md shadow-black/40 hover:shadow-xl hover:shadow-black/60 hover:border-gray-500 hover:-translate-y-1",
+              hoveredId === campaign.id && "shadow-lg shadow-black/50"
             )}
             onMouseEnter={() => setHoveredId(campaign.id)}
             onMouseLeave={() => setHoveredId(null)}
           >
-            {/* Header */}
-            <div>
-              
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-lg text-gray-900 truncate mb-3">
-                    {highlightText(campaign.name, searchTerm)}
-                  </h3>
-                  
-                  <div className="flex items-center gap-2 mb-3">
-                    <ExternalLink className="w-4 h-4 text-gray-400" />
-                    <a 
-                      href={campaign.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-sm text-gray-600 hover:text-blue-600 truncate transition-colors max-w-[200px]"
-                    >
-                      {highlightText(campaign.url.replace(/^https?:\/\//, '').split('/')[0], searchTerm)}
-                    </a>
-                  </div>
+            {/* Main horizontal layout */}
+            <div className="flex items-start justify-between gap-6">
+              {/* Left side - Campaign info */}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-xl text-white mb-2 leading-tight">
+                  {highlightText(campaign.name, searchTerm)}
+                </h3>
+                
+                <div className="flex items-center gap-2 mb-3">
+                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <a 
+                    href={campaign.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-sm text-text-paragraph hover:text-highlight transition-colors break-all"
+                  >
+                    {highlightText(campaign.url, searchTerm)}
+                  </a>
                 </div>
                 
-                <div className="flex gap-2 ml-4">
+                {campaign.description && (
+                  <p className="text-text-paragraph text-sm leading-relaxed line-clamp-2">
+                    {highlightText(campaign.description, searchTerm)}
+                  </p>
+                )}
+              </div>
+              
+              {/* Right side - Actions and metadata */}
+              <div className="flex flex-col items-end gap-3 flex-shrink-0">
+                {/* Campaign ID */}
+                <div className="flex items-center gap-2 text-xs text-text-paragraph">
+                  <span>ID:</span>
+                  <code className="font-mono bg-primary-bg px-1.5 py-0.5 rounded text-gray-300 break-all">
+                    {campaign.id}
+                  </code>
+                  <button
+                    onClick={() => handleCopyId(campaign.id)}
+                    className="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
+                    title="Copy full campaign ID"
+                  >
+                    {copiedId === campaign.id ? (
+                      <Check className="w-3 h-3 text-green-600" />
+                    ) : (
+                      <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                    )}
+                  </button>
+                </div>
+                
+                {/* Action buttons */}
+                <div className="flex gap-2">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => testRssFeeds(campaign)}
-                    className="h-10 w-10 p-0 bg-purple-50 text-purple-600 hover:bg-purple-100 hover:text-purple-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    className="h-10 w-10 p-0 bg-primary-bg text-purple-400 hover:bg-gray-700 hover:text-purple-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
                     title="Test RSS Feeds (check console)"
                   >
                     <TestTube className="w-5 h-5" />
@@ -403,16 +442,25 @@ export function CampaignList({ user }) {
                     variant="ghost"
                     size="sm"
                     onClick={() => showRssContent(campaign)}
-                    className="h-10 w-10 p-0 bg-orange-50 text-orange-600 hover:bg-orange-100 hover:text-orange-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
-                    title="View RSS Content"
+                    disabled={loadingRss && loadingCampaignId === campaign.id}
+                    className={`h-10 w-10 p-0 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md ${
+                      loadingRss && loadingCampaignId === campaign.id 
+                        ? 'bg-gray-700 text-orange-300 cursor-not-allowed' 
+                        : 'bg-primary-bg text-orange-400 hover:bg-gray-700 hover:text-orange-300'
+                    }`}
+                    title={loadingRss && loadingCampaignId === campaign.id ? "Loading RSS Content..." : "View RSS Content"}
                   >
-                    <Rss className="w-5 h-5" />
+                    {loadingRss && loadingCampaignId === campaign.id ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Rss className="w-5 h-5" />
+                    )}
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleEdit(campaign)}
-                    className="h-10 w-10 p-0 bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    className="h-10 w-10 p-0 bg-primary-bg text-highlight hover:bg-gray-700 hover:text-highlight/80 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
                   >
                     <Edit3 className="w-5 h-5" />
                   </Button>
@@ -420,123 +468,84 @@ export function CampaignList({ user }) {
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDeleteClick(campaign)}
-                    className="h-10 w-10 p-0 bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    className="h-10 w-10 p-0 bg-primary-bg text-red-400 hover:bg-gray-700 hover:text-red-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
                   >
                     <Trash2 className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
-
-              {/* Campaign ID - Full Width */}
-              <div className="flex items-center gap-2 mb-4 w-full">
-                <span className="text-xs text-gray-400">ID:</span>
-                <code className="text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded flex-1 truncate">
-                  {campaign.id}
-                </code>
-                <button
-                  onClick={() => handleCopyId(campaign.id)}
-                  className="p-1 hover:bg-gray-100 rounded transition-colors flex-shrink-0"
-                  title="Copy full campaign ID"
-                >
-                  {copiedId === campaign.id ? (
-                    <Check className="w-3 h-3 text-green-600" />
-                  ) : (
-                    <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
-                  )}
-                </button>
-              </div>
             </div>
 
-            {/* Description */}
-            {campaign.description && (
-              <div className="mb-5">
-                <p className="text-gray-600 text-sm leading-relaxed line-clamp-3">
-                  {highlightText(campaign.description, searchTerm)}
-                </p>
-              </div>
-            )}
-
-            {/* Tags */}
-            {campaign.tags && campaign.tags.length > 0 && (
-              <div className="mb-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Tag className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">Tags</span>
+            {/* Bottom metadata section */}
+            <div className="pt-4 mt-4 border-t border-gray-600/50 space-y-3">
+              {/* Tags Row */}
+              {campaign.tags && campaign.tags.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-text-paragraph" />
+                  <div className="flex flex-wrap gap-1">
+                    {campaign.tags.slice(0, 5).map((tag, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {highlightText(tag, searchTerm)}
+                      </Badge>
+                    ))}
+                    {campaign.tags.length > 5 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{campaign.tags.length - 5}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {campaign.tags.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="text-xs">
-                      {highlightText(tag, searchTerm)}
-                    </Badge>
-                  ))}
-                  {campaign.tags.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{campaign.tags.length - 3} more
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Countries */}
-            {campaign.rss_countries && campaign.rss_countries.length > 0 && (
-              <div className="mb-5">
-                <div className="flex items-center gap-2 mb-3">
+              {/* Countries Row */}
+              {campaign.rss_countries && campaign.rss_countries.length > 0 && (
+                <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4 text-green-500" />
-                  <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Target Countries</span>
+                  <div className="flex flex-wrap gap-1">
+                    {campaign.rss_countries.slice(0, 5).map((countryCode, index) => (
+                      <Badge key={index} variant="outline" className="text-xs bg-green-900/30 text-green-400 border-green-600">
+                        {getCountryDisplayName(countryCode)}
+                      </Badge>
+                    ))}
+                    {campaign.rss_countries.length > 5 && (
+                      <Badge variant="outline" className="text-xs">
+                        +{campaign.rss_countries.length - 5}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {campaign.rss_countries.map((countryCode, index) => (
-                    <Badge key={index} variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200 font-medium px-3 py-1">
-                      {getCountryDisplayName(countryCode)}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* RSS Categories */}
-            {campaign.rss_categories && campaign.rss_categories.length > 0 && (
-              <div className="mb-5">
-                <div className="flex items-center gap-2 mb-2">
-                  <Globe className="w-4 h-4 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">RSS Categories</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {campaign.rss_categories.includes('all') ? (
-                    <Badge className="text-xs bg-blue-600 text-white">
-                      All Categories
-                    </Badge>
-                  ) : (
-                    <>
-                      {campaign.rss_categories.slice(0, 2).map((category, index) => (
-                        <Badge key={index} className="text-xs bg-blue-600 text-white">
-                          {highlightText(category, searchTerm)}
-                        </Badge>
-                      ))}
-                      {campaign.rss_categories.length > 2 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{campaign.rss_categories.length - 2} more
-                        </Badge>
-                      )}
-                    </>
+              {/* Categories and Last Updated */}
+              <div className="flex items-center justify-between text-xs text-text-paragraph">
+                <div className="flex items-center gap-4">
+                  {campaign.rss_categories && campaign.rss_categories.length > 0 && (
+                    <div className="flex items-center gap-1">
+                      <Globe className="w-3 h-3" />
+                      <span>
+                        {campaign.rss_categories.includes('all') ? 'All categories' : `${campaign.rss_categories.length} categories`}
+                      </span>
+                    </div>
                   )}
                 </div>
+                
+                {campaign.updatedAt && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    <span>Updated {new Date(campaign.updatedAt).toLocaleDateString()}</span>
+                  </div>
+                )}
               </div>
-            )}
-
-            {/* Footer */}
-            {campaign.updatedAt && (
-              <div className="flex items-center gap-2 text-xs text-gray-400 pt-4 border-t border-gray-100">
-                <Calendar className="w-3 h-3" />
-                <span>
-                  Updated {new Date(campaign.updatedAt).toLocaleDateString()}
-                </span>
-              </div>
-            )}
+            </div>
           </div>
         ))}
       </div>
+
+      {/* Loading Modal */}
+      <LoadingModal
+        isOpen={loadingRss}
+        campaignName={campaigns.find(c => c.id === loadingCampaignId)?.name || 'Campaign'}
+      />
 
       {/* RSS Items Modal */}
       <RssItemsModal

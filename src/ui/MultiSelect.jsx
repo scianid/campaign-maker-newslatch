@@ -27,11 +27,11 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex h-10 w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+        className="flex h-10 w-full items-center justify-between rounded-lg border border-gray-600 bg-card-bg px-3 py-2 text-sm placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent transition-all"
       >
         <div className={cn(
           "flex-1 text-left truncate",
-          value.length === 0 ? 'text-gray-400' : 'text-gray-900'
+          value.length === 0 ? 'text-gray-400' : 'text-white'
         )}>
           {value.length === 0 
             ? placeholder 
@@ -47,16 +47,16 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+        <div className="absolute z-10 mt-1 w-full bg-card-bg border border-gray-600 rounded-lg shadow-lg">
           <div className="p-1">
             {/* All option */}
             <div
               onClick={handleSelectAll}
-              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded cursor-pointer"
+              className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-primary-bg rounded cursor-pointer text-white"
             >
               <div className={cn(
                 "w-4 h-4 border rounded flex items-center justify-center",
-                isAllSelected ? "bg-blue-600 border-blue-600" : "border-gray-300"
+                isAllSelected ? "bg-highlight border-highlight" : "border-gray-500"
               )}>
                 {isAllSelected && <Check className="w-3 h-3 text-white" />}
               </div>
@@ -70,11 +70,11 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
                 <div
                   key={option}
                   onClick={() => handleToggle(option)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-gray-50 rounded cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-primary-bg rounded cursor-pointer text-white"
                 >
                   <div className={cn(
                     "w-4 h-4 border rounded flex items-center justify-center",
-                    isSelected ? "bg-blue-600 border-blue-600" : "border-gray-300"
+                    isSelected ? "bg-highlight border-highlight" : "border-gray-500"
                   )}>
                     {isSelected && <Check className="w-3 h-3 text-white" />}
                   </div>

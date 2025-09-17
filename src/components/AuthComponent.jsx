@@ -70,8 +70,8 @@ export function AuthComponent({ user, onAuthChange }) {
   if (user) {
     return (
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+        <div className="flex items-center gap-2 px-3 py-2">
+          <div className="w-8 h-8 bg-highlight rounded-full flex items-center justify-center">
             {user.user_metadata?.avatar_url ? (
               <img 
                 src={user.user_metadata.avatar_url} 
@@ -83,10 +83,10 @@ export function AuthComponent({ user, onAuthChange }) {
             )}
           </div>
           <div className="hidden sm:block">
-            <p className="text-sm font-medium text-gray-900">
+            <p className="text-sm font-medium text-white">
               {user.user_metadata?.full_name || user.email}
             </p>
-            <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="text-xs text-text-paragraph">{user.email}</p>
           </div>
         </div>
         <Button
@@ -106,13 +106,24 @@ export function AuthComponent({ user, onAuthChange }) {
   // Authentication form modal
   if (showAuthForm) {
     return (
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+      <div 
+        className="fixed bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999] p-4" 
+        style={{ 
+          position: 'fixed', 
+          top: 0, 
+          left: 0, 
+          right: 0, 
+          bottom: 0, 
+          width: '100vw', 
+          height: '100vh' 
+        }}
+      >
+        <div className="bg-card-bg rounded-2xl shadow-2xl w-full max-w-md p-8">
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-white mb-2">
               {isSignUp ? 'Create Account' : 'Welcome Back'}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-text-paragraph">
               {isSignUp ? 'Sign up to start creating campaigns' : 'Sign in to your account'}
             </p>
           </div>
@@ -125,7 +136,7 @@ export function AuthComponent({ user, onAuthChange }) {
 
           <form onSubmit={handleEmailAuth} className="space-y-4">
             <div>
-              <Label htmlFor="email">Email address</Label>
+              <Label htmlFor="email" className="text-white">Email address</Label>
               <Input
                 id="email"
                 type="email"
@@ -138,7 +149,7 @@ export function AuthComponent({ user, onAuthChange }) {
             </div>
 
             <div>
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-white">Password</Label>
               <div className="relative mt-1">
                 <Input
                   id="password"
@@ -161,7 +172,7 @@ export function AuthComponent({ user, onAuthChange }) {
 
             {isSignUp && (
               <div>
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
@@ -177,7 +188,7 @@ export function AuthComponent({ user, onAuthChange }) {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="w-full bg-highlight hover:bg-highlight/80 text-white"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin mr-2" />
@@ -193,7 +204,7 @@ export function AuthComponent({ user, onAuthChange }) {
           <div className="mt-6 text-center">
             <button
               onClick={() => setIsSignUp(!isSignUp)}
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              className="text-highlight hover:text-highlight/80 text-sm font-medium"
             >
               {isSignUp ? 'Already have an account? Sign in' : "Don't have an account? Sign up"}
             </button>
@@ -202,7 +213,7 @@ export function AuthComponent({ user, onAuthChange }) {
           <div className="mt-4 text-center">
             <button
               onClick={resetForm}
-              className="text-gray-500 hover:text-gray-700 text-sm"
+              className="text-text-paragraph hover:text-white text-sm"
             >
               Cancel
             </button>
@@ -216,7 +227,8 @@ export function AuthComponent({ user, onAuthChange }) {
   return (
     <Button
       onClick={() => setShowAuthForm(true)}
-      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 flex items-center gap-2"
+      className="bg-highlight hover:bg-highlight/80 text-button-text flex items-center gap-2 font-semibold"
+      style={{ color: 'rgb(41, 41, 61)' }}
     >
       <LogIn className="w-4 h-4" />
       Sign In

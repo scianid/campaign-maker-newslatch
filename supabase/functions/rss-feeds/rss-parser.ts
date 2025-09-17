@@ -30,15 +30,67 @@ export interface RssParseResult {
 }
 
 /**
- * Extract text content from XML tag using regex
+ * Extract text content from XML tag using regex, handling CDATA sections
  */
 function extractXmlTag(xml: string, tagName: string): string {
   const regex = new RegExp(`<${tagName}[^>]*?(?:/>|>(.*?)<\/${tagName}>)`, 'is');
   const match = xml.match(regex);
   if (match && match[1] !== undefined) {
-    return match[1].trim();
+    let content = match[1].trim();
+    
+    // Handle CDATA sections
+    content = content.replace(/<!\[CDATA\[(.*?)\]\]>/gs, '$1');
+    
+    return content;
   }
   return '';
+}
+
+/**
+ * Extract title with fallback logic
+ */
+function extractTitle(xml: string): string {
+  // Try standard title first
+  let title = extractXmlTag(xml, 'title');
+  
+  // If title is empty, try other possible fields
+  if (!title) {
+    title = extractXmlTag(xml, 'dc:title') ||
+            extractXmlTag(xml, 'media:title') ||
+            extractXmlTag(xml, 'itunes:title');
+  }
+  
+  // If still empty, try to extract from link or description
+  if (!title) {
+    const link = extractXmlTag(xml, 'link');
+    const guid = extractXmlTag(xml, 'guid');
+    
+    // Try to extract title from URL path
+    if (link) {
+      const urlParts = link.split('/');
+      const lastPart = urlParts[urlParts.length - 1];
+      if (lastPart && lastPart.length > 0) {
+        // Convert URL-style text to readable title
+        title = lastPart
+          .replace(/[-_]/g, ' ')
+          .replace(/\.(html?|php|aspx?)$/i, '')
+          .replace(/^\d+[-_]?/, '') // Remove leading numbers
+          .replace(/\b\w/g, l => l.toUpperCase()); // Title case
+      }
+    } else if (guid) {
+      const urlParts = guid.split('/');
+      const lastPart = urlParts[urlParts.length - 1];
+      if (lastPart && lastPart.length > 0) {
+        title = lastPart
+          .replace(/[-_]/g, ' ')
+          .replace(/\.(html?|php|aspx?)$/i, '')
+          .replace(/^\d+[-_]?/, '')
+          .replace(/\b\w/g, l => l.toUpperCase());
+      }
+    }
+  }
+  
+  return title || 'Untitled Article';
 }
 
 /**
@@ -100,29 +152,45 @@ export function parseRssXml(xmlContent: string, source: { name: string; url: str
       const itemXml = match[1];
       
       try {
-        // Extract fields using regex
-        const title = extractXmlTag(itemXml, 'title') || 'No title';
+        // Extract title with improved logic
+        const title = extractTitle(itemXml);
+        
+        // Extract link with CDATA handling
         const linkFromTag = extractXmlTag(itemXml, 'link');
         const linkFromAttr = extractLinkAttribute(itemXml);
         const link = linkFromTag || linkFromAttr || '';
         
-        const description = extractXmlTag(itemXml, 'description') || 
-                          extractXmlTag(itemXml, 'summary') || 
-                          extractXmlTag(itemXml, 'content') || '';
+        // Extract description with multiple fallbacks
+        let description = extractXmlTag(itemXml, 'description') || 
+                         extractXmlTag(itemXml, 'summary') || 
+                         extractXmlTag(itemXml, 'content') ||
+                         extractXmlTag(itemXml, 'content:encoded') ||
+                         extractXmlTag(itemXml, 'media:description') ||
+                         '';
+        
+        // If description is still empty, try to create one from title
+        if (!description && title && title !== 'Untitled Article') {
+          description = `Article: ${title}`;
+        }
         
         const pubDateRaw = extractXmlTag(itemXml, 'pubDate') || 
                           extractXmlTag(itemXml, 'published') || 
-                          extractXmlTag(itemXml, 'updated') || '';
+                          extractXmlTag(itemXml, 'updated') || 
+                          extractXmlTag(itemXml, 'dc:date') || '';
         
         // Parse and normalize date
         const pubDate = pubDateRaw;
         let pubDateISO = '';
         try {
-          const dateObj = new Date(pubDateRaw);
-          if (!isNaN(dateObj.getTime())) {
-            pubDateISO = dateObj.toISOString();
+          if (pubDateRaw) {
+            const dateObj = new Date(pubDateRaw);
+            if (!isNaN(dateObj.getTime())) {
+              pubDateISO = dateObj.toISOString();
+            } else {
+              pubDateISO = new Date().toISOString();
+            }
           } else {
-            pubDateISO = new Date().toISOString(); // Fallback to current time
+            pubDateISO = new Date().toISOString();
           }
         } catch {
           pubDateISO = new Date().toISOString();
@@ -130,14 +198,22 @@ export function parseRssXml(xmlContent: string, source: { name: string; url: str
 
         // Extract additional fields
         const guid = extractXmlTag(itemXml, 'guid') || extractXmlTag(itemXml, 'id') || '';
-        const author = extractXmlTag(itemXml, 'author') || extractXmlTag(itemXml, 'dc:creator') || '';
-        const content = extractXmlTag(itemXml, 'content:encoded') || extractXmlTag(itemXml, 'content') || '';
+        const author = extractXmlTag(itemXml, 'author') || 
+                      extractXmlTag(itemXml, 'dc:creator') || 
+                      extractXmlTag(itemXml, 'managingEditor') ||
+                      extractXmlTag(itemXml, 'itunes:author') || '';
+        
+        const content = extractXmlTag(itemXml, 'content:encoded') || 
+                       extractXmlTag(itemXml, 'content') || 
+                       description || '';
         
         // Extract image URL
         const imageUrl = extractImageUrl(itemXml);
         
         // Extract categories
         const categories = extractCategories(itemXml);
+
+
 
         const rssItem: RssItem = {
           title: cleanText(title),
@@ -153,7 +229,20 @@ export function parseRssXml(xmlContent: string, source: { name: string; url: str
           imageUrl: imageUrl.trim()
         };
 
-        items.push(rssItem);
+        // Only add items that have meaningful content
+        const hasTitle = rssItem.title && rssItem.title !== 'Untitled Article';
+        const hasDescription = rssItem.description && rssItem.description.trim().length > 0;
+        const hasContent = rssItem.content && rssItem.content.trim().length > 0;
+        const hasLink = rssItem.link && rssItem.link.trim().length > 0;
+        
+        if (hasTitle || hasDescription || hasContent || hasLink) {
+          items.push(rssItem);
+        } else {
+          console.warn('Skipping RSS item with no meaningful content:', { 
+            guid: rssItem.guid, 
+            source: rssItem.source.name 
+          });
+        }
       } catch (error) {
         console.warn('Error parsing RSS item:', error);
         // Continue with other items

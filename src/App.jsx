@@ -18,22 +18,16 @@ function ProtectedRoute({ user, children }) {
 // Layout component for authenticated pages
 function Layout({ user, children }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30">
+    <div className="min-h-screen bg-primary-bg">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-40">
+      <header className="bg-primary-bg/95 backdrop-blur-sm border-b border-gray-700/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg">
-                <Megaphone className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent">
-                  NewsLatch Studio
-                </h1>
-                <p className="text-sm text-gray-600">Welcome back, {user.user_metadata?.full_name || user.email}!</p>
-              </div>
-            </div>
+            <img 
+              src="/toplogo.png" 
+              alt="NewsLatch Studio Logo" 
+              className="h-10 w-auto"
+            />
             
             <AuthComponent user={user} />
           </div>
@@ -41,15 +35,15 @@ function Layout({ user, children }) {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-white/50 backdrop-blur-sm border-t border-gray-200/50 mt-20">
+      <footer className="bg-primary-bg/80 backdrop-blur-sm border-t border-gray-700/50 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-300">
               Built with ❤️ using React, Tailwind CSS, and Supabase
             </p>
           </div>
@@ -82,10 +76,10 @@ function App() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/30 flex items-center justify-center">
+      <div className="min-h-screen bg-primary-bg flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading...</p>
+          <div className="w-16 h-16 border-4 border-gray-600 border-t-highlight rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">Loading...</p>
         </div>
       </div>
     );

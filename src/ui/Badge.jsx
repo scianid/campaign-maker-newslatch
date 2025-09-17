@@ -3,9 +3,9 @@ import { cn } from '../utils/cn';
 
 export const Badge = forwardRef(({ className, variant = 'default', ...props }, ref) => {
   const variants = {
-    default: 'bg-gray-900 text-white',
-    secondary: 'bg-gray-100 text-gray-800 hover:bg-gray-200',
-    outline: 'border border-gray-300 bg-white text-gray-900'
+    default: 'bg-highlight text-primary-bg',
+    secondary: 'bg-primary-bg text-gray-300 hover:bg-gray-700',
+    outline: 'border border-gray-600 bg-card-bg text-white'
   };
 
   return (

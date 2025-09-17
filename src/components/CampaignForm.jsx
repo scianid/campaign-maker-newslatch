@@ -155,12 +155,12 @@ export function CampaignForm({ user }) {
         </Button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
+      <div className="bg-card-bg rounded-2xl shadow-xl p-8 border border-gray-600/50">
         <div className="flex items-center gap-3 mb-8">
-          <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
+          <div className="p-2 bg-highlight rounded-lg">
             {isEdit ? <Edit3 className="w-5 h-5 text-white" /> : <Plus className="w-5 h-5 text-white" />}
           </div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+          <h2 className="text-2xl font-bold text-white">
             {isEdit ? 'Edit Campaign' : 'Create New Campaign'}
           </h2>
         </div>
@@ -168,7 +168,7 @@ export function CampaignForm({ user }) {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Name Field */}
         <div className="space-y-2">
-          <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+          <Label htmlFor="name" className="text-sm font-medium text-white">
             Campaign Name *
           </Label>
           <Input
@@ -183,7 +183,7 @@ export function CampaignForm({ user }) {
 
         {/* URL Field */}
         <div className="space-y-2">
-          <Label htmlFor="url" className="text-sm font-medium text-gray-700">
+          <Label htmlFor="url" className="text-sm font-medium text-white">
             Campaign URL *
           </Label>
           <Input
@@ -200,7 +200,7 @@ export function CampaignForm({ user }) {
 
         {/* Tags Field */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-700">
+          <Label className="text-sm font-medium text-white">
             Tags
           </Label>
           <div className="flex gap-2">
@@ -233,7 +233,7 @@ export function CampaignForm({ user }) {
                   <button
                     type="button"
                     onClick={() => removeTag(tag)}
-                    className="ml-1 hover:text-red-600 transition-colors"
+                    className="ml-1 hover:text-red-400 transition-colors"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -245,7 +245,7 @@ export function CampaignForm({ user }) {
 
         {/* Country Selection */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-700">
+          <Label className="text-sm font-medium text-white">
             Target Countries
           </Label>
           <MultiSelect
@@ -259,7 +259,7 @@ export function CampaignForm({ user }) {
 
         {/* RSS Categories */}
         <div className="space-y-3">
-          <Label className="text-sm font-medium text-gray-700">
+          <Label className="text-sm font-medium text-white">
             RSS Feed Categories
           </Label>
           <MultiSelect
@@ -272,7 +272,7 @@ export function CampaignForm({ user }) {
 
         {/* Description Field */}
         <div className="space-y-2">
-          <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+          <Label htmlFor="description" className="text-sm font-medium text-white">
             Description (Optional)
           </Label>
           <Textarea
@@ -290,7 +290,8 @@ export function CampaignForm({ user }) {
           <Button 
             type="submit"
             disabled={loading}
-            className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="flex-1 bg-button-primary hover:bg-button-primary/80 text-button-text font-semibold"
+            style={{ color: 'rgb(41, 41, 61)' }}
           >
             <Save className="w-4 h-4 mr-2" />
             {loading ? 'Saving...' : (isEdit ? 'Update Campaign' : 'Create Campaign')}
