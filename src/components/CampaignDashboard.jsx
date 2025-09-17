@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CampaignForm } from './CampaignForm';
 import { CampaignList } from './CampaignList';
-import { AuthComponent } from './AuthComponent';
+import { Layout } from './Layout';
 import { Button } from '../ui/Button';
 import { Plus, Sparkles, Loader2, AlertCircle } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
@@ -82,35 +82,21 @@ export function CampaignDashboard({ user }) {
   };
 
   return (
-    <div className="min-h-screen bg-primary-bg">
-      {/* Header */}
-      <header className="bg-primary-bg/95 backdrop-blur-sm border-b border-gray-700/30 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <img 
-              src="/toplogo.png" 
-              alt="NewsLatch Studio Logo" 
-              className="h-10 w-auto"
-            />
-            
-            <div className="flex items-center gap-4">
-              {!showForm && !loading && (
-                <Button 
-                  onClick={handleNewCampaign}
-                  className="bg-highlight text-button-text hover:bg-highlight/90 shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  New Campaign
-                </Button>
-              )}
-              <AuthComponent user={user} />
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
+    <Layout 
+      user={user}
+      headerActions={
+        !showForm && !loading && (
+          <Button 
+            onClick={handleNewCampaign}
+            className="bg-highlight text-button-text hover:bg-highlight/90 shadow-lg hover:shadow-xl transition-all duration-300"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            New Campaign
+          </Button>
+        )
+      }
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
         {/* Loading State */}
         {loading && (
           <div className="text-center py-16">
@@ -186,18 +172,7 @@ export function CampaignDashboard({ user }) {
             />
           </div>
         )}
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-primary-bg/80 backdrop-blur-sm border-t border-gray-700/50 mt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center">
-            <p className="text-sm text-gray-300">
-              Powered by AI-driven news analysis for smarter lead generation 💡
-            </p>
-          </div>
-        </div>
-      </footer>
-    </div>
+      </div>
+    </Layout>
   );
 }

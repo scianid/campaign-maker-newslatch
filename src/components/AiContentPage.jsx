@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { AuthComponent } from './AuthComponent';
+import { Layout } from './Layout';
 import { supabase } from '../lib/supabase';
 
 export function AiContentPage({ user }) {
@@ -145,22 +145,7 @@ export function AiContentPage({ user }) {
 
   if (loading && currentPage === 1) {
     return (
-      <div className="min-h-screen bg-primary-bg">
-        {/* Header */}
-        <header className="bg-primary-bg/95 backdrop-blur-sm border-b border-gray-700/30 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <img 
-                src="/toplogo.png" 
-                alt="NewsLatch Studio Logo" 
-                className="h-10 w-auto"
-              />
-              
-              <AuthComponent user={user} />
-            </div>
-          </div>
-        </header>
-
+      <Layout user={user}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="animate-pulse">
             <div className="h-8 bg-gray-600 rounded w-1/3 mb-8"></div>
@@ -171,28 +156,13 @@ export function AiContentPage({ user }) {
             </div>
           </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-primary-bg">
-        {/* Header */}
-        <header className="bg-primary-bg/95 backdrop-blur-sm border-b border-gray-700/30 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <img 
-                src="/toplogo.png" 
-                alt="NewsLatch Studio Logo" 
-                className="h-10 w-auto"
-              />
-              
-              <AuthComponent user={user} />
-            </div>
-          </div>
-        </header>
-
+      <Layout user={user}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-6">
             <h3 className="text-lg font-bold text-red-400 mb-2">Error Loading AI Content</h3>
@@ -207,29 +177,20 @@ export function AiContentPage({ user }) {
             </div>
           </div>
         </div>
-      </div>
+      </Layout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-primary-bg">
-      {/* Header */}
-      <header className="bg-primary-bg/95 backdrop-blur-sm border-b border-gray-700/30 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <img 
-              src="/toplogo.png" 
-              alt="NewsLatch Studio Logo" 
-              className="h-10 w-auto"
-            />
-            
-            <AuthComponent user={user} />
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
+    <Layout 
+      user={user}
+      headerActions={
+        <Button onClick={fetchAiItems} variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+          <RefreshCw className="w-4 h-4" />
+        </Button>
+      }
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
         {/* Page Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
@@ -253,13 +214,6 @@ export function AiContentPage({ user }) {
                 </p>
               )}
             </div>
-          </div>
-
-          {/* Filters */}
-          <div className="flex items-center gap-4">
-            <Button onClick={fetchAiItems} variant="ghost" size="sm" className="text-gray-400 hover:text-white">
-              <RefreshCw className="w-4 h-4" />
-            </Button>
           </div>
         </div>
 
@@ -699,7 +653,7 @@ export function AiContentPage({ user }) {
             )}
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 }
