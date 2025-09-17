@@ -171,10 +171,16 @@ export function CampaignList({ user }) {
       
       const result = await fetchRssContent(campaign.id);
       
+      // Log the response for debugging
+      console.log('📦 Full API response:', result);
+      console.log('📰 RSS data:', result.rss || result);
+      console.log('🤖 AI analysis:', result.ai_analysis);
+      
       // Show the RSS items in a modal
       setRssModal({
         show: true,
-        data: result,
+        data: result.rss || result,
+        aiAnalysis: result.ai_analysis || null,
         campaignName: campaign.name
       });
       

@@ -64,22 +64,53 @@ export async function runGpt(prompt: string): Promise<string> {
     let GPT_API_URL = "https://api.openai.com/v1/chat/completions";
     let OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
+    console.log('🔑 API Key available:', !!OPENAI_API_KEY);
+    console.log('📝 Prompt length:', prompt.length);
+
+    if (!OPENAI_API_KEY) {
+        throw new Error('OPENAI_API_KEY environment variable not set');
+    }
+
+    const requestBody = {
+        model: "gpt-5-mini",
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" }
+    };
+
+    console.log('🚀 Making OpenAI API request...');
+    
     const res = await fetch(GPT_API_URL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${OPENAI_API_KEY}`,
         },
-        body: JSON.stringify({
-            model: "gpt-5-mini", // adjust if needed
-            messages: [{ role: "user", content: prompt }],
-            max_tokens: 2500,
-            temperature: 0.9,
-            response_format: { type: "json_object" }
-        }),
+        body: JSON.stringify(requestBody),
     });
+
+    console.log('📡 API Response status:', res.status);
+    
+    if (!res.ok) {
+        const errorText = await res.text();
+        console.error('❌ OpenAI API error:', errorText);
+        throw new Error(`OpenAI API error: ${res.status} - ${errorText}`);
+    }
+
     const data = await res.json();
-    // Extract the response text
+    console.log('📦 Full API response:', JSON.stringify(data, null, 2));
+    
+    if (data.error) {
+        console.error('❌ OpenAI returned error:', data.error);
+        throw new Error(`OpenAI error: ${data.error.message || data.error}`);
+    }
+
     const text = data.choices?.[0]?.message?.content || "";
+    console.log('📝 GPT Response length:', text.length);
+    console.log('🎯 GPT Response preview:', text.substring(0, 200) + '...');
+    
+    if (!text.trim()) {
+        throw new Error('OpenAI returned empty response');
+    }
+    
     return text;
 }
