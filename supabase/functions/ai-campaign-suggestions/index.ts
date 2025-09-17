@@ -53,8 +53,7 @@ Return your response in this exact JSON format:
 
 Guidelines for tags:
 - Use lowercase, single words or short phrases
-- Include industry terms, business model descriptors, target audience keywords
-- Mix of broad categories (e.g., "technology", "saas") and specific niches (e.g., "cybersecurity", "automation")
+- Include industry terms, product types (e.g., "computer games", "books", "software"), target audience keywords
 - Avoid generic words like "company", "business", "service"
 
 Guidelines for description:

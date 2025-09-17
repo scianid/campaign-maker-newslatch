@@ -220,8 +220,8 @@ export function MultiStepCampaignForm({ user }) {
         url: formData.url,
         description: formData.description,
         tags: formData.tags,
-        rss_categories: formData.rssCategories,
-        rss_countries: formData.rssCountries
+        rssCategories: formData.rssCategories,
+        rssCountries: formData.rssCountries
       };
 
       if (isEdit) {
@@ -357,31 +357,36 @@ export function MultiStepCampaignForm({ user }) {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* AI Suggested Tags */}
-          <div>
-            <Label className="text-white mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              Suggested Tags
-            </Label>
-            <p className="text-text-paragraph text-sm mb-3">
-              Select the tags that best represent your company (choose multiple)
-            </p>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {(formData.aiSuggestions.tags || []).map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                    formData.tags.includes(tag)
-                      ? 'bg-purple-600 border-purple-500 text-white'
-                      : 'bg-card-bg border-gray-600 text-gray-300 hover:border-purple-500'
+          {/* Selected Tags Summary */}
+          <div className="bg-gray-800/50 rounded-lg p-4">
+            <h4 className="text-white font-medium mb-2">Selected Tags</h4>
+            <div className="flex flex-wrap gap-2">
+              {formData.tags.map((tag) => (
+                <Badge 
+                  key={tag} 
+                  variant="outline" 
+                  className={`text-xs ${
+                    (formData.aiSuggestions.tags || []).includes(tag)
+                      ? 'bg-purple-900/30 text-purple-400 border-purple-600'
+                      : 'bg-green-900/30 text-green-400 border-green-600'
                   }`}
                 >
-                  {formData.tags.includes(tag) && <Check className="w-3 h-3 inline mr-1" />}
-                  {tag}
-                </button>
+                  {(formData.aiSuggestions.tags || []).includes(tag) ? '🤖' : '✏️'} {tag}
+                </Badge>
               ))}
+              {formData.tags.length === 0 && (
+                <p className="text-text-paragraph text-sm">No tags selected yet</p>
+              )}
+            </div>
+            
+            {errors.tags && <p className="text-red-400 text-sm mt-2">{errors.tags}</p>}
+            
+            <div className="mt-3">
+              <p className="text-sm text-text-paragraph">
+                Total selected: {formData.tags.length} tag{formData.tags.length !== 1 ? 's' : ''} 
+                ({formData.tags.filter(tag => (formData.aiSuggestions.tags || []).includes(tag)).length} AI suggested, 
+                {formData.tags.filter(tag => !(formData.aiSuggestions.tags || []).includes(tag)).length} custom)
+              </p>
             </div>
           </div>
 
@@ -392,7 +397,7 @@ export function MultiStepCampaignForm({ user }) {
               Add Custom Tags
             </Label>
             <p className="text-text-paragraph text-sm mb-3">
-              Add your own tags that aren't in the suggestions above
+              Add your own tags that aren't in the AI suggestions below
             </p>
             
             <div className="flex gap-2">
@@ -441,36 +446,31 @@ export function MultiStepCampaignForm({ user }) {
             )}
           </div>
 
-          {/* Selected Tags Summary */}
-          <div className="bg-gray-800/50 rounded-lg p-4">
-            <h4 className="text-white font-medium mb-2">Selected Tags Summary</h4>
-            <div className="flex flex-wrap gap-2">
-              {formData.tags.map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant="outline" 
-                  className={`text-xs ${
-                    (formData.aiSuggestions.tags || []).includes(tag)
-                      ? 'bg-purple-900/30 text-purple-400 border-purple-600'
-                      : 'bg-green-900/30 text-green-400 border-green-600'
+          {/* AI Suggested Tags */}
+          <div>
+            <Label className="text-white mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              AI Suggested Tags
+            </Label>
+            <p className="text-text-paragraph text-sm mb-3">
+              Click to select tags that best represent your company
+            </p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              {(formData.aiSuggestions.tags || []).map((tag) => (
+                <button
+                  key={tag}
+                  onClick={() => toggleTag(tag)}
+                  className={`p-3 rounded-lg border text-sm font-medium transition-all ${
+                    formData.tags.includes(tag)
+                      ? 'bg-purple-600 border-purple-500 text-white'
+                      : 'bg-card-bg border-gray-600 text-gray-300 hover:border-purple-500'
                   }`}
                 >
-                  {(formData.aiSuggestions.tags || []).includes(tag) ? '🤖' : '✏️'} {tag}
-                </Badge>
+                  {formData.tags.includes(tag) && <Check className="w-3 h-3 inline mr-1" />}
+                  {tag}
+                </button>
               ))}
-              {formData.tags.length === 0 && (
-                <p className="text-text-paragraph text-sm">No tags selected yet</p>
-              )}
-            </div>
-            
-            {errors.tags && <p className="text-red-400 text-sm mt-2">{errors.tags}</p>}
-            
-            <div className="mt-3">
-              <p className="text-sm text-text-paragraph">
-                Total selected: {formData.tags.length} tag{formData.tags.length !== 1 ? 's' : ''} 
-                ({formData.tags.filter(tag => (formData.aiSuggestions.tags || []).includes(tag)).length} AI suggested, 
-                {formData.tags.filter(tag => !(formData.aiSuggestions.tags || []).includes(tag)).length} custom)
-              </p>
             </div>
           </div>
 
