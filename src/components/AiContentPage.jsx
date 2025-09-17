@@ -20,7 +20,7 @@ export function AiContentPage({ user }) {
   const [previewStyles, setPreviewStyles] = useState({}); // Track preview style for each item
   const [expandedDetails, setExpandedDetails] = useState({}); // Track which cards have details expanded
   const [filters, setFilters] = useState({
-    status: 'published', // 'all', 'published', 'unpublished'
+    status: 'all', // 'all', 'published', 'unpublished'
     scoreRange: 'all', // 'all', 'high', 'medium', 'low'
     dateRange: 'all', // 'all', 'today', 'week', 'month'
     sortBy: 'created_at', // 'created_at', 'relevance_score', 'trend'
@@ -64,7 +64,6 @@ export function AiContentPage({ user }) {
       // Build query parameters
       const params = new URLSearchParams({
         campaignId,
-        action: 'ai-items',
         page: currentPage.toString(),
         limit: itemsPerPage.toString(),
         status: filters.status,
@@ -75,10 +74,10 @@ export function AiContentPage({ user }) {
       });
 
       console.log('🔍 Fetching AI items with filters:', filters);
-      console.log('📡 Request URL:', `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?${params}`);
+      console.log('📡 Request URL:', `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/ai-content?${params}`);
 
       const response = await fetch(
-        `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?${params}`,
+        `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/ai-content?${params}`,
         {
           method: 'GET',
           headers: {
@@ -336,7 +335,7 @@ export function AiContentPage({ user }) {
             <span className="text-xs text-gray-400">Active filters:</span>
             {Object.entries(filters).map(([key, value]) => {
               // Skip default values
-              if ((key === 'status' && value === 'published') || 
+              if ((key === 'status' && value === 'all') || 
                   (key === 'sortOrder' && value === 'desc') || 
                   (key === 'sortBy' && value === 'created_at') ||
                   value === 'all') return null;
@@ -360,12 +359,12 @@ export function AiContentPage({ user }) {
               );
             })}
             {/* Check if any non-default filters are active */}
-            {(filters.status === 'published' && 
+            {(filters.status === 'all' && 
               filters.scoreRange === 'all' && 
               filters.dateRange === 'all' && 
               filters.sortBy === 'created_at' && 
               filters.sortOrder === 'desc') && (
-              <span className="text-xs text-gray-500">Default filters (published content)</span>
+              <span className="text-xs text-gray-500">Default filters (all content)</span>
             )}
             
             {/* Debug info - show current filter status and item count */}
@@ -381,17 +380,17 @@ export function AiContentPage({ user }) {
             <Zap className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <h2 className="text-xl font-semibold text-gray-300 mb-2">
               {/* Check if any non-default filters are active */}
-              {(filters.status !== 'published' || 
+              {(filters.status !== 'all' || 
                 filters.scoreRange !== 'all' || 
                 filters.dateRange !== 'all' || 
                 filters.sortBy !== 'created_at' || 
                 filters.sortOrder !== 'desc') 
                 ? 'No content matches your filters' 
-                : 'No published AI content found'
+                : 'No AI content found'
               }
             </h2>
             <p className="text-text-paragraph mb-6">
-              {(filters.status !== 'published' || 
+              {(filters.status !== 'all' || 
                 filters.scoreRange !== 'all' || 
                 filters.dateRange !== 'all' || 
                 filters.sortBy !== 'created_at' || 
@@ -401,7 +400,7 @@ export function AiContentPage({ user }) {
               }
             </p>
             {/* Show clear filters button if non-default filters are active */}
-            {(filters.status !== 'published' || 
+            {(filters.status !== 'all' || 
               filters.scoreRange !== 'all' || 
               filters.dateRange !== 'all' || 
               filters.sortBy !== 'created_at' || 
@@ -409,7 +408,7 @@ export function AiContentPage({ user }) {
               <Button 
                 onClick={() => {
                   setFilters({
-                    status: 'published',
+                    status: 'all',
                     scoreRange: 'all',
                     dateRange: 'all',
                     sortBy: 'created_at',

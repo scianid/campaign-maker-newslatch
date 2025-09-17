@@ -71,30 +71,28 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
     }
   };
 
-  // Fetch RSS content for campaign and return it
-  const fetchRssContent = async (campaignId) => {
+  // Generate AI content for campaign
+  const generateAiContent = async (campaignId) => {
     try {
-      console.log('🔐 Getting session...');
+      console.log('🤖 Generating AI content for campaign:', campaignId);
+      
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session) {
         console.error('❌ Session error:', sessionError);
         throw new Error('No session found');
       }
-      console.log('✅ Session found, making API call...');
 
-      const url = `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?campaignId=${campaignId}&action=content`;
-      console.log('🌐 API URL:', url);
-
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${session.access_token}`,
-          'Content-Type': 'application/json'
+      const response = await fetch(
+        `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/ai-generate`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ campaignId })
         }
-      });
-
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response ok:', response.ok);
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -103,61 +101,44 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
       }
 
       const result = await response.json();
-      console.log('📦 API Result:', result);
+      console.log('🤖 AI Generation Result:', result);
       
-      // Check if this is an error response
       if (result.error) {
-        console.error('❌ API returned error:', result.error);
-        console.error('❌ API error details:', result.details);
-        throw new Error(result.error || 'Failed to fetch RSS content');
-      }
-      
-      // Check if we have the expected data structure
-      if (!result.rss && !result.items) {
-        console.error('❌ Unexpected response format:', result);
-        throw new Error('Unexpected response format from API');
+        throw new Error(result.error || 'Failed to generate AI content');
       }
 
       return result;
     } catch (error) {
-      console.error('💥 Failed to fetch RSS content:', error);
+      console.error('💥 Failed to generate AI content:', error);
       throw error;
     }
   };
 
-  // Show RSS content for campaign in modal
-  const showRssContent = async (campaign) => {
+  // Generate AI content for campaign and show success message
+  const showAiContentGeneration = async (campaign) => {
     try {
-      console.log('📰 Fetching RSS content for campaign:', campaign.name, campaign.id);
+      console.log('🤖 Starting AI content generation for campaign:', campaign.name, campaign.id);
       
       // Show loading state
       setLoadingRss(true);
       setLoadingCampaignId(campaign.id);
       
-      const result = await fetchRssContent(campaign.id);
+      const result = await generateAiContent(campaign.id);
       
-      // Log the response for debugging
-      console.log('📦 Full API response:', result);
-      console.log('📰 RSS data:', result.rss || result);
-      console.log('🤖 AI analysis:', result.ai_analysis);
+      // Show success message
+      const itemsGenerated = result.items_generated || 0;
       
-      // Show the RSS items in a modal
-      setRssModal({
-        show: true,
-        data: result.rss || result,
-        aiAnalysis: result.ai_analysis || null,
-        campaignName: campaign.name
-      });
+      console.log('✅ AI Content Generation completed:', result);
       
-      // Also log to console for debugging
-      console.log('📰 RSS Content Result:', result);
+      // Navigate to the AI content page for this campaign
+      navigate(`/content/${campaign.id}`);
       
     } catch (error) {
-      console.error('💥 Failed to fetch RSS content:', error);
+      console.error('💥 Failed to generate AI content:', error);
       
       // Show user-friendly error message
       const errorMessage = error.message || 'Unknown error occurred';
-      alert(`Failed to fetch RSS content: ${errorMessage}\n\nCheck the browser console for more details.`);
+      alert(`❌ Failed to generate AI content: ${errorMessage}\n\nPlease check:\n- RSS feeds are configured\n- RSS categories are set\n- Recent RSS content is available\n\nCheck the browser console for more details.`);
     } finally {
       // Hide loading state
       setLoadingRss(false);
@@ -371,29 +352,36 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => showRssContent(campaign)}
+                    onClick={() => showAiContentGeneration(campaign)}
                     disabled={loadingRss && loadingCampaignId === campaign.id}
-                    className={`h-10 w-10 p-0 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md ${
+                    className={`h-10 px-3 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md ${
                       loadingRss && loadingCampaignId === campaign.id 
                         ? 'bg-gray-700 text-orange-300 cursor-not-allowed' 
                         : 'bg-primary-bg text-orange-400 hover:bg-gray-700 hover:text-orange-300'
                     }`}
-                    title={loadingRss && loadingCampaignId === campaign.id ? "Loading RSS Content..." : "View RSS Content"}
+                    title={loadingRss && loadingCampaignId === campaign.id ? "Generating AI Content..." : "Generate AI Content"}
                   >
                     {loadingRss && loadingCampaignId === campaign.id ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
                     ) : (
-                      <Rss className="w-5 h-5" />
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate AI
+                      </>
                     )}
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => navigateToAiContent(campaign)}
-                    className="h-10 w-10 p-0 bg-primary-bg text-purple-400 hover:bg-gray-700 hover:text-purple-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    className="h-10 px-3 bg-primary-bg text-purple-400 hover:bg-gray-700 hover:text-purple-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
                     title="View AI Content"
                   >
-                    <Zap className="w-5 h-5" />
+                    <Zap className="w-4 h-4 mr-2" />
+                    View AI Content
                   </Button>
                   <Button
                     variant="ghost"
