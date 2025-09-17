@@ -14,6 +14,7 @@ import {
  */
 export async function handleGetRssFeeds(supabaseClient: any, req: Request): Promise<Response> {
   try {
+    const url = new URL(req.url);
     const params = getUrlParams(req);
     const validation = validateRequiredParams(params, ['campaignId']);
     
@@ -113,14 +114,69 @@ export async function handleGetRssFeeds(supabaseClient: any, req: Request): Prom
       }
       
     } else if (action === 'ai-items') {
-      // Fetch saved AI-generated items for the campaign
+      // Fetch saved AI-generated items for the campaign with pagination and filtering
       try {
-        const { data: aiItems, error: aiError } = await supabaseClient
+        const page = parseInt(url.searchParams.get('page') || '1');
+        const limit = parseInt(url.searchParams.get('limit') || '10');
+        const status = url.searchParams.get('status') || 'all';
+        const scoreRange = url.searchParams.get('scoreRange') || 'all';
+        const dateRange = url.searchParams.get('dateRange') || 'all';
+        const sortBy = url.searchParams.get('sortBy') || 'created_at';
+        const sortOrder = url.searchParams.get('sortOrder') || 'desc';
+        
+        const offset = (page - 1) * limit;
+        
+        let query = supabaseClient
           .from('ai_generated_items')
-          .select('*')
+          .select('*', { count: 'exact' })
           .eq('campaign_id', campaignId)
-          .gt('ttl', 'now()')  // Only get non-expired items
-          .order('created_at', { ascending: false });
+          .gt('ttl', 'now()');  // Only get non-expired items
+        
+        // Apply status filtering
+        if (status === 'published') {
+          query = query.eq('is_published', true);
+        } else if (status === 'unpublished') {
+          query = query.eq('is_published', false);
+        }
+        
+        // Apply score range filtering
+        if (scoreRange === 'high') {
+          query = query.gte('relevance_score', 80);
+        } else if (scoreRange === 'medium') {
+          query = query.gte('relevance_score', 50).lt('relevance_score', 80);
+        } else if (scoreRange === 'low') {
+          query = query.lt('relevance_score', 50);
+        }
+        
+        // Apply date range filtering
+        if (dateRange === 'today') {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          query = query.gte('created_at', today.toISOString());
+        } else if (dateRange === 'week') {
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          query = query.gte('created_at', weekAgo.toISOString());
+        } else if (dateRange === 'month') {
+          const monthAgo = new Date();
+          monthAgo.setMonth(monthAgo.getMonth() - 1);
+          query = query.gte('created_at', monthAgo.toISOString());
+        }
+        
+        // Apply sorting
+        const ascending = sortOrder === 'asc';
+        if (sortBy === 'relevance_score') {
+          query = query.order('relevance_score', { ascending });
+        } else if (sortBy === 'trend') {
+          query = query.order('trend', { ascending });
+        } else {
+          query = query.order('created_at', { ascending });
+        }
+        
+        // Apply pagination
+        query = query.range(offset, offset + limit - 1);
+        
+        const { data: aiItems, error: aiError, count } = await query;
         
         if (aiError) {
           return createErrorResponse('Failed to fetch AI items', aiError.message, 500);
@@ -129,6 +185,9 @@ export async function handleGetRssFeeds(supabaseClient: any, req: Request): Prom
         return createSuccessResponse({
           ai_items: aiItems || [],
           count: aiItems?.length || 0,
+          total: count || 0,
+          page,
+          limit,
           campaign_id: campaignId
         });
       } catch (error) {

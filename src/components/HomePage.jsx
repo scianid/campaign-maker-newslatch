@@ -131,7 +131,7 @@ export function HomePage({ user }) {
           
           <div className="border-t border-gray-700/50 mt-8 pt-8 text-center">
             <p className="text-sm text-text-paragraph">
-              © 2025 NewsLatch Studio. Powered by AI-driven news analysis for smarter lead generation.
+              © 2025 NewsLatch Studio. Powered by AI-driven news analysis for smarter lead generation. 💡
             </p>
           </div>
         </div>

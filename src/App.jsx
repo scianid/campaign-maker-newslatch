@@ -4,6 +4,7 @@ import { AuthComponent } from './components/AuthComponent';
 import { HomePage } from './components/HomePage';
 import { CampaignForm } from './components/CampaignForm';
 import { CampaignDashboard } from './components/CampaignDashboard';
+import { AiContentPage } from './components/AiContentPage';
 import { authService } from './lib/supabase';
 import { Megaphone } from 'lucide-react';
 
@@ -44,7 +45,7 @@ function Layout({ user, children }) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <p className="text-sm text-gray-300">
-              Powered by AI-driven news analysis for smarter lead generation
+              Powered by AI-driven news analysis for smarter lead generation 💡
             </p>
           </div>
         </div>
@@ -118,6 +119,15 @@ function App() {
           element={
             <ProtectedRoute user={user}>
               <CampaignDashboard user={user} />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/content/:campaignId" 
+          element={
+            <ProtectedRoute user={user}>
+              <AiContentPage user={user} />
             </ProtectedRoute>
           } 
         />

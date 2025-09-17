@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, Rss, Search } from 'lucide-react';
+import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, Rss, Search, Zap } from 'lucide-react';
 import { campaignService, supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
 import { getCountryDisplayName } from '../constants/locales';
@@ -18,6 +19,7 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingRss, setLoadingRss] = useState(false);
   const [loadingCampaignId, setLoadingCampaignId] = useState(null);
+  const navigate = useNavigate();
 
   // Load campaigns from Supabase on mount
   useEffect(() => {
@@ -44,6 +46,10 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
 
   const handleDeleteCancel = () => {
     setDeleteConfirm({ show: false, campaign: null });
+  };
+
+  const navigateToAiContent = (campaign) => {
+    navigate(`/content/${campaign.id}`);
   };
 
   const handleCopyId = async (id) => {
@@ -379,6 +385,15 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                     ) : (
                       <Rss className="w-5 h-5" />
                     )}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigateToAiContent(campaign)}
+                    className="h-10 w-10 p-0 bg-primary-bg text-purple-400 hover:bg-gray-700 hover:text-purple-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    title="View AI Content"
+                  >
+                    <Zap className="w-5 h-5" />
                   </Button>
                   <Button
                     variant="ghost"

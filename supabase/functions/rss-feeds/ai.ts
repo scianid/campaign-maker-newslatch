@@ -48,7 +48,7 @@ OUTPUT FORMAT (JSON only):
             "ad_placement": {
                 "headline": "[Compelling ad headline that connects news to ${companyName}]",
                 "body": "[Persuasive ad body text explaining the connection and value proposition]",
-                "cta": "[Clear, action-oriented call-to-action button text]"
+                "cta": "[Short action text ONLY - no URLs, no links, just 2-4 words like 'Get Started' or 'Learn More']"
             }
         }
     ],
@@ -65,6 +65,15 @@ CRITICAL INSTRUCTIONS:
 3. Every result must drive leads toward ${companyUrl}
 4. Create urgency that compels immediate action
 5. Return 3-5 highly relevant results maximum
+6. CTA must be SHORT button text only (2-4 words) - NO URLs or links
+
+CTA EXAMPLES (use similar format):
+- "Get Started"
+- "Learn More" 
+- "Free Quote"
+- "Contact Us"
+- "Try Now"
+- "Schedule Call"
 
 Generate JSON now:
     `;
