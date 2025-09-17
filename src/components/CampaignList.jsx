@@ -131,31 +131,53 @@ export function CampaignList({ user }) {
   // Fetch RSS content for campaign and return it
   const fetchRssContent = async (campaignId) => {
     try {
+      console.log('🔐 Getting session...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session) {
+        console.error('❌ Session error:', sessionError);
         throw new Error('No session found');
       }
+      console.log('✅ Session found, making API call...');
 
-      const response = await fetch(
-        `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?campaignId=${campaignId}&action=content`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          }
+      const url = `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/rss-feeds?campaignId=${campaignId}&action=content`;
+      console.log('🌐 API URL:', url);
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
         }
-      );
+      });
+
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response ok:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ HTTP Error:', response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
 
       const result = await response.json();
+      console.log('📦 API Result:', result);
       
-      if (!result.success) {
+      // Check if this is an error response
+      if (result.error) {
+        console.error('❌ API returned error:', result.error);
+        console.error('❌ API error details:', result.details);
         throw new Error(result.error || 'Failed to fetch RSS content');
+      }
+      
+      // Check if we have the expected data structure
+      if (!result.rss && !result.items) {
+        console.error('❌ Unexpected response format:', result);
+        throw new Error('Unexpected response format from API');
       }
 
       return result;
     } catch (error) {
-      console.error('Failed to fetch RSS content:', error);
+      console.error('💥 Failed to fetch RSS content:', error);
       throw error;
     }
   };
@@ -189,7 +211,10 @@ export function CampaignList({ user }) {
       
     } catch (error) {
       console.error('💥 Failed to fetch RSS content:', error);
-      alert('Failed to fetch RSS content. Please try again.');
+      
+      // Show user-friendly error message
+      const errorMessage = error.message || 'Unknown error occurred';
+      alert(`Failed to fetch RSS content: ${errorMessage}\n\nCheck the browser console for more details.`);
     } finally {
       // Hide loading state
       setLoadingRss(false);

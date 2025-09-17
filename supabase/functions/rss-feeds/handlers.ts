@@ -88,11 +88,11 @@ export async function handleGetRssFeeds(supabaseClient: any, req: Request): Prom
           return createSuccessResponse(result);
         }
       } else {
-        // No news or tags, just return RSS
+        // No news or tags, just return RSS data without AI analysis
         console.log('⚠️ Skipping AI analysis - insufficient data');
         console.log('📰 News items:', news.length);
         console.log('🏷️ Tags:', tags.length);
-      return createErrorResponse('Invalid action', 'news or tages are 0' + news.length + " " + tags.length, 400);
+        return createSuccessResponse(result);
       }
     } else {
       // Default: just return the list of RSS feeds
