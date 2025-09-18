@@ -218,7 +218,7 @@ export function AiContentPage({ user }) {
   if (error) {
     return (
       <Layout user={user}>
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
           <div className="bg-red-900/20 border border-red-600/50 rounded-lg p-6">
             <h3 className="text-lg font-bold text-red-400 mb-2">Error Loading AI Content</h3>
             <p className="text-red-300">{error}</p>
@@ -247,7 +247,7 @@ export function AiContentPage({ user }) {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
         {/* Page Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
           <div className="flex items-center gap-3 min-w-0">
             <Button
               variant="ghost"
@@ -257,7 +257,7 @@ export function AiContentPage({ user }) {
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               <span className="hidden sm:inline">Back to Campaigns</span>
-              <span className="sm:hidden">Back</span>
+              <span className="sm:hidden">Back to Campaigns</span>
             </Button>
             <div className="h-6 w-px bg-gray-600 hidden sm:block"></div>
             
