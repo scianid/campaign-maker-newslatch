@@ -20,6 +20,7 @@ export function AiContentPage({ user }) {
   const [totalItems, setTotalItems] = useState(0);
   const [previewStyles, setPreviewStyles] = useState({}); // Track preview style for each item
   const [expandedDetails, setExpandedDetails] = useState({}); // Track which cards have details expanded
+  const [expandedReasons, setExpandedReasons] = useState({}); // Track which cards have AI reasoning expanded
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
   const [filters, setFilters] = useState({
     status: 'all', // 'all', 'published', 'unpublished'
@@ -174,6 +175,13 @@ export function AiContentPage({ user }) {
 
   const toggleDetails = (itemId) => {
     setExpandedDetails(prev => ({
+      ...prev,
+      [itemId]: !prev[itemId]
+    }));
+  };
+
+  const toggleReason = (itemId) => {
+    setExpandedReasons(prev => ({
       ...prev,
       [itemId]: !prev[itemId]
     }));
@@ -475,27 +483,36 @@ export function AiContentPage({ user }) {
                     } hover:shadow-lg`}
                   >
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-6">
+                    <div className="flex items-start justify-between mb-4">
                       <div className="flex-1">
+                        <div className="mb-2">
+                          <span className="text-sm font-medium text-blue-400 uppercase tracking-wide">News Headline</span>
+                        </div>
                         <h3 className="font-semibold text-white text-xl leading-tight mb-3">
                           {item.headline}
                         </h3>
                         <div className="flex items-center gap-3 text-sm">
-                          <div className="flex items-center gap-1 text-text-paragraph">
-                            <Clock className="w-4 h-4" />
-                            {formatDate(item.created_at)}
-                          </div>
-                          
                           <Badge 
                             variant="outline" 
-                            className={`text-xs ${scoreBadge.color}`}
+                            className="text-xs bg-blue-900/20 text-blue-400 border-blue-600/30"
                           >
-                            {scoreBadge.icon} {item.relevance_score}/100 {scoreBadge.label}
+                            {scoreBadge.icon} Relevance: {item.relevance_score}/100 {scoreBadge.label}
                           </Badge>
                           
-                          <Badge variant="outline" className="text-xs bg-purple-900/20 text-purple-400 border-purple-600/30">
-                            📈 {item.trend}
+                          <Badge variant="outline" className="text-xs bg-blue-900/20 text-blue-400 border-blue-600/30">
+                            📈 Trend Detected: {item.trend}
                           </Badge>
+                          
+                          <a
+                            href={item.link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-xs bg-blue-900/20 text-blue-400 border border-blue-600/30 hover:border-blue-500/50 hover:bg-blue-900/30 transition-all rounded-full px-2 py-1"
+                            title="Read original article"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            Source
+                          </a>
                         </div>
                       </div>
                       
@@ -511,11 +528,48 @@ export function AiContentPage({ user }) {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleDeleteClick(item)}
-                          className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all duration-200"
+                          className="h-10 w-10 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all duration-200"
                           title="Delete this AI content"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-5 h-5" />
                         </Button>
+                      </div>
+                    </div>
+
+                    {/* AI Reasoning Section */}
+                    <div className="mb-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleReason(item.id)}
+                        className="text-gray-400 hover:text-white transition-colors text-sm h-auto p-2 -ml-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          {expandedReasons[item.id] ? (
+                            <ChevronUp className="w-4 h-4" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
+                          <span>Why AI thinks this is good ad copy?</span>
+                        </div>
+                      </Button>
+                      
+                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                        expandedReasons[item.id] ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                      }`}>
+                        <div className="bg-yellow-900/10 border border-yellow-600/30 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-yellow-900/30 border border-yellow-600/50 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-yellow-400 text-sm">AI</span>
+                            </div>
+                            <div>
+                              <h5 className="text-sm font-medium text-yellow-400 mb-2">AI Analysis</h5>
+                              <p className="text-sm text-yellow-200 leading-relaxed">
+                                {item.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -525,7 +579,7 @@ export function AiContentPage({ user }) {
                       {item.ad_placement && typeof item.ad_placement === 'object' && (
                         <div>
                           <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-sm font-medium text-blue-400">👁️ Ad Preview</h4>
+                            <h4 className="text-sm font-medium text-blue-400">Ad Preview</h4>
                             
                             {/* Preview Style Toggle */}
                             <div className="flex items-center gap-1 bg-card-bg border border-gray-600 rounded-md p-1">
@@ -626,6 +680,14 @@ export function AiContentPage({ user }) {
                       )}
                     </div>
 
+                    {/* Generated Timestamp */}
+                    <div className="mb-4">
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Clock className="w-3 h-3" />
+                        <span>Generated {formatDate(item.created_at)}</span>
+                      </div>
+                    </div>
+
                     {/* Details Toggle Button */}
                     <div className="flex items-center justify-center mb-4">
                       <Button
@@ -659,7 +721,7 @@ export function AiContentPage({ user }) {
                             {/* Clickbait */}
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-sm font-medium text-orange-400">💡 Clickbait Hook</h4>
+                                <h4 className="text-sm font-medium text-orange-400">💡 Attention-Grabbing Hook</h4>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -672,19 +734,19 @@ export function AiContentPage({ user }) {
                                   }
                                 </Button>
                               </div>
-                              <p className="text-orange-300 font-medium">{item.clickbait}</p>
-                            </div>
-
-                            {/* Description */}
-                            <div>
-                              <h4 className="text-sm font-medium text-blue-400 mb-2">📋 Description</h4>
-                              <p className="text-sm text-text-paragraph">{item.description}</p>
+                              <p className="text-sm text-gray-400 mb-2">Social media ready hook:</p>
+                              <p className="text-orange-300 font-medium bg-orange-900/10 p-3 rounded border-l-2 border-orange-600">
+                                "{item.clickbait}"
+                              </p>
                             </div>
 
                             {/* Tooltip */}
                             <div>
-                              <h4 className="text-sm font-medium text-purple-400 mb-2">💬 Tooltip</h4>
-                              <p className="text-sm text-text-paragraph italic">{item.tooltip}</p>
+                              <h4 className="text-sm font-medium text-purple-400 mb-2">💬 User Engagement Message</h4>
+                              <p className="text-sm text-gray-400 mb-2">Tooltip for interactive elements:</p>
+                              <p className="text-sm text-purple-300 italic bg-purple-900/10 p-3 rounded border-l-2 border-purple-600">
+                                {item.tooltip}
+                              </p>
                             </div>
                           </div>
 
@@ -694,14 +756,14 @@ export function AiContentPage({ user }) {
                             {item.ad_placement && (
                               <div>
                                 <div className="flex items-center justify-between mb-2">
-                                  <h4 className="text-sm font-medium text-green-400">🎯 Ad Copy</h4>
+                                  <h4 className="text-sm font-medium text-green-400">🎯 Complete Ad Campaign</h4>
                                   <Button
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => copyToClipboard(
                                       typeof item.ad_placement === 'string' 
                                         ? item.ad_placement 
-                                        : `${item.ad_placement.headline}\n\n${item.ad_placement.body}\n\n${item.ad_placement.cta}`,
+                                        : `Headline: ${item.ad_placement.headline}\n\nBody: ${item.ad_placement.body}\n\nCall to Action: ${item.ad_placement.cta}`,
                                       `ad-${item.id}`
                                     )}
                                     className="h-6 w-6 p-0 text-gray-400 hover:text-gray-300"
@@ -712,6 +774,7 @@ export function AiContentPage({ user }) {
                                     }
                                   </Button>
                                 </div>
+                                <p className="text-sm text-gray-400 mb-3">Ready-to-use ad components:</p>
                                 
                                 {typeof item.ad_placement === 'string' ? (
                                   <p className="text-sm text-green-300 bg-green-900/20 p-3 rounded border-l-2 border-green-600">
@@ -720,15 +783,15 @@ export function AiContentPage({ user }) {
                                 ) : (
                                   <div className="bg-green-900/20 p-4 rounded border-l-2 border-green-600 space-y-3">
                                     <div>
-                                      <h6 className="text-xs font-semibold text-green-400 mb-1">HEADLINE</h6>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">Ad Headline</h6>
                                       <p className="text-sm font-medium text-green-300">{item.ad_placement.headline}</p>
                                     </div>
                                     <div>
-                                      <h6 className="text-xs font-semibold text-green-400 mb-1">BODY</h6>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">Ad Description</h6>
                                       <p className="text-sm text-green-300">{item.ad_placement.body}</p>
                                     </div>
                                     <div>
-                                      <h6 className="text-xs font-semibold text-green-400 mb-1">CALL TO ACTION</h6>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">Call to Action Button</h6>
                                       <p className="text-sm font-semibold text-green-300 bg-green-800/30 px-3 py-1 rounded inline-block">
                                         {item.ad_placement.cta}
                                       </p>
@@ -740,14 +803,15 @@ export function AiContentPage({ user }) {
 
                             {/* Source Link */}
                             <div className="pt-3 border-t border-gray-600/30">
+                              <h4 className="text-sm font-medium text-blue-400 mb-2">📰 Original News Source</h4>
                               <a
                                 href={item.link}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300"
+                                className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 bg-blue-900/10 px-3 py-2 rounded border border-blue-600/30 hover:border-blue-500/50 transition-all"
                               >
                                 <ExternalLink className="w-4 h-4" />
-                                View Source Article
+                                Read Full Article
                               </a>
                             </div>
                           </div>
