@@ -114,24 +114,8 @@ If you cannot access the website, provide general business-appropriate suggestio
         throw new Error('Invalid AI response: missing or invalid description');
       }
 
-      // Ensure we have exactly 15 tags
-      const tags = suggestions.suggested_tags.slice(0, 15);
-      
-      // Pad with generic tags if we don't have enough
-      const fallbackTags = [
-        'business', 'technology', 'innovation', 'solutions', 'digital', 
-        'services', 'productivity', 'automation', 'efficiency', 'growth',
-        'professional', 'enterprise', 'software', 'platform', 'tools'
-      ];
-      
-      while (tags.length < 15) {
-        const fallbackTag = fallbackTags[tags.length - suggestions.suggested_tags.length];
-        if (fallbackTag && !tags.includes(fallbackTag)) {
-          tags.push(fallbackTag);
-        } else {
-          break;
-        }
-      }
+      // Use only the tags provided by AI, no fallbacks
+      const tags = suggestions.suggested_tags;
 
       console.log('✅ AI suggestions generated successfully:', {
         tags: tags.length,
@@ -147,15 +131,13 @@ If you cannot access the website, provide general business-appropriate suggestio
     } catch (aiError) {
       console.error('❌ AI generation failed:', aiError);
       
-      // Fallback to hardcoded suggestions based on URL analysis
-      const domain = new URL(url).hostname.toLowerCase();
-      const fallbackSuggestions = generateFallbackSuggestions(domain, name);
-      
-      console.log('🔄 Using fallback suggestions');
+      // Return empty tags if AI generation fails
+      console.log('🔄 Using empty suggestions due to AI failure');
       
       return createSuccessResponse({
-        ...fallbackSuggestions,
-        source: 'fallback'
+        suggested_tags: [],
+        suggested_description: '',
+        source: 'ai-failed'
       });
     }
 
@@ -168,48 +150,3 @@ If you cannot access the website, provide general business-appropriate suggestio
   }
 });
 
-// Generate fallback suggestions based on domain analysis
-function generateFallbackSuggestions(domain: string, name?: string): { suggested_tags: string[], suggested_description: string } {
-  const suggestions = {
-    suggested_tags: [
-      'business', 'technology', 'digital', 'solutions', 'innovation',
-      'services', 'productivity', 'professional', 'software', 'platform',
-      'automation', 'efficiency', 'growth', 'enterprise', 'tools'
-    ],
-    suggested_description: `This company provides innovative digital solutions to help businesses improve their operations and achieve their goals. They focus on delivering technology-driven services that enhance productivity and efficiency. Their platform is designed to meet the evolving needs of modern enterprises.`
-  };
-
-  // Customize based on domain keywords
-  if (domain.includes('tech') || domain.includes('software') || domain.includes('app')) {
-    suggestions.suggested_tags = [
-      'technology', 'software', 'development', 'digital', 'innovation',
-      'saas', 'platform', 'solutions', 'automation', 'cloud',
-      'data', 'analytics', 'mobile', 'web', 'api'
-    ];
-    suggestions.suggested_description = `This technology company develops innovative software solutions that help businesses streamline their operations and enhance productivity. They specialize in creating digital platforms and tools that solve complex business challenges. Their software is designed to scale with growing enterprises and adapt to changing market needs.`;
-  } else if (domain.includes('health') || domain.includes('medical') || domain.includes('care')) {
-    suggestions.suggested_tags = [
-      'healthcare', 'medical', 'wellness', 'patient-care', 'health-tech',
-      'digital-health', 'telemedicine', 'medical-devices', 'diagnostics', 'treatment',
-      'prevention', 'medical-software', 'health-data', 'clinical', 'therapeutic'
-    ];
-    suggestions.suggested_description = `This healthcare company provides innovative medical solutions that improve patient outcomes and healthcare delivery. They focus on developing technology and services that address critical healthcare challenges and enhance the quality of care. Their solutions are designed to support healthcare providers and improve patient experiences.`;
-  } else if (domain.includes('finance') || domain.includes('bank') || domain.includes('pay')) {
-    suggestions.suggested_tags = [
-      'finance', 'fintech', 'banking', 'payments', 'financial-services',
-      'digital-banking', 'investment', 'lending', 'cryptocurrency', 'blockchain',
-      'financial-tech', 'money-management', 'trading', 'insurance', 'wealth'
-    ];
-    suggestions.suggested_description = `This financial technology company delivers innovative solutions that transform how people and businesses manage their finances. They specialize in creating digital financial services that are secure, efficient, and accessible. Their platform helps users make better financial decisions and achieve their financial goals.`;
-  }
-
-  // Add company name context if provided
-  if (name) {
-    suggestions.suggested_description = suggestions.suggested_description.replace(
-      'This company',
-      `${name}`
-    );
-  }
-
-  return suggestions;
-}

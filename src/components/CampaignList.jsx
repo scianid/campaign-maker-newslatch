@@ -299,62 +299,65 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
             onMouseEnter={() => setHoveredId(campaign.id)}
             onMouseLeave={() => setHoveredId(null)}
           >
-            {/* Main horizontal layout */}
-            <div className="flex items-start justify-between gap-6">
-              {/* Left side - Campaign info */}
+            {/* Responsive layout - stacks on mobile */}
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 lg:gap-6">
+              {/* Campaign info */}
               <div className="flex-1 min-w-0">
                 <h3 className="font-semibold text-xl text-white mb-2 leading-tight">
                   {highlightText(campaign.name, searchTerm)}
                 </h3>
                 
                 <div className="flex items-center gap-2 mb-3">
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                  <ExternalLink className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   <a 
                     href={campaign.url} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-sm text-text-paragraph hover:text-highlight transition-colors break-all"
+                    className="text-sm text-text-paragraph hover:text-highlight transition-colors break-words min-w-0"
                   >
                     {highlightText(campaign.url, searchTerm)}
                   </a>
                 </div>
                 
                 {campaign.description && (
-                  <p className="text-text-paragraph text-sm leading-relaxed line-clamp-2">
+                  <p className="text-text-paragraph text-sm leading-relaxed line-clamp-3 lg:line-clamp-2">
                     {highlightText(campaign.description, searchTerm)}
                   </p>
                 )}
               </div>
               
-              {/* Right side - Actions and metadata */}
-              <div className="flex flex-col items-end gap-3 flex-shrink-0">
-                {/* Campaign ID */}
-                <div className="flex items-center gap-2 text-xs text-text-paragraph">
-                  <span>ID:</span>
-                  <code className="font-mono bg-primary-bg px-1.5 py-0.5 rounded text-gray-300 break-all">
-                    {campaign.id}
-                  </code>
-                  <button
-                    onClick={() => handleCopyId(campaign.id)}
-                    className="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
-                    title="Copy full campaign ID"
-                  >
-                    {copiedId === campaign.id ? (
-                      <Check className="w-3 h-3 text-green-600" />
-                    ) : (
-                      <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
-                    )}
-                  </button>
+              {/* Campaign ID and Actions */}
+              <div className="flex flex-col gap-3 lg:items-end">
+                {/* Campaign ID - responsive layout */}
+                <div className="flex items-center justify-between lg:justify-end gap-2">
+                  <div className="flex items-center gap-2 text-xs text-text-paragraph">
+                    <span className="hidden sm:inline">ID:</span>
+                    <code className="font-mono bg-primary-bg px-1.5 py-0.5 rounded text-gray-300 text-xs break-all">
+                      <span className="sm:hidden">{campaign.id.slice(0, 8)}...</span>
+                      <span className="hidden sm:inline">{campaign.id}</span>
+                    </code>
+                    <button
+                      onClick={() => handleCopyId(campaign.id)}
+                      className="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
+                      title="Copy full campaign ID"
+                    >
+                      {copiedId === campaign.id ? (
+                        <Check className="w-3 h-3 text-green-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                      )}
+                    </button>
+                  </div>
                 </div>
                 
-                {/* Action buttons */}
-                <div className="flex gap-2">
+                {/* Action buttons - responsive grid */}
+                <div className="grid grid-cols-2 lg:flex gap-2 w-full lg:w-auto">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => showAiContentGeneration(campaign)}
                     disabled={loadingRss && loadingCampaignId === campaign.id}
-                    className={`h-10 px-3 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md ${
+                    className={`h-10 px-2 lg:px-3 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md text-xs lg:text-sm ${
                       loadingRss && loadingCampaignId === campaign.id 
                         ? 'bg-gray-700 text-orange-300 cursor-not-allowed' 
                         : 'bg-primary-bg text-orange-400 hover:bg-gray-700 hover:text-orange-300'
@@ -363,13 +366,15 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                   >
                     {loadingRss && loadingCampaignId === campaign.id ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Generating...
+                        <Loader2 className="w-4 h-4 mr-1 lg:mr-2 animate-spin" />
+                        <span className="hidden sm:inline">Generating...</span>
+                        <span className="sm:hidden">Gen...</span>
                       </>
                     ) : (
                       <>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Generate AI
+                        <Sparkles className="w-4 h-4 mr-1 lg:mr-2" />
+                        <span className="hidden sm:inline">Generate AI</span>
+                        <span className="sm:hidden">Gen AI</span>
                       </>
                     )}
                   </Button>
@@ -377,27 +382,32 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                     variant="ghost"
                     size="sm"
                     onClick={() => navigateToAiContent(campaign)}
-                    className="h-10 px-3 bg-primary-bg text-purple-400 hover:bg-gray-700 hover:text-purple-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    className="h-10 px-2 lg:px-3 bg-primary-bg text-purple-400 hover:bg-gray-700 hover:text-purple-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md text-xs lg:text-sm"
                     title="View AI Content"
                   >
-                    <Zap className="w-4 h-4 mr-2" />
-                    View AI Content
+                    <Zap className="w-4 h-4 mr-1 lg:mr-2" />
+                    <span className="hidden sm:inline">View AI</span>
+                    <span className="sm:hidden">View</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleEdit(campaign)}
-                    className="h-10 w-10 p-0 bg-primary-bg text-highlight hover:bg-gray-700 hover:text-highlight/80 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    className="h-10 w-full lg:w-10 p-0 lg:p-0 bg-primary-bg text-highlight hover:bg-gray-700 hover:text-highlight/80 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md flex items-center justify-center"
+                    title="Edit Campaign"
                   >
-                    <Edit3 className="w-5 h-5" />
+                    <Edit3 className="w-4 h-4 lg:w-5 lg:h-5" />
+                    <span className="ml-2 lg:hidden text-xs">Edit</span>
                   </Button>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDeleteClick(campaign)}
-                    className="h-10 w-10 p-0 bg-primary-bg text-red-400 hover:bg-gray-700 hover:text-red-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md"
+                    className="h-10 w-full lg:w-10 p-0 lg:p-0 bg-primary-bg text-red-400 hover:bg-gray-700 hover:text-red-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md flex items-center justify-center"
+                    title="Delete Campaign"
                   >
-                    <Trash2 className="w-5 h-5" />
+                    <Trash2 className="w-4 h-4 lg:w-5 lg:h-5" />
+                    <span className="ml-2 lg:hidden text-xs">Delete</span>
                   </Button>
                 </div>
               </div>
@@ -407,73 +417,122 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
             <div className="pt-4 mt-4 border-t border-gray-600/50 space-y-3">
               {/* Tags Row */}
               {campaign.tags && campaign.tags.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-text-paragraph" />
-                  <div className="flex flex-wrap gap-1">
-                    {campaign.tags.slice(0, 5).map((tag, index) => (
-                      <Badge key={index} variant="secondary" className="text-xs">
-                        {highlightText(tag, searchTerm)}
-                      </Badge>
-                    ))}
-                    {campaign.tags.length > 5 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{campaign.tags.length - 5}
-                      </Badge>
-                    )}
+                <div className="flex items-start gap-2">
+                  <Tag className="w-4 h-4 text-text-paragraph flex-shrink-0 mt-0.5" />
+                  <div className="flex flex-wrap gap-1 min-w-0">
+                    {/* Show fewer tags on mobile */}
+                    <div className="flex flex-wrap gap-1 sm:hidden">
+                      {campaign.tags.slice(0, 3).map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs break-words">
+                          {highlightText(tag, searchTerm)}
+                        </Badge>
+                      ))}
+                      {campaign.tags.length > 3 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{campaign.tags.length - 3}
+                        </Badge>
+                      )}
+                    </div>
+                    {/* Show more tags on desktop */}
+                    <div className="hidden sm:flex sm:flex-wrap sm:gap-1">
+                      {campaign.tags.slice(0, 5).map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs break-words">
+                          {highlightText(tag, searchTerm)}
+                        </Badge>
+                      ))}
+                      {campaign.tags.length > 5 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{campaign.tags.length - 5}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
 
-              {/* Countries Row */}
-              {campaign.rss_countries && campaign.rss_countries.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Globe className="w-4 h-4 text-green-500" />
-                  <div className="flex flex-wrap gap-1">
-                    {campaign.rss_countries.slice(0, 5).map((countryCode, index) => (
-                      <Badge key={index} variant="outline" className="text-xs bg-green-900/30 text-green-400 border-green-600">
-                        {getCountryDisplayName(countryCode)}
-                      </Badge>
-                    ))}
-                    {campaign.rss_countries.length > 5 && (
-                      <Badge variant="outline" className="text-xs">
-                        +{campaign.rss_countries.length - 5}
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* RSS Categories Row */}
-              {campaign.rss_categories && campaign.rss_categories.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Rss className="w-4 h-4 text-blue-500" />
-                  <div className="flex flex-wrap gap-1">
-                    {campaign.rss_categories.includes('all') ? (
-                      <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
-                        All Categories
-                      </Badge>
-                    ) : (
-                      <>
-                        {campaign.rss_categories.slice(0, 4).map((category, index) => (
-                          <Badge key={index} variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600 capitalize">
-                            {highlightText(category, searchTerm)}
+              {/* Countries and RSS Categories - responsive layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Countries Row */}
+                {campaign.rss_countries && campaign.rss_countries.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <Globe className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex flex-wrap gap-1 min-w-0">
+                      {/* Mobile: show 2, Desktop: show 3 */}
+                      <div className="flex flex-wrap gap-1 sm:hidden">
+                        {campaign.rss_countries.slice(0, 2).map((countryCode, index) => (
+                          <Badge key={index} variant="outline" className="text-xs bg-green-900/30 text-green-400 border-green-600">
+                            {getCountryDisplayName(countryCode)}
                           </Badge>
                         ))}
-                        {campaign.rss_categories.length > 4 && (
-                          <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
-                            +{campaign.rss_categories.length - 4}
+                        {campaign.rss_countries.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{campaign.rss_countries.length - 2}
                           </Badge>
                         )}
-                      </>
-                    )}
+                      </div>
+                      <div className="hidden sm:flex sm:flex-wrap sm:gap-1">
+                        {campaign.rss_countries.slice(0, 3).map((countryCode, index) => (
+                          <Badge key={index} variant="outline" className="text-xs bg-green-900/30 text-green-400 border-green-600">
+                            {getCountryDisplayName(countryCode)}
+                          </Badge>
+                        ))}
+                        {campaign.rss_countries.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{campaign.rss_countries.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+
+                {/* RSS Categories Row */}
+                {campaign.rss_categories && campaign.rss_categories.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <Rss className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <div className="flex flex-wrap gap-1 min-w-0">
+                      {campaign.rss_categories.includes('all') ? (
+                        <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
+                          All Categories
+                        </Badge>
+                      ) : (
+                        <>
+                          {/* Mobile: show 2, Desktop: show 3 */}
+                          <div className="flex flex-wrap gap-1 sm:hidden">
+                            {campaign.rss_categories.slice(0, 2).map((category, index) => (
+                              <Badge key={index} variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600 capitalize">
+                                {highlightText(category, searchTerm)}
+                              </Badge>
+                            ))}
+                            {campaign.rss_categories.length > 2 && (
+                              <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
+                                +{campaign.rss_categories.length - 2}
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="hidden sm:flex sm:flex-wrap sm:gap-1">
+                            {campaign.rss_categories.slice(0, 3).map((category, index) => (
+                              <Badge key={index} variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600 capitalize">
+                                {highlightText(category, searchTerm)}
+                              </Badge>
+                            ))}
+                            {campaign.rss_categories.length > 3 && (
+                              <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
+                                +{campaign.rss_categories.length - 3}
+                              </Badge>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Last Updated */}
               {campaign.updatedAt && (
                 <div className="flex items-center gap-2 text-xs text-text-paragraph">
-                  <Calendar className="w-3 h-3" />
+                  <Calendar className="w-3 h-3 flex-shrink-0" />
                   <span>Updated {new Date(campaign.updatedAt).toLocaleDateString()}</span>
                 </div>
               )}

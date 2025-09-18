@@ -34,7 +34,7 @@ export function MultiStepCampaignForm({ user }) {
   const totalSteps = 3;
 
   // Form data for all steps
-  const [formData, setFormData] = useState({
+  const formData, setFormData] = useState({
     // Step 1: Basic Info
     name: '',
     url: '',
@@ -178,18 +178,11 @@ export function MultiStepCampaignForm({ user }) {
       console.error('Failed to generate AI suggestions:', error);
       setFormData(prev => ({
         ...prev,
-        aiSuggestions: { ...prev.aiSuggestions, loading: false }
-      }));
-      
-      // Fallback suggestions
-      setFormData(prev => ({
-        ...prev,
         aiSuggestions: {
-          tags: ['technology', 'innovation', 'business', 'productivity', 'digital', 'solutions'],
-          description: 'This company provides innovative solutions to help businesses improve their operations and productivity.',
+          tags: [],
+          description: '',
           loading: false
-        },
-        description: prev.description || 'This company provides innovative solutions to help businesses improve their operations and productivity.'
+        }
       }));
     }
   };
@@ -453,7 +446,7 @@ export function MultiStepCampaignForm({ user }) {
               AI Suggested Tags
             </Label>
             <p className="text-text-paragraph text-sm mb-3">
-              Click to select tags that best represent your company
+              Click to select tags that best represent the product
             </p>
             
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
