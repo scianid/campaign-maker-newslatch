@@ -247,51 +247,43 @@ export function AiContentPage({ user }) {
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-white">
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div className="flex items-center gap-3 min-w-0">
             <Button
               variant="ghost"
+              size="sm"
               onClick={() => navigate('/campaigns')}
-              className="text-gray-400 hover:text-white"
+              className="text-gray-400 hover:text-white flex-shrink-0 h-8 px-2"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Campaigns
+              <span className="hidden sm:inline">Back to Campaigns</span>
+              <span className="sm:hidden">Back</span>
             </Button>
-            <div className="h-6 w-px bg-gray-600"></div>
-            <div>
-              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Zap className="w-6 h-6 text-purple-400" />
-                AI Content
-              </h1>
-              {campaign && (
-                <p className="text-text-paragraph">
-                  {campaign.name} • {totalItems} items generated
-                </p>
-              )}
-            </div>
+            <div className="h-6 w-px bg-gray-600 hidden sm:block"></div>
+            
           </div>
         </div>
 
-        {/* Advanced Filters */}
-        <div className="bg-card-bg border border-gray-600/50 rounded-lg p-4 mb-8">
-          <div className="flex items-center gap-2 mb-4">
+        {/* Advanced Filters - Compact */}
+        <div className="bg-card-bg border border-gray-600/50 rounded-lg p-3 mb-6">
+          <div className="flex items-center gap-2 mb-3">
             <Filter className="w-4 h-4 text-gray-400" />
-            <span className="text-sm font-medium text-gray-300">Filters & Sorting</span>
+            <span className="text-sm font-medium text-gray-300">Filters</span>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
             {/* Status Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-2">Publication Status</label>
+              <label className="block text-xs text-gray-400 mb-1">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) => {
                   setFilters(prev => ({ ...prev, status: e.target.value }));
                   setCurrentPage(1);
                 }}
-                className="w-full bg-primary-bg border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:ring-2 focus:ring-highlight focus:border-highlight"
+                className="w-full bg-primary-bg border border-gray-600 rounded px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-highlight focus:border-highlight"
               >
-                <option value="all">All Content</option>
+                <option value="all">All</option>
                 <option value="published">📢 Published</option>
                 <option value="unpublished">📝 Draft</option>
               </select>
@@ -299,116 +291,126 @@ export function AiContentPage({ user }) {
 
             {/* Score Range Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-2">Relevance Score</label>
+              <label className="block text-xs text-gray-400 mb-1">Score</label>
               <select
                 value={filters.scoreRange}
                 onChange={(e) => {
                   setFilters(prev => ({ ...prev, scoreRange: e.target.value }));
                   setCurrentPage(1);
                 }}
-                className="w-full bg-primary-bg border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:ring-2 focus:ring-highlight focus:border-highlight"
+                className="w-full bg-primary-bg border border-gray-600 rounded px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-highlight focus:border-highlight"
               >
-                <option value="all">All Scores</option>
-                <option value="high">⭐ High (80-100)</option>
-                <option value="medium">🔶 Medium (50-79)</option>
-                <option value="low">📊 Low (0-49)</option>
+                <option value="all">All</option>
+                <option value="high">⭐ High</option>
+                <option value="medium">🔶 Medium</option>
+                <option value="low">📊 Low</option>
               </select>
             </div>
 
             {/* Date Range Filter */}
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-2">Created</label>
+              <label className="block text-xs text-gray-400 mb-1">Date</label>
               <select
                 value={filters.dateRange}
                 onChange={(e) => {
                   setFilters(prev => ({ ...prev, dateRange: e.target.value }));
                   setCurrentPage(1);
                 }}
-                className="w-full bg-primary-bg border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:ring-2 focus:ring-highlight focus:border-highlight"
+                className="w-full bg-primary-bg border border-gray-600 rounded px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-highlight focus:border-highlight"
               >
                 <option value="all">All Time</option>
                 <option value="today">🕐 Today</option>
-                <option value="week">📅 This Week</option>
-                <option value="month">📆 This Month</option>
+                <option value="week">📅 Week</option>
+                <option value="month">📆 Month</option>
               </select>
             </div>
 
             {/* Sort By */}
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-2">Sort By</label>
+              <label className="block text-xs text-gray-400 mb-1">Sort</label>
               <select
                 value={filters.sortBy}
                 onChange={(e) => {
                   setFilters(prev => ({ ...prev, sortBy: e.target.value }));
                   setCurrentPage(1);
                 }}
-                className="w-full bg-primary-bg border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:ring-2 focus:ring-highlight focus:border-highlight"
+                className="w-full bg-primary-bg border border-gray-600 rounded px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-highlight focus:border-highlight"
               >
-                <option value="created_at">🕒 Date Created</option>
-                <option value="relevance_score">⭐ Relevance Score</option>
+                <option value="created_at">🕒 Date</option>
+                <option value="relevance_score">⭐ Score</option>
                 <option value="trend">📈 Trend</option>
               </select>
             </div>
 
             {/* Sort Order */}
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-2">Order</label>
+              <label className="block text-xs text-gray-400 mb-1">Order</label>
               <select
                 value={filters.sortOrder}
                 onChange={(e) => {
                   setFilters(prev => ({ ...prev, sortOrder: e.target.value }));
                   setCurrentPage(1);
                 }}
-                className="w-full bg-primary-bg border border-gray-600 rounded-md px-3 py-2 text-sm text-white focus:ring-2 focus:ring-highlight focus:border-highlight"
+                className="w-full bg-primary-bg border border-gray-600 rounded px-2 py-1.5 text-xs text-white focus:ring-1 focus:ring-highlight focus:border-highlight"
               >
-                <option value="desc">↓ Newest First</option>
-                <option value="asc">↑ Oldest First</option>
+                <option value="desc">↓ New</option>
+                <option value="asc">↑ Old</option>
               </select>
             </div>
           </div>
 
-          {/* Active Filters Summary */}
-          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-600/30">
-            <span className="text-xs text-gray-400">Active filters:</span>
-            {Object.entries(filters).map(([key, value]) => {
-              // Skip default values
-              if ((key === 'status' && value === 'all') || 
-                  (key === 'sortOrder' && value === 'desc') || 
-                  (key === 'sortBy' && value === 'created_at') ||
-                  value === 'all') return null;
+          {/* Active Filters Summary - Compact */}
+          {/* Only show if non-default filters are active */}
+          {(filters.status !== 'all' || 
+            filters.scoreRange !== 'all' || 
+            filters.dateRange !== 'all' || 
+            filters.sortBy !== 'created_at' || 
+            filters.sortOrder !== 'desc') && (
+            <div className="flex flex-wrap items-center gap-1 mt-3 pt-2 border-t border-gray-600/30">
+              {Object.entries(filters).map(([key, value]) => {
+                // Skip default values
+                if ((key === 'status' && value === 'all') || 
+                    (key === 'sortOrder' && value === 'desc') || 
+                    (key === 'sortBy' && value === 'created_at') ||
+                    value === 'all') return null;
+                
+                const labels = {
+                  status: { unpublished: 'Draft', published: 'Published' },
+                  scoreRange: { high: 'High', medium: 'Medium', low: 'Low' },
+                  dateRange: { today: 'Today', week: 'Week', month: 'Month' },
+                  sortBy: { relevance_score: 'Score', trend: 'Trend' },
+                  sortOrder: { asc: 'Oldest' }
+                };
+                const label = labels[key]?.[value] || value;
+                return (
+                  <Badge 
+                    key={key} 
+                    variant="outline" 
+                    className="text-xs bg-highlight/10 text-highlight border-highlight/30 px-1.5 py-0.5"
+                  >
+                    {label}
+                  </Badge>
+                );
+              })}
               
-              const labels = {
-                status: { unpublished: 'Draft' },
-                scoreRange: { high: 'High Score', medium: 'Medium Score', low: 'Low Score' },
-                dateRange: { today: 'Today', week: 'This Week', month: 'This Month' },
-                sortBy: { relevance_score: 'By Score', trend: 'By Trend' },
-                sortOrder: { asc: 'Oldest First' }
-              };
-              const label = labels[key]?.[value] || value;
-              return (
-                <Badge 
-                  key={key} 
-                  variant="outline" 
-                  className="text-xs bg-highlight/10 text-highlight border-highlight/30"
-                >
-                  {label}
-                </Badge>
-              );
-            })}
-            {/* Check if any non-default filters are active */}
-            {(filters.status === 'all' && 
-              filters.scoreRange === 'all' && 
-              filters.dateRange === 'all' && 
-              filters.sortBy === 'created_at' && 
-              filters.sortOrder === 'desc') && (
-              <span className="text-xs text-gray-500">Default filters (all content)</span>
-            )}
-            
-            {/* Debug info - show current filter status and item count */}
-            <div className="ml-auto text-xs text-gray-400">
-              {totalItems} total items • Status: {filters.status}
+              <span className="text-xs text-gray-500 ml-auto">
+                {totalItems} items
+              </span>
             </div>
-          </div>
+          )}
+          
+          {/* Show item count when no filters are active */}
+          {(filters.status === 'all' && 
+            filters.scoreRange === 'all' && 
+            filters.dateRange === 'all' && 
+            filters.sortBy === 'created_at' && 
+            filters.sortOrder === 'desc') && (
+            <div className="flex justify-end mt-2">
+              <span className="text-xs text-gray-500">
+                {totalItems} items
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Content */}
@@ -483,24 +485,24 @@ export function AiContentPage({ user }) {
                     } hover:shadow-lg`}
                   >
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
+                    <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
+                      <div className="flex-1 min-w-0">
                         <div className="mb-2">
                           <span className="text-sm font-medium text-blue-400 uppercase tracking-wide">News Headline</span>
                         </div>
-                        <h3 className="font-semibold text-white text-xl leading-tight mb-3">
+                        <h3 className="font-semibold text-white text-lg lg:text-xl leading-tight mb-3">
                           {item.headline}
                         </h3>
-                        <div className="flex items-center gap-3 text-sm">
+                        <div className="flex flex-wrap items-center gap-2 text-sm">
                           <Badge 
                             variant="outline" 
                             className="text-xs bg-blue-900/20 text-blue-400 border-blue-600/30"
                           >
-                            {scoreBadge.icon} Relevance: {item.relevance_score}/100 {scoreBadge.label}
+                            {scoreBadge.icon} {item.relevance_score}/100 {scoreBadge.label}
                           </Badge>
                           
                           <Badge variant="outline" className="text-xs bg-blue-900/20 text-blue-400 border-blue-600/30">
-                            📈 Trend Detected: {item.trend}
+                            📈 {item.trend}
                           </Badge>
                           
                           <a
@@ -511,28 +513,33 @@ export function AiContentPage({ user }) {
                             title="Read original article"
                           >
                             <ExternalLink className="w-3 h-3" />
-                            Source
+                            <span className="hidden sm:inline">Source</span>
+                            <span className="sm:hidden">Link</span>
                           </a>
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-3">
-                        <Toggle
-                          checked={item.is_published}
-                          onChange={(checked) => togglePublished(item.id, item.is_published)}
-                          label={item.is_published ? 'Published' : 'Draft'}
-                          size="sm"
-                          className="focus:ring-offset-gray-800"
-                        />
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteClick(item)}
-                          className="h-10 w-10 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all duration-200"
-                          title="Delete this AI content"
-                        >
-                          <Trash2 className="w-5 h-5" />
-                        </Button>
+                      <div className="flex items-center justify-between lg:flex-col lg:items-end gap-3">
+                        <div className="lg:order-2">
+                          <Toggle
+                            checked={item.is_published}
+                            onChange={(checked) => togglePublished(item.id, item.is_published)}
+                            label={item.is_published ? 'Published' : 'Draft'}
+                            size="sm"
+                            className="focus:ring-offset-gray-800"
+                          />
+                        </div>
+                        <div className="lg:order-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteClick(item)}
+                            className="h-10 w-10 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all duration-200"
+                            title="Delete this AI content"
+                          >
+                            <Trash2 className="w-4 h-4 lg:w-5 lg:h-5" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
 
@@ -578,11 +585,11 @@ export function AiContentPage({ user }) {
                       {/* Ad Preview Demo */}
                       {item.ad_placement && typeof item.ad_placement === 'object' && (
                         <div>
-                          <div className="flex items-center justify-between mb-3">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                             <h4 className="text-sm font-medium text-blue-400">Ad Preview</h4>
                             
                             {/* Preview Style Toggle */}
-                            <div className="flex items-center gap-1 bg-card-bg border border-gray-600 rounded-md p-1">
+                            <div className="flex items-center gap-1 bg-card-bg border border-gray-600 rounded-md p-1 w-fit">
                               <button
                                 onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'desktop' }))}
                                 className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
@@ -592,7 +599,8 @@ export function AiContentPage({ user }) {
                                 }`}
                               >
                                 <Monitor className="w-3 h-3" />
-                                Desktop
+                                <span className="hidden sm:inline">Desktop</span>
+                                <span className="sm:hidden">Web</span>
                               </button>
                               <button
                                 onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'mobile' }))}
@@ -603,7 +611,8 @@ export function AiContentPage({ user }) {
                                 }`}
                               >
                                 <Smartphone className="w-3 h-3" />
-                                Social
+                                <span className="hidden sm:inline">Social</span>
+                                <span className="sm:hidden">Mobile</span>
                               </button>
                             </div>
                           </div>
@@ -645,33 +654,35 @@ export function AiContentPage({ user }) {
 
                           {/* Mobile/Social Style */}
                           {previewStyles[item.id] === 'mobile' && (
-                            <div className="bg-white rounded-lg p-3 border border-gray-300 shadow-sm max-w-sm mx-auto">
-                              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                                {/* Header */}
-                                <div className="p-3 border-b border-gray-100">
-                                  <div className="flex items-center gap-2">
-                                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                                      <span className="text-white text-xs font-bold">{campaign?.name?.substring(0, 2).toUpperCase() || 'AD'}</span>
-                                    </div>
-                                    <div>
-                                      <p className="text-sm font-medium text-gray-900">{campaign?.name || 'Campaign'}</p>
-                                      <p className="text-xs text-gray-500">Sponsored</p>
+                            <div className="flex justify-center">
+                              <div className="bg-white rounded-lg p-3 border border-gray-300 shadow-sm w-full max-w-sm">
+                                <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                                  {/* Header */}
+                                  <div className="p-3 border-b border-gray-100">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                        <span className="text-white text-xs font-bold">{campaign?.name?.substring(0, 2).toUpperCase() || 'AD'}</span>
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-900 truncate">{campaign?.name || 'Campaign'}</p>
+                                        <p className="text-xs text-gray-500">Sponsored</p>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                
-                                {/* Content */}
-                                <div className="p-3">
-                                  <h6 className="font-semibold text-gray-900 text-sm mb-2">
-                                    {item.ad_placement.headline}
-                                  </h6>
-                                  <p className="text-gray-700 text-xs mb-3">
-                                    {item.ad_placement.body}
-                                  </p>
                                   
-                                  <button className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md text-xs">
-                                    {item.ad_placement.cta}
-                                  </button>
+                                  {/* Content */}
+                                  <div className="p-3">
+                                    <h6 className="font-semibold text-gray-900 text-sm mb-2 leading-tight">
+                                      {item.ad_placement.headline}
+                                    </h6>
+                                    <p className="text-gray-700 text-xs mb-3 leading-relaxed">
+                                      {item.ad_placement.body}
+                                    </p>
+                                    
+                                    <button className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md text-xs hover:bg-blue-700 transition-colors">
+                                      {item.ad_placement.cta}
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -715,13 +726,13 @@ export function AiContentPage({ user }) {
                       expandedDetails[item.id] ? 'max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                     }`}>
                       <div className="border-t border-gray-600/30 pt-4">
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                           {/* Left Column */}
                           <div className="space-y-4">
                             {/* Clickbait */}
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-sm font-medium text-orange-400">💡 Attention-Grabbing Hook</h4>
+                                <h4 className="text-sm font-medium text-orange-400">💡 Hook</h4>
                                 <Button
                                   variant="ghost"
                                   size="sm"
@@ -734,16 +745,16 @@ export function AiContentPage({ user }) {
                                   }
                                 </Button>
                               </div>
-                              <p className="text-sm text-gray-400 mb-2">Social media ready hook:</p>
-                              <p className="text-orange-300 font-medium bg-orange-900/10 p-3 rounded border-l-2 border-orange-600">
+                              <p className="text-sm text-gray-400 mb-2">Social media hook:</p>
+                              <p className="text-orange-300 font-medium bg-orange-900/10 p-3 rounded border-l-2 border-orange-600 text-sm">
                                 "{item.clickbait}"
                               </p>
                             </div>
 
                             {/* Tooltip */}
                             <div>
-                              <h4 className="text-sm font-medium text-purple-400 mb-2">💬 User Engagement Message</h4>
-                              <p className="text-sm text-gray-400 mb-2">Tooltip for interactive elements:</p>
+                              <h4 className="text-sm font-medium text-purple-400 mb-2">💬 Engagement</h4>
+                              <p className="text-sm text-gray-400 mb-2">User interaction message:</p>
                               <p className="text-sm text-purple-300 italic bg-purple-900/10 p-3 rounded border-l-2 border-purple-600">
                                 {item.tooltip}
                               </p>
@@ -756,7 +767,7 @@ export function AiContentPage({ user }) {
                             {item.ad_placement && (
                               <div>
                                 <div className="flex items-center justify-between mb-2">
-                                  <h4 className="text-sm font-medium text-green-400">🎯 Complete Ad Campaign</h4>
+                                  <h4 className="text-sm font-medium text-green-400">🎯 Ad Copy</h4>
                                   <Button
                                     variant="ghost"
                                     size="sm"
@@ -774,24 +785,24 @@ export function AiContentPage({ user }) {
                                     }
                                   </Button>
                                 </div>
-                                <p className="text-sm text-gray-400 mb-3">Ready-to-use ad components:</p>
+                                <p className="text-sm text-gray-400 mb-3">Campaign components:</p>
                                 
                                 {typeof item.ad_placement === 'string' ? (
                                   <p className="text-sm text-green-300 bg-green-900/20 p-3 rounded border-l-2 border-green-600">
                                     {item.ad_placement}
                                   </p>
                                 ) : (
-                                  <div className="bg-green-900/20 p-4 rounded border-l-2 border-green-600 space-y-3">
+                                  <div className="bg-green-900/20 p-3 lg:p-4 rounded border-l-2 border-green-600 space-y-3">
                                     <div>
-                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">Ad Headline</h6>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">Headline</h6>
                                       <p className="text-sm font-medium text-green-300">{item.ad_placement.headline}</p>
                                     </div>
                                     <div>
-                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">Ad Description</h6>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">Body</h6>
                                       <p className="text-sm text-green-300">{item.ad_placement.body}</p>
                                     </div>
                                     <div>
-                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">Call to Action Button</h6>
+                                      <h6 className="text-xs font-semibold text-green-400 mb-1 uppercase tracking-wide">CTA</h6>
                                       <p className="text-sm font-semibold text-green-300 bg-green-800/30 px-3 py-1 rounded inline-block">
                                         {item.ad_placement.cta}
                                       </p>
@@ -803,7 +814,7 @@ export function AiContentPage({ user }) {
 
                             {/* Source Link */}
                             <div className="pt-3 border-t border-gray-600/30">
-                              <h4 className="text-sm font-medium text-blue-400 mb-2">📰 Original News Source</h4>
+                              <h4 className="text-sm font-medium text-blue-400 mb-2">📰 Source</h4>
                               <a
                                 href={item.link}
                                 target="_blank"
@@ -811,7 +822,8 @@ export function AiContentPage({ user }) {
                                 className="inline-flex items-center gap-2 text-sm text-blue-400 hover:text-blue-300 bg-blue-900/10 px-3 py-2 rounded border border-blue-600/30 hover:border-blue-500/50 transition-all"
                               >
                                 <ExternalLink className="w-4 h-4" />
-                                Read Full Article
+                                <span className="hidden sm:inline">Read Full Article</span>
+                                <span className="sm:hidden">Read More</span>
                               </a>
                             </div>
                           </div>
@@ -825,51 +837,67 @@ export function AiContentPage({ user }) {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between">
-                <div className="text-sm text-text-paragraph">
-                  Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="text-sm text-text-paragraph text-center sm:text-left">
+                  <span className="hidden sm:inline">
+                    Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} items
+                  </span>
+                  <span className="sm:hidden">
+                    {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+                  </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1 || loading}
+                    className="px-2 sm:px-3"
                   >
                     <ChevronLeft className="w-4 h-4" />
-                    Previous
+                    <span className="hidden sm:inline ml-1">Previous</span>
                   </Button>
                   
                   <div className="flex items-center gap-1">
-                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                      const page = i + 1;
-                      return (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setCurrentPage(page)}
-                          disabled={loading}
-                          className="h-8 w-8 p-0"
-                        >
-                          {page}
-                        </Button>
-                      );
-                    })}
-                    {totalPages > 5 && (
-                      <>
-                        {currentPage < totalPages - 2 && <span className="text-gray-400">...</span>}
-                        <Button
-                          variant={currentPage === totalPages ? "default" : "ghost"}
-                          size="sm"
-                          onClick={() => setCurrentPage(totalPages)}
-                          disabled={loading}
-                          className="h-8 w-8 p-0"
-                        >
-                          {totalPages}
-                        </Button>
-                      </>
-                    )}
+                    {/* Show fewer page numbers on mobile */}
+                    <div className="hidden sm:flex sm:items-center sm:gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = i + 1;
+                        return (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "ghost"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            disabled={loading}
+                            className="h-8 w-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                      {totalPages > 5 && (
+                        <>
+                          {currentPage < totalPages - 2 && <span className="text-gray-400">...</span>}
+                          <Button
+                            variant={currentPage === totalPages ? "default" : "ghost"}
+                            size="sm"
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={loading}
+                            className="h-8 w-8 p-0"
+                          >
+                            {totalPages}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                    
+                    {/* Mobile pagination - just show current page */}
+                    <div className="sm:hidden flex items-center gap-2">
+                      <span className="text-sm text-gray-400">
+                        {currentPage} / {totalPages}
+                      </span>
+                    </div>
                   </div>
 
                   <Button
@@ -877,8 +905,9 @@ export function AiContentPage({ user }) {
                     size="sm"
                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                     disabled={currentPage === totalPages || loading}
+                    className="px-2 sm:px-3"
                   >
-                    Next
+                    <span className="hidden sm:inline mr-1">Next</span>
                     <ChevronRight className="w-4 h-4" />
                   </Button>
                 </div>
