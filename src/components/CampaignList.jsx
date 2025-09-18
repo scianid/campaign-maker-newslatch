@@ -232,39 +232,58 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
   return (
     <div className="space-y-6">
       {/* Header with Search and New Button */}
-      <div className="flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
-        <h2 className="text-2xl font-bold text-white">
-          Your Campaigns ({filteredCampaigns.length}{(campaigns?.length || 0) !== filteredCampaigns.length ? ` of ${campaigns?.length || 0}` : ''})
-        </h2>
-        <div className="flex gap-3">
+      <div className="flex flex-col gap-4">
+        {/* Title */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-bold text-white">
+            Your Campaigns
+          </h2>
+          {/* Campaign count - only show on larger screens */}
+          <div className="hidden sm:block">
+            <span className="text-sm text-text-paragraph">
+              ({filteredCampaigns.length}{(campaigns?.length || 0) !== filteredCampaigns.length ? ` of ${campaigns?.length || 0}` : ''})
+            </span>
+          </div>
+        </div>
+        
+        {/* Search and Actions Row */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           {/* Search Bar */}
-          <div className="relative flex-1 sm:flex-none sm:w-80">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search campaigns..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight focus:border-highlight bg-card-bg text-white placeholder-gray-400 shadow-sm"
+              className="w-full pl-10 pr-10 py-2.5 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight focus:border-highlight bg-card-bg text-white placeholder-gray-400 shadow-sm text-sm"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-white"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
+          
           {/* New Campaign Button */}
           <Button 
             onClick={() => navigate('/new')}
-            className="bg-button-primary hover:bg-button-primary/80 text-button-text hover:text-button-text shadow-lg hover:shadow-xl transition-all duration-300 whitespace-nowrap font-semibold"
+            className="bg-button-primary hover:bg-button-primary/80 text-button-text hover:text-button-text shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-4 py-2.5 text-sm sm:px-6 whitespace-nowrap"
             style={{ color: 'rgb(41, 41, 61)' }}
           >
             <Plus className="w-4 h-4 mr-2" />
             New Campaign
           </Button>
+        </div>
+        
+        {/* Mobile campaign count */}
+        <div className="sm:hidden">
+          <span className="text-xs text-text-paragraph">
+            {filteredCampaigns.length} campaign{filteredCampaigns.length !== 1 ? 's' : ''}{(campaigns?.length || 0) !== filteredCampaigns.length ? ` of ${campaigns?.length || 0} total` : ''}
+          </span>
         </div>
       </div>
       

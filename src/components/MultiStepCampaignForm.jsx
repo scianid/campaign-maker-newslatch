@@ -34,7 +34,7 @@ export function MultiStepCampaignForm({ user }) {
   const totalSteps = 3;
 
   // Form data for all steps
-  const formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     // Step 1: Basic Info
     name: '',
     url: '',
