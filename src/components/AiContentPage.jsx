@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { Toggle } from '../ui/Toggle';
 import { Layout } from './Layout';
 import { supabase } from '../lib/supabase';
 
@@ -19,6 +20,7 @@ export function AiContentPage({ user }) {
   const [totalItems, setTotalItems] = useState(0);
   const [previewStyles, setPreviewStyles] = useState({}); // Track preview style for each item
   const [expandedDetails, setExpandedDetails] = useState({}); // Track which cards have details expanded
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
   const [filters, setFilters] = useState({
     status: 'all', // 'all', 'published', 'unpublished'
     scoreRange: 'all', // 'all', 'high', 'medium', 'low'
@@ -131,6 +133,33 @@ export function AiContentPage({ user }) {
       console.error('Failed to update publish status:', err);
       alert('Failed to update publish status');
     }
+  };
+
+  const handleDeleteClick = (item) => {
+    setDeleteConfirm({ show: true, item });
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      const { error } = await supabase
+        .from('ai_generated_items')
+        .delete()
+        .eq('id', deleteConfirm.item.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setAiItems(prev => prev.filter(item => item.id !== deleteConfirm.item.id));
+      setTotalItems(prev => prev - 1);
+      setDeleteConfirm({ show: false, item: null });
+    } catch (err) {
+      console.error('Failed to delete item:', err);
+      alert('Failed to delete item. Please try again.');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setDeleteConfirm({ show: false, item: null });
   };
 
   const copyToClipboard = async (text, itemId) => {
@@ -445,29 +474,8 @@ export function AiContentPage({ user }) {
                         : 'border-gray-600/50 hover:border-gray-500/50'
                     } hover:shadow-lg`}
                   >
-                    {/* Status Indicator */}
-                    <div className="absolute top-4 right-4">
-                      <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium ${
-                        item.is_published 
-                          ? 'bg-green-900/30 text-green-400 border border-green-600/30' 
-                          : 'bg-gray-800/50 text-gray-400 border border-gray-600/30'
-                      }`}>
-                        {item.is_published ? (
-                          <>
-                            <Eye className="w-3 h-3" />
-                            Published
-                          </>
-                        ) : (
-                          <>
-                            <EyeOff className="w-3 h-3" />
-                            Draft
-                          </>
-                        )}
-                      </div>
-                    </div>
-
                     {/* Header */}
-                    <div className="flex items-start justify-between mb-6 pr-24">
+                    <div className="flex items-start justify-between mb-6">
                       <div className="flex-1">
                         <h3 className="font-semibold text-white text-xl leading-tight mb-3">
                           {item.headline}
@@ -491,19 +499,22 @@ export function AiContentPage({ user }) {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
+                        <Toggle
+                          checked={item.is_published}
+                          onChange={(checked) => togglePublished(item.id, item.is_published)}
+                          label={item.is_published ? 'Published' : 'Draft'}
+                          size="sm"
+                          className="focus:ring-offset-gray-800"
+                        />
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => togglePublished(item.id, item.is_published)}
-                          className={`h-9 w-9 p-0 transition-all ${
-                            item.is_published 
-                              ? 'text-green-400 hover:text-green-300 hover:bg-green-900/20' 
-                              : 'text-gray-400 hover:text-gray-300 hover:bg-gray-800/50'
-                          }`}
-                          title={item.is_published ? 'Unpublish' : 'Publish'}
+                          onClick={() => handleDeleteClick(item)}
+                          className="h-8 w-8 p-0 text-red-400 hover:text-red-300 hover:bg-red-900/20 transition-all duration-200"
+                          title="Delete this AI content"
                         >
-                          {item.is_published ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
@@ -810,6 +821,67 @@ export function AiContentPage({ user }) {
               </div>
             )}
           </>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirm.show && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-card-bg border border-gray-600/50 rounded-2xl shadow-2xl w-full max-w-md p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-red-900/20 border border-red-600/50 rounded-full flex items-center justify-center">
+                  <Trash2 className="w-6 h-6 text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-white">Delete AI Content</h3>
+                  <p className="text-sm text-gray-400">This action cannot be undone</p>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <p className="text-gray-300 mb-3">
+                  Are you sure you want to delete this AI content?
+                </p>
+                <div className="bg-gray-800/50 border border-gray-600/30 rounded-lg p-3">
+                  <p className="font-medium text-white text-sm line-clamp-2">
+                    {deleteConfirm.item?.headline}
+                  </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs ${
+                        deleteConfirm.item?.is_published 
+                          ? 'bg-green-900/30 text-green-400 border-green-600/30'
+                          : 'bg-gray-800/50 text-gray-400 border-gray-600/30'
+                      }`}
+                    >
+                      {deleteConfirm.item?.is_published ? '📢 Published' : '📝 Draft'}
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Score: {deleteConfirm.item?.relevance_score}/100
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleDeleteCancel}
+                  variant="outline"
+                  className="flex-1 border-gray-600 hover:border-gray-500"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleDeleteConfirm}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white border-red-600 hover:border-red-700"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </Layout>
