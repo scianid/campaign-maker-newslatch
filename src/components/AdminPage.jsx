@@ -37,8 +37,8 @@ export function AdminPage() {
   const [feedForm, setFeedForm] = useState({
     name: '',
     url: '',
-    categories: [],
-    countries: [],
+    categories: ['news'],
+    countries: ['US'],
     is_active: true
   });
 
@@ -233,8 +233,8 @@ export function AdminPage() {
     setFeedForm({
       name: '',
       url: '',
-      categories: [],
-      countries: [],
+      categories: ['news'],
+      countries: ['US'],
       is_active: true
     });
   };
