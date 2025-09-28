@@ -76,9 +76,6 @@ export function AiContentPage({ user }) {
         sortOrder: filters.sortOrder
       });
 
-      console.log('🔍 Fetching AI items with filters:', filters);
-      console.log('📡 Request URL:', `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/ai-content?${params}`);
-
       const response = await fetch(
         `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/ai-content?${params}`,
         {
@@ -95,13 +92,6 @@ export function AiContentPage({ user }) {
       }
 
       const result = await response.json();
-      
-      console.log('📊 API Response:', {
-        success: !result.error,
-        itemsReceived: result.ai_items?.length || 0,
-        totalItems: result.total || 0,
-        currentFilters: filters
-      });
       
       if (result.error) {
         throw new Error(result.error);

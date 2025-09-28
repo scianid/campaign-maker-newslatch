@@ -7,11 +7,7 @@ export function RssItemsModal({ isOpen, onClose, rssData, aiAnalysis, campaignNa
 
   const { items, count, campaign } = rssData;
 
-  // Debug logging
-  console.log('🎭 Modal props:');
-  console.log('  📰 rssData:', rssData);
-  console.log('  🤖 aiAnalysis:', aiAnalysis);
-  console.log('  📊 AI results count:', aiAnalysis?.results?.length || 0);
+
 
   return (
     <div className="fixed top-0 left-0 right-0 bottom-0 bg-primary-bg/95 backdrop-blur-sm flex items-center justify-center z-[9999]" style={{ margin: 0, padding: 0 }}>

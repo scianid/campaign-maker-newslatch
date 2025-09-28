@@ -74,11 +74,8 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
   // Generate AI content for campaign
   const generateAiContent = async (campaignId) => {
     try {
-      console.log('🤖 Generating AI content for campaign:', campaignId);
-      
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session) {
-        console.error('❌ Session error:', sessionError);
         throw new Error('No session found');
       }
 
@@ -96,20 +93,15 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ HTTP Error:', response.status, errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
-
-      const result = await response.json();
-      console.log('🤖 AI Generation Result:', result);
       
-      if (result.error) {
+      const result = await response.json();      if (result.error) {
         throw new Error(result.error || 'Failed to generate AI content');
       }
 
       return result;
     } catch (error) {
-      console.error('💥 Failed to generate AI content:', error);
       throw error;
     }
   };
@@ -117,7 +109,6 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
   // Generate AI content for campaign and show success message
   const showAiContentGeneration = async (campaign) => {
     try {
-      console.log('🤖 Starting AI content generation for campaign:', campaign.name, campaign.id);
       
       // Show loading state
       setLoadingRss(true);
@@ -133,12 +124,9 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
       // Navigate to the AI content page for this campaign
       navigate(`/content/${campaign.id}`);
       
-    } catch (error) {
-      console.error('💥 Failed to generate AI content:', error);
-      
-      // Show user-friendly error message
+      } catch (error) {      // Show user-friendly error message
       const errorMessage = error.message || 'Unknown error occurred';
-      alert(`❌ Failed to generate AI content: ${errorMessage}\n\nPlease check:\n- RSS feeds are configured\n- RSS categories are set\n- Recent RSS content is available\n\nCheck the browser console for more details.`);
+      alert(`Failed to generate AI content: ${errorMessage}\n\nPlease check:\n- RSS feeds are configured\n- RSS categories are set\n- Recent RSS content is available`);
     } finally {
       // Hide loading state
       setLoadingRss(false);
@@ -206,25 +194,7 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
   if (!campaigns || campaigns.length === 0) {
     return (
       <div className="text-center py-16">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl mb-6">
-          <Sparkles className="w-10 h-10 text-blue-600" />
-        </div>
-        <h2 className="text-3xl font-bold text-gray-900 mb-4">
-          Ready to create your first campaign?
-        </h2>
-        <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-          Start building amazing campaigns! Add URLs, organize with tags, 
-          configure RSS feed categories, and track everything in one place.
-        </p>
-        <Button 
-          onClick={() => navigate('/new')}
-          size="lg"
-          className="bg-button-primary hover:bg-button-primary/80 text-button-text hover:text-button-text shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300 font-semibold"
-          style={{ color: 'rgb(41, 41, 61)' }}
-        >
-          <Plus className="w-5 h-5 mr-2" />
-          Create Your First Campaign
-        </Button>
+
       </div>
     );
   }

@@ -7,6 +7,7 @@ import { MultiStepCampaignForm } from './components/MultiStepCampaignForm';
 import { EditCampaignForm } from './components/EditCampaignForm';
 import { CampaignDashboard } from './components/CampaignDashboard';
 import { AiContentPage } from './components/AiContentPage';
+import { AdminPage } from './components/AdminPage';
 import { authService } from './lib/supabase';
 import { Megaphone } from 'lucide-react';
 
@@ -130,6 +131,15 @@ function App() {
           element={
             <ProtectedRoute user={user}>
               <AiContentPage user={user} />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/admin" 
+          element={
+            <ProtectedRoute user={user}>
+              <AdminPage user={user} />
             </ProtectedRoute>
           } 
         />
