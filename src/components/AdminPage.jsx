@@ -38,6 +38,7 @@ export function AdminPage() {
     name: '',
     url: '',
     categories: [],
+    countries: [],
     is_active: true
   });
 
@@ -220,6 +221,7 @@ export function AdminPage() {
       name: feed.name,
       url: feed.url,
       categories: feed.categories || [],
+      countries: feed.countries || [],
       is_active: feed.is_active
     });
     setShowAddFeed(true);
@@ -232,6 +234,7 @@ export function AdminPage() {
       name: '',
       url: '',
       categories: [],
+      countries: [],
       is_active: true
     });
   };
@@ -273,7 +276,7 @@ export function AdminPage() {
 
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-main-bg flex items-center justify-center p-6">
+      <div className="min-h-screen bg-primary-bg flex items-center justify-center p-6">
         <div className="bg-card-bg rounded-xl p-8 max-w-md w-full text-center">
           <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">Access Denied</h1>
@@ -289,7 +292,7 @@ export function AdminPage() {
   }
 
   return (
-    <div className="min-h-screen bg-main-bg">
+    <div className="min-h-screen bg-primary-bg">
       <div className="container mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
@@ -399,9 +402,10 @@ export function AdminPage() {
 
             {/* Add/Edit Feed Modal */}
             {showAddFeed && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                <div className="bg-card-bg rounded-lg p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-                  <div className="flex items-center justify-between mb-6">
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 z-50">
+                <div className="bg-card-bg rounded-lg max-w-2xl w-full h-[90vh] flex flex-col">
+                  {/* Header */}
+                  <div className="flex items-center justify-between p-6 border-b border-gray-700">
                     <h3 className="text-xl font-semibold text-white">
                       {editingFeed ? 'Edit RSS Feed' : 'Add RSS Feed'}
                     </h3>
@@ -410,7 +414,9 @@ export function AdminPage() {
                     </Button>
                   </div>
 
-                  <div className="space-y-4">
+                  {/* Scrollable Content */}
+                  <div className="flex-1 overflow-y-auto p-6">
+                    <div className="space-y-4">
                     <div>
                       <Label htmlFor="feedName">Feed Name</Label>
                       <Input
@@ -431,14 +437,78 @@ export function AdminPage() {
                       />
                     </div>
 
-                    <div>
-                      <Label>Categories</Label>
-                      <MultiSelect
-                        options={categoryOptions}
-                        value={feedForm.categories}
-                        onChange={(categories) => setFeedForm(prev => ({ ...prev, categories }))}
-                        placeholder="Select categories"
-                      />
+                    <div className="mb-6">
+                      <Label className="block mb-3">Categories</Label>
+                      <div className="grid grid-cols-2 gap-3 p-4 border border-gray-600 rounded-lg bg-gray-800/30">
+                        {categoryOptions.map((category) => (
+                          <label
+                            key={category.value}
+                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-700/30 p-2 rounded transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={feedForm.categories.includes(category.value)}
+                              onChange={(e) => {
+                                const newCategories = e.target.checked
+                                  ? [...feedForm.categories, category.value]
+                                  : feedForm.categories.filter(cat => cat !== category.value);
+                                setFeedForm(prev => ({ ...prev, categories: newCategories }));
+                              }}
+                              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-highlight focus:ring-highlight focus:ring-1"
+                            />
+                            <span className="text-white text-sm">{category.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                      {feedForm.categories.length > 0 && (
+                        <div className="mt-2 text-xs text-gray-400">
+                          Selected: {feedForm.categories.map(cat => 
+                            categoryOptions.find(opt => opt.value === cat)?.label
+                          ).join(', ')}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mb-6">
+                      <Label className="block mb-3">Countries</Label>
+                      <div className="grid grid-cols-3 gap-3 p-4 border border-gray-600 rounded-lg bg-gray-800/30">
+                        {[
+                          { value: 'US', label: 'United States' },
+                          { value: 'DE', label: 'Germany' },
+                          { value: 'GB', label: 'United Kingdom' }
+                        ].map((country) => (
+                          <label
+                            key={country.value}
+                            className="flex items-center gap-2 cursor-pointer hover:bg-gray-700/30 p-2 rounded transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={feedForm.countries?.includes(country.value) || false}
+                              onChange={(e) => {
+                                const currentCountries = feedForm.countries || [];
+                                const newCountries = e.target.checked
+                                  ? [...currentCountries, country.value]
+                                  : currentCountries.filter(c => c !== country.value);
+                                setFeedForm(prev => ({ ...prev, countries: newCountries }));
+                              }}
+                              className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-highlight focus:ring-highlight focus:ring-1"
+                            />
+                            <span className="text-white text-sm">{country.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                      {feedForm.countries && feedForm.countries.length > 0 && (
+                        <div className="mt-2 text-xs text-gray-400">
+                          Selected: {feedForm.countries.map(code => {
+                            const country = [
+                              { value: 'US', label: 'United States' },
+                              { value: 'DE', label: 'Germany' },
+                              { value: 'GB', label: 'United Kingdom' }
+                            ].find(c => c.value === code);
+                            return country?.label;
+                          }).join(', ')}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center space-x-2">
@@ -451,20 +521,24 @@ export function AdminPage() {
                       />
                       <Label htmlFor="isActive">Active</Label>
                     </div>
+                    </div>
                   </div>
 
-                  <div className="flex justify-end gap-3 mt-6">
-                    <Button variant="outline" onClick={resetFeedForm}>
-                      Cancel
-                    </Button>
-                    <Button onClick={handleSaveFeed} disabled={loading}>
-                      {loading ? 'Saving...' : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save
-                        </>
-                      )}
-                    </Button>
+                  {/* Footer */}
+                  <div className="border-t border-gray-700 p-6">
+                    <div className="flex justify-end gap-3">
+                      <Button variant="outline" onClick={resetFeedForm}>
+                        Cancel
+                      </Button>
+                      <Button onClick={handleSaveFeed} disabled={loading}>
+                        {loading ? 'Saving...' : (
+                          <>
+                            <Save className="h-4 w-4 mr-2" />
+                            Save
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -6,6 +6,11 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Normalize options to handle both string arrays and object arrays
+  const normalizedOptions = options.map(option => 
+    typeof option === 'string' ? { value: option, label: option } : option
+  );
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -20,14 +25,14 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
     };
   }, []);
 
-  const handleToggle = (option) => {
-    const newValue = value.includes(option) 
-      ? value.filter(v => v !== option)
-      : [...value, option];
+  const handleToggle = (optionValue) => {
+    const newValue = value.includes(optionValue) 
+      ? value.filter(v => v !== optionValue)
+      : [...value, optionValue];
     onChange(newValue);
   };
 
-  const isAllSelected = value.includes('all') || value.length === options.length;
+  const isAllSelected = value.includes('all') || value.length === normalizedOptions.length;
 
   const handleSelectAll = () => {
     if (isAllSelected) {
@@ -52,7 +57,10 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
             ? placeholder 
             : isAllSelected 
               ? 'All categories' 
-              : value.map(v => v.charAt(0).toUpperCase() + v.slice(1)).join(', ')
+              : value.map(v => {
+                  const option = normalizedOptions.find(opt => opt.value === v);
+                  return option ? option.label : v.charAt(0).toUpperCase() + v.slice(1);
+                }).join(', ')
           }
         </div>
         <ChevronDown className={cn(
@@ -62,7 +70,7 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 mt-1 w-full bg-card-bg border border-gray-600 rounded-lg shadow-lg">
+        <div className="absolute z-[60] mt-1 w-full bg-card-bg border border-gray-600 rounded-lg shadow-lg">
           <div className="p-1">
             {/* All option */}
             <div
@@ -79,12 +87,12 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
             </div>
 
             {/* Individual options */}
-            {options.map((option) => {
-              const isSelected = value.includes(option) || isAllSelected;
+            {normalizedOptions.map((option) => {
+              const isSelected = value.includes(option.value) || isAllSelected;
               return (
                 <div
-                  key={option}
-                  onClick={() => handleToggle(option)}
+                  key={option.value}
+                  onClick={() => handleToggle(option.value)}
                   className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-primary-bg rounded cursor-pointer text-white"
                 >
                   <div className={cn(
@@ -93,7 +101,7 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
                   )}>
                     {isSelected && <Check className="w-3 h-3 text-white" />}
                   </div>
-                  <span className="capitalize">{option}</span>
+                  <span className="capitalize">{option.label}</span>
                 </div>
               );
             })}
