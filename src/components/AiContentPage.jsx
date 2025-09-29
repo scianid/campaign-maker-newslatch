@@ -704,10 +704,10 @@ export function AiContentPage({ user }) {
                                     fontSize: '14px',
                                     fontWeight: '400',
                                     lineHeight: '1.3em',
-                                    maxHeight: '2.6em',
+                                    maxHeight: '3.9em',
                                     overflow: 'hidden',
                                     display: '-webkit-box',
-                                    WebkitLineClamp: 2,
+                                    WebkitLineClamp: 3,
                                     WebkitBoxOrient: 'vertical',
                                     opacity: 0.9
                                   }}>
