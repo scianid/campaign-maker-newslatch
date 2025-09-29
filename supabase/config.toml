@@ -2,3 +2,6 @@ project_id = "emvwmwdsaakdnweyhmki"
 
 [functions.keep-alive]
 verify_jwt = false
+
+[functions.get-latest-campaign-placement]
+verify_jwt = false
