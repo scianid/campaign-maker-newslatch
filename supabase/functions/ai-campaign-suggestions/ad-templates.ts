@@ -65,8 +65,6 @@ export function ad300x250Template({
         ">
         ${title}
       </div>
-
-      <!-- Description -->
       <div style="
           font-size:14px;
           font-weight:400;
