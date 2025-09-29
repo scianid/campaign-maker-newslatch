@@ -495,6 +495,12 @@ export function AiContentPage({ user }) {
                             📈 {item.trend}
                           </Badge>
                           
+                          {item.image_url && (
+                            <Badge variant="outline" className="text-xs bg-green-900/20 text-green-400 border-green-600/30">
+                              🖼️ Image
+                            </Badge>
+                          )}
+                          
                           <a
                             href={item.link}
                             target="_blank"
@@ -624,6 +630,30 @@ export function AiContentPage({ user }) {
                                       {item.ad_placement.body}
                                     </p>
                                     
+                                    {/* Article Image */}
+                                    {item.image_url && (
+                                      <div className="mb-3">
+                                        <img 
+                                          src={item.image_url} 
+                                          alt="Article image" 
+                                          className="w-full h-32 object-cover rounded-md border border-gray-200"
+                                          onError={(e) => {
+                                            e.target.style.display = 'none';
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                    
+                                    {/* Placeholder for missing image */}
+                                    {!item.image_url && (
+                                      <div className="mb-3 w-full h-32 bg-gray-100 border border-gray-200 rounded-md flex items-center justify-center">
+                                        <div className="text-center">
+                                          <div className="text-gray-400 text-2xl mb-1">🖼️</div>
+                                          <div className="text-xs text-gray-500">No image</div>
+                                        </div>
+                                      </div>
+                                    )}
+                                    
                                     <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md text-sm transition-colors shadow-sm">
                                       {item.ad_placement.cta}
                                     </button>
@@ -668,6 +698,30 @@ export function AiContentPage({ user }) {
                                     <p className="text-gray-700 text-xs mb-3 leading-relaxed">
                                       {item.ad_placement.body}
                                     </p>
+                                    
+                                    {/* Article Image */}
+                                    {item.image_url && (
+                                      <div className="mb-3">
+                                        <img 
+                                          src={item.image_url} 
+                                          alt="Article image" 
+                                          className="w-full h-24 object-cover rounded border border-gray-200"
+                                          onError={(e) => {
+                                            e.target.style.display = 'none';
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                    
+                                    {/* Placeholder for missing image */}
+                                    {!item.image_url && (
+                                      <div className="mb-3 w-full h-24 bg-gray-100 border border-gray-200 rounded flex items-center justify-center">
+                                        <div className="text-center">
+                                          <div className="text-gray-400 text-lg mb-1">🖼️</div>
+                                          <div className="text-xs text-gray-500">No image</div>
+                                        </div>
+                                      </div>
+                                    )}
                                     
                                     <button className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-md text-xs hover:bg-blue-700 transition-colors">
                                       {item.ad_placement.cta}

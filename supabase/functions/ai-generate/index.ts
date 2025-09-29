@@ -167,7 +167,8 @@ Deno.serve(async (req: Request) => {
           items_generated: savedItems?.length || 0,
           items_with_images: itemsWithImages,
           campaign_id: campaignId,
-          ai_analysis: aiResults
+          ai_analysis: aiResults,
+          saved_items: savedItems || []
         });
       } else {
         return createErrorResponse(
