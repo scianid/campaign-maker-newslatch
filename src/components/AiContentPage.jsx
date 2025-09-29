@@ -587,9 +587,21 @@ export function AiContentPage({ user }) {
                             {/* Preview Style Toggle */}
                             <div className="flex items-center gap-1 bg-card-bg border border-gray-600 rounded-md p-1 w-fit">
                               <button
+                                onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'banner' }))}
+                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                  (previewStyles[item.id] || 'banner') === 'banner'
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                              >
+                                <TrendingUp className="w-3 h-3" />
+                                <span className="hidden sm:inline">Banner</span>
+                                <span className="sm:hidden">Banner</span>
+                              </button>
+                              <button
                                 onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'desktop' }))}
                                 className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
-                                  (previewStyles[item.id] || 'desktop') === 'desktop'
+                                  previewStyles[item.id] === 'desktop'
                                     ? 'bg-blue-600 text-white' 
                                     : 'text-gray-400 hover:text-gray-300'
                                 }`}
@@ -613,8 +625,117 @@ export function AiContentPage({ user }) {
                             </div>
                           </div>
                           
+                          {/* Banner/Image Overlay Style */}
+                          {(previewStyles[item.id] || 'banner') === 'banner' && (
+                            <div className="flex justify-center">
+                              <div 
+                                style={{
+                                  margin: 0,
+                                  padding: 0,
+                                  position: 'relative',
+                                  display: 'block',
+                                  width: '300px',
+                                  height: '250px',
+                                  overflow: 'hidden',
+                                  borderRadius: '10px',
+                                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                                  textDecoration: 'none',
+                                  cursor: 'pointer',
+                                  fontFamily: 'Arial, Helvetica, sans-serif',
+                                  backgroundColor: '#f8f9fa'
+                                }}
+                              >
+                                {/* Background image */}
+                                <img 
+                                  src={item.image_url || 'https://via.placeholder.com/600x500.jpg?text=Your+Product+Image'}
+                                  alt="Ad Background"
+                                  style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    transition: 'transform 0.8s ease'
+                                  }}
+                                  onError={(e) => {
+                                    e.target.src = 'https://via.placeholder.com/600x500.jpg?text=Your+Product+Image';
+                                  }}
+                                />
+
+                                {/* Gradient overlay */}
+                                <div style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: '100%',
+                                  height: '100%',
+                                  background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 35%, rgba(0,0,0,0.4) 65%, rgba(0,0,0,0.1) 100%)'
+                                }}></div>
+
+                                {/* Content */}
+                                <div style={{
+                                  position: 'absolute',
+                                  bottom: '16px',
+                                  left: '16px',
+                                  right: '16px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  gap: '8px',
+                                  color: '#fff'
+                                }}>
+
+                                  {/* Headline */}
+                                  <div style={{
+                                    fontSize: '20px',
+                                    fontWeight: '600',
+                                    lineHeight: '1.2em',
+                                    maxHeight: '2.4em',
+                                    overflow: 'hidden',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical'
+                                  }}>
+                                    {item.ad_placement.headline || 'Your Catchy Placeholder Headline Fits Here'}
+                                  </div>
+
+                                  {/* Description */}
+                                  <div style={{
+                                    fontSize: '14px',
+                                    fontWeight: '400',
+                                    lineHeight: '1.3em',
+                                    maxHeight: '2.6em',
+                                    overflow: 'hidden',
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 2,
+                                    WebkitBoxOrient: 'vertical',
+                                    opacity: 0.9
+                                  }}>
+                                    {item.ad_placement.body || 'A short, engaging description that automatically truncates if too long.'}
+                                  </div>
+
+                                  {/* CTA Button */}
+                                  <div style={{
+                                    alignSelf: 'start',
+                                    padding: '8px 16px',
+                                    background: 'linear-gradient(90deg, #00c6ff 0%, #7d2cff 100%)',
+                                    color: '#fff',
+                                    fontSize: '14px',
+                                    fontWeight: '600',
+                                    borderRadius: '6px',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.5px'
+                                  }}>
+                                    {item.ad_placement.cta || 'Learn More'}
+                                  </div>
+
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Desktop/Web Ad Style */}
-                          {(previewStyles[item.id] || 'desktop') === 'desktop' && (
+                          {previewStyles[item.id] === 'desktop' && (
                             <div className="bg-white rounded-lg p-4 border border-gray-300 shadow-md">
                               <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-md p-4 border border-blue-200">
                                 <div className="flex items-start gap-3">
@@ -731,6 +852,8 @@ export function AiContentPage({ user }) {
                               </div>
                             </div>
                           )}
+
+
                         </div>
                       )}
                     </div>
