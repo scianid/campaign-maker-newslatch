@@ -6,6 +6,7 @@ import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.t
 import { handleCors, createErrorResponse, createSuccessResponse, getUrlParams, validateRequiredParams } from '../rss-feeds/http-utils.ts';
 import { getLatestRssContent } from '../rss-feeds/rss-filter.ts';
 import { buildPrompt, runGpt } from '../rss-feeds/ai.ts';
+import { extractImagesForNewsItems } from '../rss-feeds/image-extractor.ts';
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -63,7 +64,8 @@ Deno.serve(async (req: Request) => {
     // Prepare data for AI analysis
     const news = (rssResult.items || []).map(item => ({ 
       headline: item.title, 
-      link: item.link 
+      link: item.link,
+      imageUrl: item.imageUrl
     }));
     const tags = rssResult.campaign?.rss_categories || [];
     
@@ -104,6 +106,11 @@ Deno.serve(async (req: Request) => {
       );
     }
 
+    // Extract images from news articles
+    console.log('🖼️ Extracting images from news articles...');
+    const newsWithImages = await extractImagesForNewsItems(news);
+    console.log('✅ Image extraction completed');
+
     // Run AI analysis
     try {
       console.log('🤖 Running AI analysis...');
@@ -117,6 +124,11 @@ Deno.serve(async (req: Request) => {
       if (aiResults.results && aiResults.results.length > 0) {
         console.log('💾 Saving AI items to database...');
         
+        // Create a map of link to extracted image URL for quick lookup
+        const imageMap = new Map(
+          newsWithImages.map(item => [item.link, item.extractedImageUrl])
+        );
+        
         const aiItemsToSave = aiResults.results.map((item: any) => ({
           campaign_id: campaignId,
           headline: item.headline,
@@ -127,6 +139,7 @@ Deno.serve(async (req: Request) => {
           description: item.description,
           tooltip: item.tooltip,
           ad_placement: item.ad_placement || null,
+          image_url: imageMap.get(item.link) || null,
           is_published: false // Default to unpublished
         }));
         
@@ -146,9 +159,13 @@ Deno.serve(async (req: Request) => {
         
         console.log('✅ Saved AI items to database:', savedItems?.length || 0);
         
+        // Count items with images
+        const itemsWithImages = savedItems?.filter((item: any) => item.image_url).length || 0;
+        
         return createSuccessResponse({
           message: 'AI content generated successfully',
           items_generated: savedItems?.length || 0,
+          items_with_images: itemsWithImages,
           campaign_id: campaignId,
           ai_analysis: aiResults
         });

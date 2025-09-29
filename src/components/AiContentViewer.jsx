@@ -213,6 +213,27 @@ export function AiContentViewer({ campaignId, campaignName }) {
                 <p className="text-orange-300 font-medium">{item.clickbait}</p>
               </div>
 
+              {/* Image */}
+              {item.image_url && (
+                <div className="mb-3">
+                  <h5 className="text-sm font-medium text-pink-400 mb-2">🖼️ Article Image</h5>
+                  <div className="relative rounded-lg overflow-hidden bg-gray-800 border border-gray-600">
+                    <img
+                      src={item.image_url}
+                      alt={item.headline}
+                      className="w-full h-32 object-cover"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="hidden w-full h-32 items-center justify-center text-gray-500 text-sm">
+                      Image unavailable
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Description */}
               <div className="mb-3">
                 <h5 className="text-sm font-medium text-blue-400 mb-1">📋 Description</h5>
