@@ -128,6 +128,7 @@ serve(async (req) => {
           description: latestItem.description,
           tooltip: latestItem.tooltip,
           ad_placement: latestItem.ad_placement,
+          tags: latestItem.tags,
           created_at: latestItem.created_at,
           updated_at: latestItem.updated_at
         }
