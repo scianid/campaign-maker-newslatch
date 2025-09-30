@@ -38,17 +38,20 @@ Deno.serve(async (req: Request) => {
 
     console.log('🔍 Fetching public landing page with slug:', slug);
 
+    // Use service role for public queries to bypass RLS complexity
+    const supabaseServiceClient = createClient(supabaseUrl, supabaseServiceKey);
+
     // First, let's check if any landing pages exist at all
-    const { data: allPages, error: countError } = await supabase
+    const { data: allPages, error: countError } = await supabaseServiceClient
       .from('landing_pages')
       .select('slug, is_active, title')
       .limit(10);
     
     console.log('📊 Available landing pages:', allPages);
     console.log('🎯 Looking for slug:', slug);
-
-    // Fetch landing page by slug (using anon key for public access)
-    const { data: landingPage, error } = await supabase
+    
+    // Fetch landing page by slug (using service role to avoid RLS recursion)
+    const { data: landingPage, error } = await supabaseServiceClient
       .from('landing_pages')
       .select(`
         *,
@@ -87,8 +90,7 @@ Deno.serve(async (req: Request) => {
     }
 
     // Increment view count using service role to bypass RLS
-    const supabaseService = createClient(supabaseUrl, supabaseServiceKey);
-    const { error: updateError } = await supabaseService
+    const { error: updateError } = await supabaseServiceClient
       .from('landing_pages')
       .update({ 
         view_count: (landingPage.view_count || 0) + 1 

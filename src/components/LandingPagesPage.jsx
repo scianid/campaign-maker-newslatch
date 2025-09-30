@@ -395,7 +395,12 @@ export function LandingPagesPage({ user }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => window.open(getPublicUrl(page.slug), '_blank')}
+                          onClick={() => {
+                            const url = getPublicUrl(page.slug);
+                            console.log('🔗 Opening public URL:', url);
+                            console.log('📄 Page data:', page);
+                            window.open(url, '_blank');
+                          }}
                           className="h-10 w-10 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 transition-all duration-200"
                           title="View Landing Page"
                         >

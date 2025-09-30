@@ -192,6 +192,17 @@ export function PublicLandingPageViewer() {
 
   return (
     <div className="min-h-screen bg-white">
+      {/* Advertorial Notice */}
+      <div className="bg-gray-50 border-b border-gray-200 py-2">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
+              Advertorial
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -226,26 +237,9 @@ export function PublicLandingPageViewer() {
             {landingPage.title}
           </h1>
           
-          {landingPage.ai_generated_items && (
-            <div className="flex items-center justify-center gap-4 text-sm text-gray-500 mb-8">
-              {landingPage.ai_generated_items.campaigns && (
-                <span>
-                  Published by {landingPage.ai_generated_items.campaigns.name}
-                </span>
-              )}
-              {landingPage.ai_generated_items.link && (
-                <a
-                  href={landingPage.ai_generated_items.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  Original Source
-                </a>
-              )}
-            </div>
-          )}
+          <div className="flex items-center justify-center text-sm text-gray-500 mb-8">
+            <span>Powered by NewsLatch</span>
+          </div>
 
           {/* Trending Badge */}
           {landingPage.ai_generated_items?.trend && (
@@ -284,10 +278,23 @@ export function PublicLandingPageViewer() {
       {/* Footer */}
       <footer className="bg-gray-100 border-t border-gray-200 mt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-sm text-gray-500">
+          <div className="text-center text-sm text-gray-500 space-y-2">
             <p>
               Powered by AI-driven content generation
             </p>
+            {landingPage.ai_generated_items?.link && (
+              <p className="text-xs text-gray-400">
+                <span className="mr-2">Based on news from:</span>
+                <a
+                  href={landingPage.ai_generated_items.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-600 transition-colors underline"
+                >
+                  Original Source
+                </a>
+              </p>
+            )}
           </div>
         </div>
       </footer>
