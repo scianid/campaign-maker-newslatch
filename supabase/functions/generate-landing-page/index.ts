@@ -145,20 +145,16 @@ I will give you two inputs:
 3. The logic behind the product and why it is relevant to the news article.
 
 Your task:
-- Transform the news article into a long-form advertorial-style landing page article that sells the product.
-- The structure must follow this sequence:
-   1. Hero section (headline, subheadline, intro story, CTA)
-   2. Problem amplification
-   3. Authority / credibility
-   4. Unique mechanism / discovery
-   5. How the product works (step by step)
-   6. Benefits & future vision
-   7. Testimonials / social proof
-   8. Guarantee / risk reversal
-   9. Offer / pricing / urgency
-   10. Fear of inaction
-   11. FAQ / objections
-   12. Final CTA & closing
+- Transform the news article into a concise but powerful advertorial-style landing page article that sells the product.
+- The structure must follow this sequence (MAX 5 SECTIONS):
+   1. Hero section (headline, subheadline, compelling intro story with hook, CTA)
+   2. Problem amplification + Authority/credibility (combine the problem with your expertise)
+   3. Unique mechanism/discovery + How it works (explain the solution and methodology)
+   4. Benefits/results + Social proof (show outcomes and testimonials)
+   5. Final offer + CTA (pricing, guarantee, urgency, final call to action)
+
+- Each section should be substantial with 3-5 paragraphs of compelling copy
+- Focus on emotional storytelling and strong benefits in each section
 
 - Output everything as a JSON object.
 - Each section should contain:

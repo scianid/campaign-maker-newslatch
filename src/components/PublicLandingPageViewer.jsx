@@ -104,25 +104,53 @@ export function PublicLandingPageViewer() {
           </p>
         ))}
 
-        {section.image_prompt && (
-          <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-6">
-            <div className="text-gray-500">
-              <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <p className="text-sm font-medium">Image Placeholder</p>
-              <p className="text-xs text-gray-400 mt-1">
-                {section.image_prompt}
-              </p>
-            </div>
+        {(section.image_prompt || landingPage.ai_generated_items?.image_url) && (
+          <div className="mb-8">
+            {landingPage.ai_generated_items?.image_url ? (
+              <div className="rounded-lg overflow-hidden shadow-lg">
+                <img 
+                  src={landingPage.ai_generated_items.image_url}
+                  alt={section.image_prompt || "Article image"}
+                  className="w-full h-auto object-cover"
+                  onError={(e) => {
+                    // Fallback to placeholder if image fails to load
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'block';
+                  }}
+                />
+                <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hidden">
+                  <div className="text-gray-500">
+                    <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm font-medium">Image Placeholder</p>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {section.image_prompt || "Image not available"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <div className="text-gray-500">
+                  <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-sm font-medium">Image Placeholder</p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {section.image_prompt}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
         {section.cta && (
-          <div className="bg-gradient-to-r from-red-50 to-orange-50 border border-red-200 rounded-xl p-8 text-center mb-8">
-            <div className="mb-4">
-              <div className="inline-block bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium mb-2">
-                Limited Time Offer
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-xl p-10 text-center mb-10 shadow-lg">
+            <div className="mb-6">
+              <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-base font-bold mb-4 animate-bounce">
+                ✨ EXCLUSIVE OPPORTUNITY ✨
               </div>
             </div>
             <Button
@@ -131,12 +159,15 @@ export function PublicLandingPageViewer() {
                   window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                 }
               }}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 text-lg rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 animate-pulse"
+              className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-bold py-6 px-12 text-xl rounded-xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 hover:scale-105 transition-all duration-300 animate-pulse border-2 border-green-500"
             >
               {section.cta} →
             </Button>
-            <p className="text-sm text-gray-600 mt-3">
-              Click above to secure your spot now!
+            <p className="text-base text-gray-700 mt-4 font-medium">
+              🌟 Click above to unlock your exclusive access now!
+            </p>
+            <p className="text-sm text-green-600 mt-2 font-semibold">
+              Join thousands of satisfied users!
             </p>
           </div>
         )}
@@ -241,12 +272,7 @@ export function PublicLandingPageViewer() {
             <span>Powered by NewsLatch</span>
           </div>
 
-          {/* Trending Badge */}
-          {landingPage.ai_generated_items?.trend && (
-            <div className="inline-block bg-red-100 text-red-800 px-4 py-2 rounded-full text-sm font-medium mb-8">
-              🔥 {landingPage.ai_generated_items.trend}
-            </div>
-          )}
+
         </header>
 
         {/* Article Content */}
@@ -258,19 +284,27 @@ export function PublicLandingPageViewer() {
 
         {/* Footer CTA */}
         {landingPage.ai_generated_items?.campaigns?.url && (
-          <div className="bg-gray-50 rounded-lg p-8 text-center mt-16">
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Ready to Get Started?
+          <div className="bg-gradient-to-br from-blue-50 to-green-100 border-2 border-blue-200 rounded-2xl p-12 text-center mt-20 shadow-xl">
+            <div className="mb-6">
+              <div className="inline-block bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-bold mb-4 animate-bounce">
+                🎉 YOUR SUCCESS AWAITS 🎉
+              </div>
+            </div>
+            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+              Ready to Achieve Your Goals?
             </h3>
-            <p className="text-gray-600 mb-6">
-              Don't miss out on this opportunity. Take action now!
+            <p className="text-xl text-gray-700 mb-8 font-medium">
+              🌟 Join thousands who have already transformed their lives!
             </p>
             <Button
               onClick={() => window.open(landingPage.ai_generated_items.campaigns.url, '_blank')}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 text-lg rounded-lg shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+              className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-bold py-8 px-16 text-2xl rounded-2xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 hover:scale-110 transition-all duration-300 border-4 border-blue-500 animate-pulse"
             >
-              Get Started Now →
+              🚀 START YOUR JOURNEY NOW! →
             </Button>
+            <p className="text-lg text-blue-600 mt-6 font-bold">
+              💫 Your future success starts with one click!
+            </p>
           </div>
         )}
       </main>
