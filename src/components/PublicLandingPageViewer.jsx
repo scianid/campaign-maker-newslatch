@@ -150,7 +150,7 @@ export function PublicLandingPageViewer() {
           <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-xl p-10 text-center mb-10 shadow-lg">
             <div className="mb-6">
               <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-base font-bold mb-4 animate-bounce">
-                ✨ EXCLUSIVE OPPORTUNITY ✨
+                EXCLUSIVE OPPORTUNITY
               </div>
             </div>
             <Button
@@ -164,7 +164,7 @@ export function PublicLandingPageViewer() {
               {section.cta} →
             </Button>
             <p className="text-base text-gray-700 mt-4 font-medium">
-              🌟 Click above to unlock your exclusive access now!
+              Click above to unlock your exclusive access now!
             </p>
             <p className="text-sm text-green-600 mt-2 font-semibold">
               Join thousands of satisfied users!
@@ -287,23 +287,23 @@ export function PublicLandingPageViewer() {
           <div className="bg-gradient-to-br from-blue-50 to-green-100 border-2 border-blue-200 rounded-2xl p-12 text-center mt-20 shadow-xl">
             <div className="mb-6">
               <div className="inline-block bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-bold mb-4 animate-bounce">
-                🎉 YOUR SUCCESS AWAITS 🎉
+                YOUR SUCCESS AWAITS
               </div>
             </div>
             <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
               Ready to Achieve Your Goals?
             </h3>
             <p className="text-xl text-gray-700 mb-8 font-medium">
-              🌟 Join thousands who have already transformed their lives!
+              Join thousands who have already transformed their lives!
             </p>
             <Button
               onClick={() => window.open(landingPage.ai_generated_items.campaigns.url, '_blank')}
               className="bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700 text-white font-bold py-8 px-16 text-2xl rounded-2xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 hover:scale-110 transition-all duration-300 border-4 border-blue-500 animate-pulse"
             >
-              🚀 START YOUR JOURNEY NOW! →
+              START YOUR JOURNEY NOW! →
             </Button>
             <p className="text-lg text-blue-600 mt-6 font-bold">
-              💫 Your future success starts with one click!
+              Your future success starts with one click!
             </p>
           </div>
         )}
