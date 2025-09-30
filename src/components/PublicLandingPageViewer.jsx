@@ -237,24 +237,13 @@ export function PublicLandingPageViewer() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-center">
             <div className="flex items-center gap-2">
               <img 
                 src="/toplogo.png" 
                 alt="Logo" 
                 className="h-8 w-auto opacity-50"
               />
-            </div>
-            
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <div className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                {formatDate(landingPage.created_at)}
-              </div>
-              <div className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                {landingPage.view_count} views
-              </div>
             </div>
           </div>
         </div>
