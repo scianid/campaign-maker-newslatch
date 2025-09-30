@@ -64,8 +64,9 @@ CRITICAL INSTRUCTIONS:
 2. Focus on ${companyName}'s business needs and target audience
 3. Every result must drive leads toward ${companyUrl}
 4. Create urgency that compels immediate action
-5. Return 3-5 highly relevant results maximum
+5. Return 1-3 highly relevant results maximum
 6. CTA must be SHORT button text only (2-4 words) - NO URLs or links
+7. If the content is too far away and the creative will not be approved by a marketing analyst expert, return less results in the array
 
 CTA EXAMPLES (use similar format):
 - "Get Started"
