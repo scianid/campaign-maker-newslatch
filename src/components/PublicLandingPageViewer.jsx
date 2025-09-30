@@ -251,9 +251,22 @@ export function PublicLandingPageViewer() {
             </div>
           </div>
           
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8">
             {landingPage.title}
           </h1>
+
+          {/* Hero Image */}
+          {landingPage.ai_generated_items?.image_url && (
+            <div className="mb-8">
+              <div className="rounded-xl overflow-hidden shadow-lg">
+                <img 
+                  src={landingPage.ai_generated_items.image_url}
+                  alt={landingPage.title}
+                  className="w-full h-64 md:h-80 object-cover"
+                />
+              </div>
+            </div>
+          )}
           
           <div className="text-center mb-8">
             <div className="flex items-center justify-center text-sm text-gray-500 mb-4">
@@ -267,18 +280,7 @@ export function PublicLandingPageViewer() {
               </span>
             </div>
             
-            {/* Trust Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
-              <div className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold">
-                ⭐ EXPERT VERIFIED
-              </div>
-              <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold">
-                ✓ FACT CHECKED
-              </div>
-              <div className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-semibold">
-                📊 DATA DRIVEN
-              </div>
-            </div>
+
             
             {/* Above the Fold CTA Button */}
             <div className="max-w-md mx-auto">

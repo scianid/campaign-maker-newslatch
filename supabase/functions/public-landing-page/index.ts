@@ -61,6 +61,7 @@ Deno.serve(async (req: Request) => {
           description,
           link,
           trend,
+          image_url,
           campaigns (
             name,
             url
