@@ -135,6 +135,7 @@ Deno.serve(async (req: Request) => {
           clickbait: item.clickbait,
           link: item.link,
           relevance_score: item.relevance_score,
+          tags: item.tags ? item.tags : [],
           trend: item.trend,
           description: item.description,
           tooltip: item.tooltip,

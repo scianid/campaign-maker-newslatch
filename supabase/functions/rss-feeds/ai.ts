@@ -43,6 +43,7 @@ OUTPUT FORMAT (JSON only):
             "link": "[Link from newsArray]",
             "relevance_score": [0-100],
             "trend": "[Short trend label]",
+            "tags": ["[tag1]", "tag2"], // up to 5 tags including names in the title, fields of interest, locations, people, companies
             "description": "[Why this creates urgency for ${companyName}'s services]",
             "tooltip": "[Conversion-focused explanation connecting news to ${companyName}'s value - drive action toward ${companyUrl}]",
             "ad_placement": {
