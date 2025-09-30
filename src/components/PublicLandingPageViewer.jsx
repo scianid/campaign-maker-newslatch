@@ -256,21 +256,30 @@ export function PublicLandingPageViewer() {
             </div>
           </div>
           
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8">
-            {landingPage.title}
-          </h1>
-
-          {/* Hero Image */}
-          {landingPage.ai_generated_items?.image_url && (
-            <div className="mb-8">
+          {/* Hero Section with Title Overlay */}
+          {landingPage.ai_generated_items?.image_url ? (
+            <div className="relative mb-8">
               <div className="rounded-xl overflow-hidden shadow-lg">
                 <img 
                   src={landingPage.ai_generated_items.image_url}
                   alt={landingPage.title}
-                  className="w-full h-64 md:h-80 object-cover"
+                  className="w-full h-80 md:h-96 object-cover"
                 />
+                {/* Title Overlay with Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-end">
+                  <div className="p-6 md:p-8 w-full">
+                    <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                      {landingPage.title}
+                    </h1>
+                  </div>
+                </div>
               </div>
             </div>
+          ) : (
+            // Fallback if no hero image
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight mb-8">
+              {landingPage.title}
+            </h1>
           )}
           
           <div className="text-center mb-8">
