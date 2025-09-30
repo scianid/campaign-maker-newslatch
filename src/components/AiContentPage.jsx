@@ -501,6 +501,29 @@ export function AiContentPage({ user }) {
                             </Badge>
                           )}
                           
+                          {item.tags && item.tags.length > 0 && (
+                            <>
+                              {item.tags.slice(0, 3).map((tag, index) => (
+                                <Badge 
+                                  key={index}
+                                  variant="outline" 
+                                  className="text-xs bg-purple-900/20 text-purple-400 border-purple-600/30"
+                                >
+                                  🏷️ {tag}
+                                </Badge>
+                              ))}
+                              {item.tags.length > 3 && (
+                                <Badge 
+                                  variant="outline" 
+                                  className="text-xs bg-purple-900/20 text-purple-400 border-purple-600/30"
+                                  title={`Additional tags: ${item.tags.slice(3).join(', ')}`}
+                                >
+                                  +{item.tags.length - 3} more
+                                </Badge>
+                              )}
+                            </>
+                          )}
+                          
                           <a
                             href={item.link}
                             target="_blank"
