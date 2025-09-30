@@ -90,6 +90,11 @@ export function PublicLandingPageViewer() {
   const renderSection = (section, index) => {
     if (!section) return null;
 
+    // Check if we should show images in sections
+    // If there's a hero image, only show section images occasionally to avoid repetition
+    const hasHeroImage = landingPage.ai_generated_items?.image_url;
+    const shouldShowSectionImage = hasHeroImage ? (index === 2 || index === 4) : true; // Only show in sections 3 and 5 if hero exists
+
     return (
       <section key={index} className="mb-12">
         {section.subtitle && (
@@ -104,7 +109,7 @@ export function PublicLandingPageViewer() {
           </p>
         ))}
 
-        {(section.image_prompt || landingPage.ai_generated_items?.image_url) && (
+        {shouldShowSectionImage && (section.image_prompt || landingPage.ai_generated_items?.image_url) && (
           <div className="mb-8">
             {landingPage.ai_generated_items?.image_url ? (
               <div className="rounded-lg overflow-hidden shadow-lg">
@@ -340,31 +345,7 @@ export function PublicLandingPageViewer() {
           )}
         </article>
 
-        {/* Footer CTA */}
-        {landingPage.ai_generated_items?.campaigns?.url && (
-          <div className="bg-gradient-to-br from-blue-50 to-green-100 border-2 border-blue-200 rounded-2xl p-12 text-center mt-20 shadow-xl">
-            <div className="mb-6">
-              <div className="inline-block bg-blue-500 text-white px-6 py-3 rounded-full text-lg font-bold mb-4 animate-bounce">
-                YOUR SUCCESS AWAITS
-              </div>
-            </div>
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-              Ready to Achieve Your Goals?
-            </h3>
-            <p className="text-xl text-gray-700 mb-8 font-medium">
-              Join thousands who have already transformed their lives!
-            </p>
-            <Button
-              onClick={() => window.open(landingPage.ai_generated_items.campaigns.url, '_blank')}
-              className="w-full max-w-md bg-red-500 hover:bg-red-600 text-white font-bold py-5 px-8 text-xl rounded-lg transition-colors duration-200"
-            >
-              Visit Site →
-            </Button>
-            <p className="text-lg text-blue-600 mt-6 font-bold">
-              Your future success starts with one click!
-            </p>
-          </div>
-        )}
+
 
 
       </main>
