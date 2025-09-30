@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X } from 'lucide-react';
+import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X, FileText } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
@@ -22,6 +22,7 @@ export function AiContentPage({ user }) {
   const [expandedDetails, setExpandedDetails] = useState({}); // Track which cards have details expanded
   const [expandedReasons, setExpandedReasons] = useState({}); // Track which cards have AI reasoning expanded
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
+  const [generatingLandingPage, setGeneratingLandingPage] = useState({}); // Track which items are generating landing pages
   const [filters, setFilters] = useState({
     status: 'all', // 'all', 'published', 'unpublished'
     scoreRange: 'all', // 'all', 'high', 'medium', 'low'
@@ -151,6 +152,49 @@ export function AiContentPage({ user }) {
 
   const handleDeleteCancel = () => {
     setDeleteConfirm({ show: false, item: null });
+  };
+
+  const generateLandingPage = async (aiItem) => {
+    try {
+      setGeneratingLandingPage(prev => ({ ...prev, [aiItem.id]: true }));
+
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        'https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/generate-landing-page',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            ai_item_id: aiItem.id
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to generate landing page');
+      }
+
+      console.log('✅ Landing page generated:', result);
+      alert(`Landing page "${result.landing_page.title}" generated successfully! 🎉\n\nSections created: ${result.sections_count}\nSlug: ${result.landing_page.slug}`);
+
+    } catch (err) {
+      console.error('❌ Failed to generate landing page:', err);
+      
+      let errorMessage = 'Unknown error occurred';
+      if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      alert(`Failed to generate landing page: ${errorMessage}`);
+    } finally {
+      setGeneratingLandingPage(prev => ({ ...prev, [aiItem.id]: false }));
+    }
   };
 
   const copyToClipboard = async (text, itemId) => {
@@ -548,7 +592,21 @@ export function AiContentPage({ user }) {
                             className="focus:ring-offset-gray-800"
                           />
                         </div>
-                        <div className="lg:order-1">
+                        <div className="lg:order-1 flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => generateLandingPage(item)}
+                            disabled={generatingLandingPage[item.id]}
+                            className="h-10 w-10 p-0 text-green-400 hover:text-green-300 hover:bg-green-900/20 transition-all duration-200 disabled:opacity-50"
+                            title="Generate Landing Page"
+                          >
+                            {generatingLandingPage[item.id] ? (
+                              <RefreshCw className="w-4 h-4 lg:w-5 lg:h-5 animate-spin" />
+                            ) : (
+                              <FileText className="w-4 h-4 lg:w-5 lg:h-5" />
+                            )}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
