@@ -26,6 +26,7 @@ export function EditLandingPage({ user }) {
   const [error, setError] = useState(null);
   const [generatingImage, setGeneratingImage] = useState(null);
   const [editingField, setEditingField] = useState(null); // { type, sectionIndex, paragraphIndex, value }
+  const [modal, setModal] = useState(null); // { type: 'prompt'|'alert', title, message, value, onConfirm }
 
   useEffect(() => {
     if (pageId) {
@@ -88,7 +89,11 @@ export function EditLandingPage({ user }) {
       setEditingField(null);
     } catch (err) {
       console.error('Error saving field:', err);
-      alert('Failed to save: ' + err.message);
+      setModal({
+        type: 'alert',
+        title: 'Save Failed',
+        message: err.message
+      });
     }
   };
 
@@ -192,7 +197,11 @@ export function EditLandingPage({ user }) {
       setLandingPage({ ...landingPage, sections: updatedSections });
     } catch (err) {
       console.error('Failed to generate image:', err);
-      alert('Failed to generate image: ' + err.message);
+      setModal({
+        type: 'alert',
+        title: 'Image Generation Failed',
+        message: err.message
+      });
     } finally {
       setGeneratingImage(null);
     }
@@ -201,6 +210,13 @@ export function EditLandingPage({ user }) {
   const handleRemoveImage = async (sectionIndex) => {
     const updatedSections = [...landingPage.sections];
     updatedSections[sectionIndex].image_url = null;
+    setLandingPage({ ...landingPage, sections: updatedSections });
+    await saveField({ sections: updatedSections });
+  };
+
+  const handleSetImageUrl = async (sectionIndex, imageUrl) => {
+    const updatedSections = [...landingPage.sections];
+    updatedSections[sectionIndex].image_url = imageUrl;
     setLandingPage({ ...landingPage, sections: updatedSections });
     await saveField({ sections: updatedSections });
   };
@@ -550,10 +566,17 @@ export function EditLandingPage({ user }) {
                     <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity">
                       <Button
                         onClick={() => {
-                          const prompt = window.prompt('Enter new image prompt:', section.image_prompt || '');
-                          if (prompt) {
-                            handleGenerateImage(sectionIndex, prompt);
-                          }
+                          setModal({
+                            type: 'prompt',
+                            title: 'Regenerate Image',
+                            message: 'Enter a prompt to generate a new image:',
+                            value: section.image_prompt || '',
+                            onConfirm: (prompt) => {
+                              if (prompt) {
+                                handleGenerateImage(sectionIndex, prompt);
+                              }
+                            }
+                          });
                         }}
                         disabled={generatingImage === sectionIndex}
                         size="sm"
@@ -572,6 +595,25 @@ export function EditLandingPage({ user }) {
                         )}
                       </Button>
                       <Button
+                        onClick={() => {
+                          setModal({
+                            type: 'prompt',
+                            title: 'Edit Image URL',
+                            message: 'Enter the image URL:',
+                            value: section.image_url || '',
+                            onConfirm: (url) => {
+                              if (url) {
+                                handleSetImageUrl(sectionIndex, url);
+                              }
+                            }
+                          });
+                        }}
+                        size="sm"
+                        className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Button>
+                      <Button
                         onClick={() => handleRemoveImage(sectionIndex)}
                         size="sm"
                         className="bg-red-600 hover:bg-red-700 text-white shadow-lg"
@@ -585,19 +627,26 @@ export function EditLandingPage({ user }) {
 
               {/* Generate Image Button if no image */}
               {!section.image_url && (
-                <div className="mb-8">
+                <div className="mb-8 flex gap-2">
                   <Button
                     onClick={() => {
-                      const prompt = window.prompt('Enter image prompt:', section.image_prompt || `An image representing: ${section.subtitle}`);
-                      if (prompt) {
-                        handleSaveImagePrompt(sectionIndex, prompt).then(() => {
-                          handleGenerateImage(sectionIndex, prompt);
-                        });
-                      }
+                      setModal({
+                        type: 'prompt',
+                        title: 'Generate Image With AI',
+                        message: 'Enter a prompt to generate an image:',
+                        value: section.image_prompt || `An image representing: ${section.subtitle}`,
+                        onConfirm: (prompt) => {
+                          if (prompt) {
+                            handleSaveImagePrompt(sectionIndex, prompt).then(() => {
+                              handleGenerateImage(sectionIndex, prompt);
+                            });
+                          }
+                        }
+                      });
                     }}
                     disabled={generatingImage === sectionIndex}
                     variant="outline"
-                    className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
                   >
                     {generatingImage === sectionIndex ? (
                       <>
@@ -607,9 +656,29 @@ export function EditLandingPage({ user }) {
                     ) : (
                       <>
                         <ImageIcon className="w-4 h-4 mr-2" />
-                        Generate Image
+                        Generate Image With AI
                       </>
                     )}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setModal({
+                        type: 'prompt',
+                        title: 'Add Image URL',
+                        message: 'Enter the image URL:',
+                        value: '',
+                        onConfirm: (url) => {
+                          if (url) {
+                            handleSetImageUrl(sectionIndex, url);
+                          }
+                        }
+                      });
+                    }}
+                    variant="outline"
+                    className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Image URL
                   </Button>
                 </div>
               )}
@@ -664,7 +733,7 @@ export function EditLandingPage({ user }) {
                   <>
                     {section.cta ? (
                       <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-xl p-10 text-center shadow-lg relative group">
-                        <div className="absolute -left-16 top-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                        <div className="absolute -left-16 top-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col gap-2">
                           <Button
                             size="sm"
                             onClick={() => startEdit('cta', sectionIndex, null, section.cta)}
@@ -672,6 +741,14 @@ export function EditLandingPage({ user }) {
                             className="shadow-lg hover:opacity-90"
                           >
                             <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            onClick={() => handleSaveCTA(sectionIndex, null)}
+                            style={{ backgroundColor: '#dc2626', color: 'white' }}
+                            className="shadow-lg hover:opacity-90"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                         <div className="mb-6">
@@ -694,7 +771,7 @@ export function EditLandingPage({ user }) {
                         onClick={() => startEdit('cta', sectionIndex, null, '')}
                         variant="outline"
                         size="sm"
-                        className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                        className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
                       >
                         <Plus className="w-4 h-4 mr-1" />
                         Add CTA
@@ -727,6 +804,75 @@ export function EditLandingPage({ user }) {
           </div>
         </div>
       </footer>
+
+      {/* Modal Dialog */}
+      {modal && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+          onClick={() => setModal(null)}
+        >
+          <div 
+            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-8 transform transition-all"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">{modal.title}</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">{modal.message}</p>
+            </div>
+            
+            {modal.type === 'prompt' && (
+              <div className="mb-6">
+                <Textarea
+                  value={modal.value}
+                  onChange={(e) => setModal({ ...modal, value: e.target.value })}
+                  className="w-full border-2 border-gray-300 rounded-lg p-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all bg-white"
+                  style={{ color: '#111827', fontSize: '14px', backgroundColor: '#ffffff' }}
+                  rows={4}
+                  placeholder="Enter your text here..."
+                  autoFocus
+                />
+              </div>
+            )}
+            
+            <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+              <Button
+                onClick={() => setModal(null)}
+                variant="outline"
+                className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 transition-colors font-medium"
+              >
+                Cancel
+              </Button>
+              {modal.type === 'prompt' && (
+                <Button
+                  onClick={() => {
+                    if (modal.onConfirm) {
+                      modal.onConfirm(modal.value);
+                    }
+                    setModal(null);
+                  }}
+                  className="px-6 py-2.5 font-medium transition-all"
+                  style={{ backgroundColor: '#2563eb', color: 'white' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#2563eb'}
+                >
+                  Confirm
+                </Button>
+              )}
+              {modal.type === 'alert' && (
+                <Button
+                  onClick={() => setModal(null)}
+                  className="px-6 py-2.5 font-medium transition-all"
+                  style={{ backgroundColor: '#2563eb', color: 'white' }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = '#1d4ed8'}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = '#2563eb'}
+                >
+                  OK
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
