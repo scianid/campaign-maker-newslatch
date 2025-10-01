@@ -8,6 +8,7 @@ import { EditCampaignForm } from './components/EditCampaignForm';
 import { CampaignDashboard } from './components/CampaignDashboard';
 import { AiContentPage } from './components/AiContentPage';
 import { LandingPagesPage } from './components/LandingPagesPage';
+import { EditLandingPage } from './components/EditLandingPage';
 import { PublicLandingPageViewer } from './components/PublicLandingPageViewer';
 import { AdminPage } from './components/AdminPage';
 import { authService } from './lib/supabase';
@@ -147,6 +148,15 @@ function App() {
           element={
             <ProtectedRoute user={user}>
               <LandingPagesPage user={user} />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/pages/edit/:pageId" 
+          element={
+            <ProtectedRoute user={user}>
+              <EditLandingPage user={user} />
             </ProtectedRoute>
           } 
         />

@@ -158,7 +158,7 @@ export function PublicLandingPageViewer() {
               }}
               className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200"
             >
-              Visit Site →
+              {section.cta}
             </Button>
             <p className="text-base text-gray-700 mt-4 font-medium">
               Click above to unlock your exclusive access now!
