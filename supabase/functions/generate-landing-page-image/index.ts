@@ -98,9 +98,9 @@ async function uploadImageToStorage(
   try {
     // Decode the image using imagescript
     const image = await Image.decode(new Uint8Array(imageBuffer));
-    
-    // Encode as JPEG with quality 85 (good balance for web)
-    const jpegBuffer = await image.encodeJPEG(85);
+
+    // Encode as JPEG with quality 70 (good balance for web)
+    const jpegBuffer = await image.encodeJPEG(70);
     finalBuffer = jpegBuffer.buffer;
     
     const originalSize = imageBuffer.byteLength;
