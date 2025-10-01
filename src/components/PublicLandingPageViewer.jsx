@@ -406,10 +406,10 @@ export function PublicLandingPageViewer() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex-1">
             <p className="text-white font-bold text-lg md:text-xl">
-              Ready to Take Action?
+              {landingPage.sticky_cta_title || 'Ready to Take Action?'}
             </p>
             <p className="text-orange-50 text-sm">
-              Click to visit the site and learn more
+              {landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more'}
             </p>
           </div>
           <Button
@@ -420,7 +420,7 @@ export function PublicLandingPageViewer() {
             }}
             className="bg-white hover:bg-gray-100 text-orange-600 font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
           >
-            Visit Site →
+            {landingPage.sticky_cta_button || 'Visit Site →'}
           </Button>
         </div>
       </div>

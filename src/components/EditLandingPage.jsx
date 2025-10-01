@@ -254,6 +254,30 @@ export function EditLandingPage({ user }) {
     await saveField({ sections: updatedSections });
   };
 
+  const handleSaveStickyCtaTitle = async (newTitle) => {
+    const stickyCtaTitle = newTitle || 'Ready to Take Action?';
+    setLandingPage({ ...landingPage, sticky_cta_title: stickyCtaTitle });
+    await saveField({ sticky_cta_title: stickyCtaTitle });
+  };
+
+  const handleSaveStickyCtaSubtitle = async (newSubtitle) => {
+    const stickyCtaSubtitle = newSubtitle || 'Click to visit the site and learn more';
+    setLandingPage({ ...landingPage, sticky_cta_subtitle: stickyCtaSubtitle });
+    await saveField({ sticky_cta_subtitle: stickyCtaSubtitle });
+  };
+
+  const handleSaveStickyCtaButton = async (newButtonText) => {
+    const stickyCtaButton = newButtonText || 'Visit Site →';
+    setLandingPage({ ...landingPage, sticky_cta_button: stickyCtaButton });
+    await saveField({ sticky_cta_button: stickyCtaButton });
+  };
+
+  const handleToggleStickyCtaVisible = async () => {
+    const newVisibility = !landingPage.sticky_cta_visible;
+    setLandingPage({ ...landingPage, sticky_cta_visible: newVisibility });
+    await saveField({ sticky_cta_visible: newVisibility });
+  };
+
   const startEdit = (type, sectionIndex = null, paragraphIndex = null, currentValue = '') => {
     setEditingField({ type, sectionIndex, paragraphIndex, value: currentValue });
   };
@@ -354,26 +378,160 @@ export function EditLandingPage({ user }) {
       </div>
 
       {/* Sticky Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-orange-500 to-orange-400 border-t-4 border-orange-600 shadow-2xl">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <div className="flex-1">
-            <p className="text-white font-bold text-lg md:text-xl">
-              Ready to Take Action?
-            </p>
-            <p className="text-orange-50 text-sm">
-              Click to visit the site and learn more
-            </p>
+      {(landingPage.sticky_cta_visible !== false) && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-orange-500 to-orange-400 border-t-4 border-orange-600 shadow-2xl">
+          <div className="max-w-4xl mx-auto px-4 py-4">
+            {!isEditing('sticky-cta-title') && !isEditing('sticky-cta-subtitle') && !isEditing('sticky-cta-button') && (
+              <div className="mb-3 flex gap-2 items-center justify-center flex-wrap">
+                <span className="text-xs text-orange-100 font-medium">Sticky CTA Editor:</span>
+                <Button
+                  size="sm"
+                  onClick={() => startEdit('sticky-cta-title', null, null, landingPage.sticky_cta_title || 'Ready to Take Action?')}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1"
+                >
+                  Edit Title
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => startEdit('sticky-cta-subtitle', null, null, landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more')}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1"
+                >
+                  Edit Subtitle
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => startEdit('sticky-cta-button', null, null, landingPage.sticky_cta_button || 'Visit Site →')}
+                  className="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1"
+                >
+                  Edit Button
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleToggleStickyCtaVisible}
+                  className="bg-red-600/80 hover:bg-red-700 text-white text-xs px-2 py-1 ml-2"
+                >
+                  <Eye className="w-3 h-3 mr-1" />
+                  Hide CTA
+                </Button>
+              </div>
+            )}
+          
+          {/* Edit Mode for Title */}
+          {isEditing('sticky-cta-title') && (
+            <div className="mb-4">
+              <Input
+                value={editingField.value}
+                onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                className="text-lg font-bold border-2 border-white rounded-lg p-2 bg-white text-gray-900"
+                style={{ color: '#111827' }}
+                autoFocus
+              />
+              <div className="flex gap-2 mt-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleSaveStickyCtaTitle(editingField.value)}
+                  className="bg-green-600 hover:bg-green-700 text-gray-900 border-2 border-green-700 shadow-lg font-semibold"
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={cancelEdit}
+                  className="bg-gray-800 text-white hover:bg-gray-700 border-2 border-gray-900 shadow-lg"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {/* Edit Mode for Subtitle */}
+          {isEditing('sticky-cta-subtitle') && (
+            <div className="mb-4">
+              <Input
+                value={editingField.value}
+                onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                className="text-sm border-2 border-white rounded-lg p-2 bg-white text-gray-900"
+                style={{ color: '#111827' }}
+                autoFocus
+              />
+              <div className="flex gap-2 mt-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleSaveStickyCtaSubtitle(editingField.value)}
+                  className="bg-green-600 hover:bg-green-700 text-gray-900 border-2 border-green-700 shadow-lg font-semibold"
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={cancelEdit}
+                  className="bg-gray-800 text-white hover:bg-gray-700 border-2 border-gray-900 shadow-lg"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          {/* Edit Mode for Button */}
+          {isEditing('sticky-cta-button') && (
+            <div className="mb-4">
+              <Input
+                value={editingField.value}
+                onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
+                className="text-lg font-bold border-2 border-white rounded-lg p-2 bg-white text-gray-900"
+                style={{ color: '#111827' }}
+                autoFocus
+              />
+              <div className="flex gap-2 mt-2">
+                <Button
+                  size="sm"
+                  onClick={() => handleSaveStickyCtaButton(editingField.value)}
+                  className="bg-green-600 hover:bg-green-700 text-gray-900 border-2 border-green-700 shadow-lg font-semibold"
+                >
+                  <Check className="w-4 h-4 mr-1" />
+                  Save
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={cancelEdit}
+                  className="bg-gray-800 text-white hover:bg-gray-700 border-2 border-gray-900 shadow-lg"
+                >
+                  <X className="w-4 h-4 mr-1" />
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+          
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <p className="text-white font-bold text-lg md:text-xl">
+                {landingPage.sticky_cta_title || 'Ready to Take Action?'}
+              </p>
+              <p className="text-orange-50 text-sm">
+                {landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more'}
+              </p>
+            </div>
+            <Button
+              onClick={() => {
+                if (landingPage?.ai_generated_items?.campaigns?.url) {
+                  window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                }
+              }}
+              className="bg-white hover:bg-gray-100 text-orange-600 font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
+            >
+              {landingPage.sticky_cta_button || 'Visit Site →'}
+            </Button>
           </div>
-          <Button
-            onClick={() => {
-              if (landingPage?.ai_generated_items?.campaigns?.url) {
-                window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
-              }
-            }}
-            className="bg-white hover:bg-gray-100 text-orange-600 font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
-          >
-            Visit Site →
-          </Button>
         </div>
       </div>
 
