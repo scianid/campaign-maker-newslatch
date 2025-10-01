@@ -534,6 +534,20 @@ export function EditLandingPage({ user }) {
           </div>
         </div>
       </div>
+      )}
+
+      {/* Show CTA Button (when hidden) */}
+      {landingPage.sticky_cta_visible === false && (
+        <div className="fixed bottom-4 right-4 z-40">
+          <Button
+            onClick={handleToggleStickyCtaVisible}
+            className="bg-orange-600 hover:bg-orange-700 text-white shadow-2xl px-4 py-3"
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Show Sticky CTA
+          </Button>
+        </div>
+      )}
 
       {/* Main Content - Matching Public Landing Page Style */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
