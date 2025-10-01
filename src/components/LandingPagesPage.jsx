@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, Eye, FileText, Trash2, RefreshCw, Plus, Search, Filter, ChevronDown, ChevronUp, X, Image as ImageIcon, Loader2 } from 'lucide-react';
+import { Calendar, ExternalLink, Eye, FileText, Trash2, RefreshCw, Plus, Search, Filter, ChevronDown, ChevronUp, X, Image as ImageIcon, Loader2, Edit } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
@@ -516,6 +516,16 @@ export function LandingPagesPage({ user }) {
                       />
                       
                       <div className="flex lg:flex-col gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => navigate(`/pages/edit/${page.id}`)}
+                          className="h-10 w-10 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 transition-all duration-200"
+                          title="Edit Landing Page"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        
                         <Button
                           variant="ghost"
                           size="sm"

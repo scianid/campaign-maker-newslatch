@@ -181,7 +181,9 @@ export function AiContentPage({ user }) {
       }
 
       console.log('✅ Landing page generated:', result);
-      alert(`Landing page "${result.landing_page.title}" generated successfully! 🎉\n\nSections created: ${result.sections_count}\nSlug: ${result.landing_page.slug}`);
+      
+      // Navigate to edit page
+      navigate(`/pages/edit/${result.landing_page.id}`);
 
     } catch (err) {
       console.error('❌ Failed to generate landing page:', err);
