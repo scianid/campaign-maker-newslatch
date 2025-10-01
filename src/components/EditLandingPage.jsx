@@ -353,8 +353,32 @@ export function EditLandingPage({ user }) {
         </Button>
       </div>
 
+      {/* Sticky Bottom CTA */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-orange-500 to-orange-400 border-t-4 border-orange-600 shadow-2xl">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-white font-bold text-lg md:text-xl">
+              Ready to Take Action?
+            </p>
+            <p className="text-orange-50 text-sm">
+              Click to visit the site and learn more
+            </p>
+          </div>
+          <Button
+            onClick={() => {
+              if (landingPage?.ai_generated_items?.campaigns?.url) {
+                window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+              }
+            }}
+            className="bg-white hover:bg-gray-100 text-orange-600 font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
+          >
+            Visit Site →
+          </Button>
+        </div>
+      </div>
+
       {/* Main Content - Matching Public Landing Page Style */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
         {/* Article Header */}
         <header className="text-center mb-12">
           {/* Last Updated Pill */}
