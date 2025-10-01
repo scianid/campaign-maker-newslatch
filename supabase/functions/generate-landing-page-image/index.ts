@@ -1,5 +1,6 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { Image } from "https://deno.land/x/imagescript@1.2.15/mod.ts";
 
 // Import shared utilities from rss-feeds function
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
@@ -62,7 +63,7 @@ async function generateImage(prompt: string): Promise<string> {
   return data.data[0].url;
 }
 
-// Upload image to Supabase Storage
+// Upload image to Supabase Storage with compression
 async function uploadImageToStorage(
   supabaseClient: any,
   imageUrl: string,
@@ -78,13 +79,39 @@ async function uploadImageToStorage(
     throw new Error('Failed to download image from OpenAI');
   }
   
-  const imageBlob = await imageResponse.blob();
-  const imageBuffer = await imageBlob.arrayBuffer();
+  const imageBuffer = await imageResponse.arrayBuffer();
+  
+  console.log('🔄 Converting and compressing image to JPEG (quality 85)...');
+  
+  let finalBuffer: ArrayBuffer;
+  let contentType = 'image/jpeg';
+  let fileExtension = 'jpg';
+  
+  try {
+    // Decode the image using imagescript
+    const image = await Image.decode(new Uint8Array(imageBuffer));
+    
+    // Encode as JPEG with quality 85 (good balance for web)
+    const jpegBuffer = await image.encodeJPEG(85);
+    finalBuffer = jpegBuffer.buffer;
+    
+    const originalSize = imageBuffer.byteLength;
+    const compressedSize = finalBuffer.byteLength;
+    const savings = ((1 - compressedSize / originalSize) * 100).toFixed(1);
+    
+    console.log(`✅ Image compressed: ${(originalSize / 1024).toFixed(1)}KB → ${(compressedSize / 1024).toFixed(1)}KB (saved ${savings}%)`);
+    
+  } catch (compressionError) {
+    console.warn('⚠️ Image compression failed, using original:', compressionError);
+    finalBuffer = imageBuffer;
+    contentType = 'image/png';
+    fileExtension = 'png';
+  }
   
   // Generate unique filename
   const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
   const uuid = crypto.randomUUID();
-  const fileName = `${timestamp}_${uuid}.png`;
+  const fileName = `${timestamp}_${uuid}.${fileExtension}`;
   const filePath = `${userId}/${landingPageId}/${fileName}`;
   
   console.log('☁️ Uploading to Supabase Storage:', filePath);
@@ -93,8 +120,8 @@ async function uploadImageToStorage(
   const { data, error } = await supabaseClient
     .storage
     .from('public-files')
-    .upload(filePath, imageBuffer, {
-      contentType: 'image/png',
+    .upload(filePath, finalBuffer, {
+      contentType: contentType,
       upsert: false
     });
   
