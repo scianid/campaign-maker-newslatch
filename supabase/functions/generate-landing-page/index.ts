@@ -160,7 +160,7 @@ Your task:
 - Each section should contain:
    - "subtitle": string (the section headline or subhead)
    - "paragraphs": array of strings (the body text in multiple paragraphs)
-   - "image_prompt": string (a description prompt for generating an image for this section, or leave null if no image needed)
+   - "image_prompt": string (a description prompt for generating an image for this section, or leave null if no image needed. IMPORTANT: Images should NOT contain any text, words, letters, or numbers. Focus on visual elements, scenes, objects, and people only.)
    - "cta": string (optional, only for sections with a call to action button, otherwise null)
 
 Inputs:

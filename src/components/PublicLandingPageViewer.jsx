@@ -307,8 +307,8 @@ export function PublicLandingPageViewer() {
       <div className="bg-gray-50 border-b border-gray-200 py-2">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <span className="text-xs font-medium text-gray-600 uppercase tracking-wide">
-              Advertorial
+            <span className="text-xs text-gray-500">
+              We earn commissions from brands listed on this site, which influences how listings are presented. <span className="underline cursor-pointer">Advertising Disclosure</span>.
             </span>
           </div>
         </div>
@@ -358,9 +358,6 @@ export function PublicLandingPageViewer() {
           )}
           
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center text-sm text-gray-500 mb-4">
-              <span>Powered by NewsLatch</span>
-            </div>
             
             {/* Social Proof Counter */}
             <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-4">
@@ -403,13 +400,13 @@ export function PublicLandingPageViewer() {
 
       {/* Sticky Bottom CTA */}
       {(landingPage.sticky_cta_visible !== false) && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-orange-500 to-orange-400 border-t-4 border-orange-600 shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-100" style={{ boxShadow: '0 -10px 30px -5px rgba(0, 0, 0, 0.3), 0 -4px 6px -2px rgba(0, 0, 0, 0.2)' }}>
           <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
             <div className="flex-1">
-              <p className="text-white font-bold text-lg md:text-xl">
+              <p className="text-gray-900 font-bold text-lg md:text-xl">
                 {landingPage.sticky_cta_title || 'Ready to Take Action?'}
               </p>
-              <p className="text-orange-50 text-sm">
+              <p className="text-gray-700 text-sm">
                 {landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more'}
               </p>
             </div>
@@ -419,7 +416,7 @@ export function PublicLandingPageViewer() {
                   window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                 }
               }}
-              className="bg-white hover:bg-gray-100 text-orange-600 font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
+              className="bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
             >
               {landingPage.sticky_cta_button || 'Visit Site →'}
             </Button>

@@ -124,12 +124,18 @@ export function EditLandingPage({ user }) {
   };
 
   const handleDeleteParagraph = async (sectionIndex, paragraphIndex) => {
-    if (!confirm('Delete this paragraph?')) return;
-    
-    const updatedSections = [...landingPage.sections];
-    updatedSections[sectionIndex].paragraphs.splice(paragraphIndex, 1);
-    setLandingPage({ ...landingPage, sections: updatedSections });
-    await saveField({ sections: updatedSections });
+    setModal({
+      type: 'confirm',
+      title: 'Delete Paragraph',
+      message: 'Are you sure you want to delete this paragraph? This action cannot be undone.',
+      onConfirm: async () => {
+        const updatedSections = [...landingPage.sections];
+        updatedSections[sectionIndex].paragraphs.splice(paragraphIndex, 1);
+        setLandingPage({ ...landingPage, sections: updatedSections });
+        await saveField({ sections: updatedSections });
+        setModal(null);
+      }
+    });
   };
 
   const handleAddParagraph = async (sectionIndex) => {
@@ -379,36 +385,36 @@ export function EditLandingPage({ user }) {
 
       {/* Sticky Bottom CTA */}
       {(landingPage.sticky_cta_visible !== false) && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-orange-500 to-orange-400 border-t-4 border-orange-600 shadow-2xl">
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-100" style={{ boxShadow: '0 -10px 30px -5px rgba(0, 0, 0, 0.3), 0 -4px 6px -2px rgba(0, 0, 0, 0.2)' }}>
           <div className="max-w-4xl mx-auto px-4 py-4">
             {!isEditing('sticky-cta-title') && !isEditing('sticky-cta-subtitle') && !isEditing('sticky-cta-button') && (
               <div className="mb-3 flex gap-2 items-center justify-center flex-wrap">
-                <span className="text-xs text-orange-100 font-medium">Sticky CTA Editor:</span>
+                <span className="text-xs text-gray-600 font-medium">Sticky CTA Editor:</span>
                 <Button
                   size="sm"
                   onClick={() => startEdit('sticky-cta-title', null, null, landingPage.sticky_cta_title || 'Ready to Take Action?')}
-                  className="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1"
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-900 text-xs px-2 py-1"
                 >
                   Edit Title
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => startEdit('sticky-cta-subtitle', null, null, landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more')}
-                  className="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1"
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-900 text-xs px-2 py-1"
                 >
                   Edit Subtitle
                 </Button>
                 <Button
                   size="sm"
                   onClick={() => startEdit('sticky-cta-button', null, null, landingPage.sticky_cta_button || 'Visit Site →')}
-                  className="bg-white/20 hover:bg-white/30 text-white text-xs px-2 py-1"
+                  className="bg-gray-200 hover:bg-gray-300 text-gray-900 text-xs px-2 py-1"
                 >
                   Edit Button
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleToggleStickyCtaVisible}
-                  className="bg-red-600/80 hover:bg-red-700 text-white text-xs px-2 py-1 ml-2"
+                  className="bg-red-100 hover:bg-red-200 text-red-800 text-xs px-2 py-1 ml-2"
                 >
                   <Eye className="w-3 h-3 mr-1" />
                   Hide CTA
@@ -514,10 +520,10 @@ export function EditLandingPage({ user }) {
           
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1">
-              <p className="text-white font-bold text-lg md:text-xl">
+              <p className="text-gray-900 font-bold text-lg md:text-xl">
                 {landingPage.sticky_cta_title || 'Ready to Take Action?'}
               </p>
-              <p className="text-orange-50 text-sm">
+              <p className="text-gray-700 text-sm">
                 {landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more'}
               </p>
             </div>
@@ -527,7 +533,7 @@ export function EditLandingPage({ user }) {
                   window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                 }
               }}
-              className="bg-white hover:bg-gray-100 text-orange-600 font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
+              className="bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
             >
               {landingPage.sticky_cta_button || 'Visit Site →'}
             </Button>
@@ -541,7 +547,7 @@ export function EditLandingPage({ user }) {
         <div className="fixed bottom-4 right-4 z-40">
           <Button
             onClick={handleToggleStickyCtaVisible}
-            className="bg-orange-600 hover:bg-orange-700 text-white shadow-2xl px-4 py-3"
+            className="bg-gray-800 hover:bg-gray-900 text-white shadow-2xl px-4 py-3"
           >
             <Eye className="w-4 h-4 mr-2" />
             Show Sticky CTA
@@ -1190,7 +1196,7 @@ export function EditLandingPage({ user }) {
               <Button
                 onClick={() => setModal(null)}
                 variant="outline"
-                className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 hover:bg-gray-100 hover:border-gray-400 transition-colors font-medium"
+                className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors font-medium"
               >
                 Cancel
               </Button>
@@ -1208,6 +1214,18 @@ export function EditLandingPage({ user }) {
                   onMouseLeave={(e) => e.target.style.backgroundColor = '#2563eb'}
                 >
                   Confirm
+                </Button>
+              )}
+              {modal.type === 'confirm' && (
+                <Button
+                  onClick={() => {
+                    if (modal.onConfirm) {
+                      modal.onConfirm();
+                    }
+                  }}
+                  className="px-6 py-2.5 font-medium transition-all bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Delete
                 </Button>
               )}
               {modal.type === 'alert' && (
