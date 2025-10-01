@@ -517,13 +517,12 @@ export function LandingPagesPage({ user }) {
                       
                       <div className="flex lg:flex-col gap-2">
                         <Button
-                          variant="ghost"
                           size="sm"
                           onClick={() => navigate(`/pages/edit/${page.id}`)}
-                          className="h-10 w-10 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 transition-all duration-200"
-                          title="Edit Landing Page"
+                          className="bg-blue-600 hover:bg-blue-700 text-gray-900 transition-all duration-200 text-xs font-medium px-4 py-2 flex items-center gap-1.5"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3.5 h-3.5" />
+                          Page Editor
                         </Button>
                         
                         <Button
