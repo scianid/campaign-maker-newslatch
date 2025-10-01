@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, Eye, FileText, Trash2, RefreshCw, Plus, Search, Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { Calendar, ExternalLink, Eye, FileText, Trash2, RefreshCw, Plus, Search, Filter, ChevronDown, ChevronUp, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
@@ -14,6 +14,7 @@ export function LandingPagesPage({ user }) {
   const [error, setError] = useState(null);
   const [expandedDetails, setExpandedDetails] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
+  const [generatingImage, setGeneratingImage] = useState({ pageId: null, sectionIndex: null });
   const [filters, setFilters] = useState({
     status: 'all', // 'all', 'active', 'inactive'
     search: '',
@@ -102,12 +103,26 @@ export function LandingPagesPage({ user }) {
 
   const handleDeleteConfirm = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('You must be logged in to delete landing pages');
+      }
+
+      console.log('🗑️ Deleting landing page and images:', deleteConfirm.item.id);
+
+      // First, delete images from storage (via Edge Function or trigger will handle it)
+      // The database trigger will automatically delete images when the row is deleted
+      
+      // Delete the landing page (trigger will cascade delete images)
       const { error } = await supabase
         .from('landing_pages')
         .delete()
         .eq('id', deleteConfirm.item.id);
 
       if (error) throw error;
+
+      console.log('✅ Landing page and images deleted successfully');
 
       // Update local state
       setLandingPages(prev => prev.filter(page => page.id !== deleteConfirm.item.id));
@@ -149,6 +164,60 @@ export function LandingPagesPage({ user }) {
       // You could add a toast notification here
     } catch (err) {
       console.error('Failed to copy:', err);
+    }
+  };
+
+  const handleGenerateImage = async (pageId, sectionIndex, imagePrompt) => {
+    if (!imagePrompt) {
+      alert('This section does not have an image prompt');
+      return;
+    }
+
+    setGeneratingImage({ pageId, sectionIndex });
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        throw new Error('You must be logged in to generate images');
+      }
+
+      console.log('🎨 Generating image for section:', sectionIndex);
+
+      const response = await fetch(
+        'https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/generate-landing-page-image',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            landing_page_id: pageId,
+            section_index: sectionIndex,
+            image_prompt: imagePrompt
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to generate image');
+      }
+
+      console.log('✅ Image generated successfully:', result.image_url);
+
+      // Refresh landing pages to show the new image
+      await fetchLandingPages();
+
+      alert('Image generated successfully!');
+
+    } catch (err) {
+      console.error('❌ Failed to generate image:', err);
+      alert(`Failed to generate image: ${err.message}`);
+    } finally {
+      setGeneratingImage({ pageId: null, sectionIndex: null });
     }
   };
 
@@ -363,21 +432,75 @@ export function LandingPagesPage({ user }) {
 
                       {expandedDetails[page.id] && page.sections && (
                         <div className="mt-3 space-y-2">
-                          {page.sections.slice(0, 3).map((section, index) => (
+                          {page.sections.map((section, index) => (
                             <div key={index} className="bg-gray-700/20 rounded-lg p-3">
-                              <h5 className="text-sm font-medium text-white mb-1">
-                                {section.subtitle || `Section ${index + 1}`}
-                              </h5>
-                              <p className="text-xs text-gray-400 line-clamp-2">
-                                {section.paragraphs?.[0]?.substring(0, 150)}...
-                              </p>
+                              <div className="flex items-start justify-between gap-3 mb-2">
+                                <div className="flex-1">
+                                  <h5 className="text-sm font-medium text-white mb-1">
+                                    {section.subtitle || `Section ${index + 1}`}
+                                  </h5>
+                                  <p className="text-xs text-gray-400 line-clamp-2">
+                                    {section.paragraphs?.[0]?.substring(0, 150)}...
+                                  </p>
+                                </div>
+                                {section.image_prompt && (
+                                  <div className="flex-shrink-0">
+                                    {section.image_url ? (
+                                      <div className="relative group">
+                                        <img 
+                                          src={section.image_url} 
+                                          alt={section.image_prompt}
+                                          className="w-16 h-16 object-cover rounded border border-gray-600"
+                                        />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                                          <Button
+                                            size="sm"
+                                            variant="ghost"
+                                            onClick={() => handleGenerateImage(page.id, index, section.image_prompt)}
+                                            disabled={generatingImage.pageId === page.id && generatingImage.sectionIndex === index}
+                                            className="h-auto p-1 text-white hover:text-highlight"
+                                            title="Regenerate image"
+                                          >
+                                            {generatingImage.pageId === page.id && generatingImage.sectionIndex === index ? (
+                                              <Loader2 className="w-4 h-4 animate-spin" />
+                                            ) : (
+                                              <RefreshCw className="w-4 h-4" />
+                                            )}
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ) : (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => handleGenerateImage(page.id, index, section.image_prompt)}
+                                        disabled={generatingImage.pageId === page.id && generatingImage.sectionIndex === index}
+                                        className="text-xs bg-blue-900/20 text-blue-400 border-blue-600/30 hover:bg-blue-900/30"
+                                        title={section.image_prompt}
+                                      >
+                                        {generatingImage.pageId === page.id && generatingImage.sectionIndex === index ? (
+                                          <>
+                                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                            Generating...
+                                          </>
+                                        ) : (
+                                          <>
+                                            <ImageIcon className="w-3 h-3 mr-1" />
+                                            Generate
+                                          </>
+                                        )}
+                                      </Button>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              {section.image_prompt && !section.image_url && (
+                                <p className="text-xs text-gray-500 mt-2 italic">
+                                  💡 {section.image_prompt}
+                                </p>
+                              )}
                             </div>
                           ))}
-                          {page.sections.length > 3 && (
-                            <p className="text-xs text-gray-400 text-center py-2">
-                              +{page.sections.length - 3} more sections
-                            </p>
-                          )}
                         </div>
                       )}
                     </div>

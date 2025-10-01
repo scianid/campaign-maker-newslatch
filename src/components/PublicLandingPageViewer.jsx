@@ -90,10 +90,13 @@ export function PublicLandingPageViewer() {
   const renderSection = (section, index) => {
     if (!section) return null;
 
-    // Check if we should show images in sections
-    // If there's a hero image, only show section images occasionally to avoid repetition
+    // Use section's own image_url if available, otherwise fall back to hero image occasionally
     const hasHeroImage = landingPage.ai_generated_items?.image_url;
-    const shouldShowSectionImage = hasHeroImage ? (index === 2 || index === 4) : true; // Only show in sections 3 and 5 if hero exists
+    const hasSectionImage = section.image_url;
+    
+    // Show section image if it exists, or fallback to hero image in specific sections
+    const shouldShowImage = hasSectionImage || (!hasSectionImage && hasHeroImage && (index === 2 || index === 4));
+    const imageToShow = hasSectionImage ? section.image_url : landingPage.ai_generated_items?.image_url;
 
     return (
       <section key={index} className="mb-12">
@@ -109,45 +112,34 @@ export function PublicLandingPageViewer() {
           </p>
         ))}
 
-        {shouldShowSectionImage && (section.image_prompt || landingPage.ai_generated_items?.image_url) && (
+        {shouldShowImage && imageToShow && (
           <div className="mb-8">
-            {landingPage.ai_generated_items?.image_url ? (
-              <div className="rounded-lg overflow-hidden shadow-lg">
-                <img 
-                  src={landingPage.ai_generated_items.image_url}
-                  alt={section.image_prompt || "Article image"}
-                  className="w-full h-auto object-cover"
-                  onError={(e) => {
-                    // Fallback to placeholder if image fails to load
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'block';
-                  }}
-                />
-                <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hidden">
-                  <div className="text-gray-500">
-                    <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                    <p className="text-sm font-medium">Image Placeholder</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {section.image_prompt || "Image not available"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+            <div className="rounded-lg overflow-hidden shadow-lg">
+              <img 
+                src={imageToShow}
+                alt={section.image_prompt || section.subtitle || "Article image"}
+                className="w-full h-auto object-cover"
+                onError={(e) => {
+                  // Fallback to placeholder if image fails to load
+                  e.target.style.display = 'none';
+                  const placeholderDiv = e.target.nextSibling;
+                  if (placeholderDiv) {
+                    placeholderDiv.style.display = 'block';
+                  }
+                }}
+              />
+              <div className="bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hidden">
                 <div className="text-gray-500">
                   <svg className="mx-auto h-12 w-12 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <p className="text-sm font-medium">Image Placeholder</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    {section.image_prompt}
+                    {section.image_prompt || "Image not available"}
                   </p>
                 </div>
               </div>
-            )}
+            </div>
           </div>
         )}
 
