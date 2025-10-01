@@ -146,11 +146,17 @@ export function EditLandingPage({ user }) {
   };
 
   const handleDeleteSection = async (sectionIndex) => {
-    if (!confirm('Are you sure you want to delete this section?')) return;
-    
-    const updatedSections = landingPage.sections.filter((_, idx) => idx !== sectionIndex);
-    setLandingPage({ ...landingPage, sections: updatedSections });
-    await saveField({ sections: updatedSections });
+    setModal({
+      type: 'confirm',
+      title: 'Delete Section',
+      message: 'Are you sure you want to delete this entire section? All content, including paragraphs and images, will be permanently removed.',
+      onConfirm: async () => {
+        const updatedSections = landingPage.sections.filter((_, idx) => idx !== sectionIndex);
+        setLandingPage({ ...landingPage, sections: updatedSections });
+        await saveField({ sections: updatedSections });
+        setModal(null);
+      }
+    });
   };
 
   const handleAddSection = async () => {
@@ -1195,8 +1201,7 @@ export function EditLandingPage({ user }) {
             <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
               <Button
                 onClick={() => setModal(null)}
-                variant="outline"
-                className="px-6 py-2.5 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors font-medium"
+                className="px-6 py-2.5 bg-gray-100 border-2 border-gray-300 text-gray-700 hover:bg-gray-200 hover:border-gray-400 hover:text-gray-900 transition-colors font-medium"
               >
                 Cancel
               </Button>

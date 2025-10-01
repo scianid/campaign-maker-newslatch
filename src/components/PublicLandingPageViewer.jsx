@@ -239,7 +239,7 @@ export function PublicLandingPageViewer() {
                   window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                 }
               }}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200"
+              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
             >
               {section.cta}
             </Button>
@@ -376,7 +376,7 @@ export function PublicLandingPageViewer() {
                     window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                   }
                 }}
-                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200"
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
               >
                 Visit Site →
               </Button>
@@ -416,7 +416,7 @@ export function PublicLandingPageViewer() {
                   window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                 }
               }}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 text-lg rounded-lg shadow-lg transition-all hover:scale-105"
+              className="bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
             >
               {landingPage.sticky_cta_button || 'Visit Site →'}
             </Button>
