@@ -427,7 +427,25 @@ export function PublicLandingPageViewer() {
       {/* Footer */}
       <footer className="bg-gray-100 border-t border-gray-200 mt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-sm text-gray-500 space-y-2">
+          {/* Disclaimers */}
+          <div className="mb-8 space-y-6 text-xs text-gray-600 leading-relaxed">
+            <div className="bg-white border border-gray-300 rounded-lg p-4">
+              <p className="font-bold text-gray-800 mb-2">ADVERTISEMENT NOTICE</p>
+              <p>THIS IS AN ADVERTISEMENT AND NOT AN ACTUAL NEWS ARTICLE, BLOG, OR CONSUMER PROTECTION UPDATE.</p>
+            </div>
+            
+            <div className="bg-white border border-gray-300 rounded-lg p-4">
+              <p className="font-bold text-gray-800 mb-2">MARKETING DISCLOSURE</p>
+              <p>This website is a market place. As such you should know that the owner has a monetary connection to the product and services advertised on the site. The owner receives payment whenever a qualified lead is referred but that is the extent of it.</p>
+            </div>
+            
+            <div className="bg-white border border-gray-300 rounded-lg p-4">
+              <p className="font-bold text-gray-800 mb-2">ADVERTISING DISCLOSURE</p>
+              <p>This website and the products & services referred to on the site are advertising marketplaces. This website is an advertisement and not a news publication. Any photographs of persons used on this site are models. The owner of this site and of the products and services referred to on this site only provides a service where consumers can obtain and compare.</p>
+            </div>
+          </div>
+
+          <div className="text-center text-sm text-gray-500 space-y-2 border-t border-gray-300 pt-6">
             <p>
               Powered by AI-driven content generation
             </p>
