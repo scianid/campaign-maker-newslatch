@@ -49,8 +49,7 @@ async function generateImage(prompt: string): Promise<string> {
       prompt: prompt,
       n: 1,
       size: '1024x1024',
-      quality: 'medium',
-      response_format: 'url'
+      quality: 'medium'
     })
   });
 
@@ -60,7 +59,16 @@ async function generateImage(prompt: string): Promise<string> {
   }
 
   const data = await response.json();
-  return data.data[0].url;
+  console.log('OpenAI response:', JSON.stringify(data));
+  
+  // Extract URL from response (format may vary by model)
+  const imageUrl = data.data?.[0]?.url || data.data?.[0]?.b64_json;
+  
+  if (!imageUrl) {
+    throw new Error(`No image URL found in OpenAI response: ${JSON.stringify(data)}`);
+  }
+  
+  return imageUrl;
 }
 
 // Upload image to Supabase Storage with compression
