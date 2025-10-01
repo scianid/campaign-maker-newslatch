@@ -100,6 +100,89 @@ export function PublicLandingPageViewer() {
 
     return (
       <section key={index} className="mb-12">
+        {/* Top Widget */}
+        {section.widget === 'view-count' && (
+          <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-6">
+            <span className="text-sm text-gray-700 font-medium">
+              👁️ {Math.floor(Math.random() * 500) + 200} people viewed this today
+            </span>
+          </div>
+        )}
+        
+        {section.widget === 'rating' && (
+          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="text-3xl font-bold text-gray-900">{(Math.random() * 0.8 + 9.1).toFixed(1)}</div>
+                  <div className="flex text-yellow-400">
+                    {[...Array(4)].map((_, i) => (
+                      <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                    <svg className="w-5 h-5 text-gray-300" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" fill="currentColor" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600 font-medium">Excellent Rating</div>
+              </div>
+              <div className="text-right">
+                <div className="text-sm text-gray-500">Our assessment</div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {section.widget === 'trust-badge' && (
+          <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 inline-block mb-6">
+            <span className="text-sm text-green-800 font-semibold">
+              ✓ Verified by Industry Experts
+            </span>
+          </div>
+        )}
+        
+        {section.widget === 'live-activity' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 inline-block mb-6">
+            <span className="text-sm text-blue-800 font-medium">
+              🔴 {Math.floor(Math.random() * 10) + 3} people are viewing this now
+            </span>
+          </div>
+        )}
+        
+        {section.widget === 'recent-signups' && (
+          <div className="bg-purple-50 border border-purple-200 rounded-lg px-4 py-2 inline-block mb-6">
+            <span className="text-sm text-purple-800 font-medium">
+              🔥 {Math.floor(Math.random() * 200) + 50} people joined in the last 24 hours
+            </span>
+          </div>
+        )}
+        
+        {section.widget === 'limited-time' && (
+          <div className="bg-red-50 border-2 border-red-300 rounded-lg px-4 py-3 inline-block mb-6">
+            <span className="text-sm text-red-800 font-bold">
+              ⚡ LIMITED TIME OFFER - Ends Soon!
+            </span>
+          </div>
+        )}
+        
+        {section.widget === 'featured-badge' && (
+          <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-2 inline-block mb-6">
+            <span className="text-sm text-yellow-900 font-semibold">
+              ⭐ Featured in 12+ Publications
+            </span>
+          </div>
+        )}
+        
+        {section.widget === 'testimonial-count' && (
+          <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-6">
+            <span className="text-sm text-gray-700 font-medium">
+              💬 Based on {Math.floor(Math.random() * 2000) + 500}+ reviews
+            </span>
+          </div>
+        )}
+
         {section.subtitle && (
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
             {section.subtitle}

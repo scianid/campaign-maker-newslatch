@@ -27,6 +27,7 @@ export function EditLandingPage({ user }) {
   const [generatingImage, setGeneratingImage] = useState(null);
   const [editingField, setEditingField] = useState(null); // { type, sectionIndex, paragraphIndex, value }
   const [modal, setModal] = useState(null); // { type: 'prompt'|'alert', title, message, value, onConfirm }
+  const [showSaved, setShowSaved] = useState(false);
 
   useEffect(() => {
     if (pageId) {
@@ -87,6 +88,12 @@ export function EditLandingPage({ user }) {
       if (error) throw error;
       
       setEditingField(null);
+      
+      // Show saved indicator
+      setShowSaved(true);
+      setTimeout(() => {
+        setShowSaved(false);
+      }, 2000);
     } catch (err) {
       console.error('Error saving field:', err);
       setModal({
@@ -148,7 +155,8 @@ export function EditLandingPage({ user }) {
         paragraphs: ['Add your content here...'],
         image_prompt: '',
         image_url: null,
-        cta: null
+        cta: null,
+        widget: null
       }
     ];
     setLandingPage({ ...landingPage, sections: updatedSections });
@@ -231,6 +239,17 @@ export function EditLandingPage({ user }) {
   const handleSaveCTA = async (sectionIndex, newCTA) => {
     const updatedSections = [...landingPage.sections];
     updatedSections[sectionIndex].cta = newCTA;
+    setLandingPage({ ...landingPage, sections: updatedSections });
+    await saveField({ sections: updatedSections });
+  };
+
+  const handleSetWidget = async (sectionIndex, widgetType) => {
+    const updatedSections = [...landingPage.sections];
+    const section = updatedSections[sectionIndex];
+    
+    // Set single widget (or null to remove)
+    section.widget = widgetType || null;
+    
     setLandingPage({ ...landingPage, sections: updatedSections });
     await saveField({ sections: updatedSections });
   };
@@ -321,6 +340,19 @@ export function EditLandingPage({ user }) {
         </div>
       </div>
 
+      {/* Floating Save Button */}
+      <div 
+        className={`fixed bottom-8 right-8 z-50 transition-opacity duration-500 ${showSaved ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      >
+        <Button
+          className="shadow-2xl px-6 py-3 text-base font-semibold"
+          style={{ backgroundColor: '#10b981', color: 'white' }}
+        >
+          <Check className="w-5 h-5 mr-2" />
+          Auto-Saved
+        </Button>
+      </div>
+
       {/* Main Content - Matching Public Landing Page Style */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Article Header */}
@@ -398,6 +430,128 @@ export function EditLandingPage({ user }) {
         <article className="max-w-none">
           {landingPage.sections?.map((section, sectionIndex) => (
             <section key={sectionIndex} className="mb-12">
+              {/* Widget Controls */}
+              <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-gray-700 mb-3">Section Widget</h3>
+                <div className="flex gap-2 items-center">
+                  <select
+                    value={section.widget || ''}
+                    onChange={(e) => handleSetWidget(sectionIndex, e.target.value)}
+                    className="flex-1 border-2 border-gray-300 rounded-lg px-3 py-2 pr-8 text-sm bg-white text-gray-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all appearance-none cursor-pointer"
+                    style={{
+                      backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                      backgroundPosition: 'right 0.5rem center',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: '1.5em 1.5em'
+                    }}
+                  >
+                    <option value="">No Widget</option>
+                    <option value="view-count">👁️ View Count</option>
+                    <option value="rating">⭐ Star Rating</option>
+                    <option value="trust-badge">✓ Trust Badge</option>
+                    <option value="live-activity">🔴 Live Activity</option>
+                    <option value="recent-signups">🔥 Recent Sign-ups</option>
+                    <option value="limited-time">⚡ Limited Time</option>
+                    <option value="featured-badge">⭐ Featured Badge</option>
+                    <option value="testimonial-count">💬 Testimonial Count</option>
+                  </select>
+                  {section.widget && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleSetWidget(sectionIndex, null)}
+                      style={{ backgroundColor: '#dc2626', color: 'white' }}
+                      className="shadow-lg hover:opacity-90"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-gray-500 mt-2">Select one widget to display at the top of this section</p>
+              </div>
+
+              {/* Top Widget */}
+              {section.widget === 'view-count' && (
+                <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-6">
+                  <span className="text-sm text-gray-700 font-medium">
+                    👁️ {Math.floor(Math.random() * 500) + 200} people viewed this today
+                  </span>
+                </div>
+              )}
+              
+              {section.widget === 'rating' && (
+                <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="text-3xl font-bold text-gray-900">{(Math.random() * 0.8 + 9.1).toFixed(1)}</div>
+                        <div className="flex text-yellow-400">
+                          {[...Array(4)].map((_, i) => (
+                            <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 20 20">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                          ))}
+                          <svg className="w-5 h-5 text-gray-300" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" fill="currentColor" />
+                          </svg>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-600 font-medium">Excellent Rating</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-gray-500">Our assessment</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {section.widget === 'trust-badge' && (
+                <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2 inline-block mb-6">
+                  <span className="text-sm text-green-800 font-semibold">
+                    ✓ Verified by Industry Experts
+                  </span>
+                </div>
+              )}
+              
+              {section.widget === 'live-activity' && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 inline-block mb-6">
+                  <span className="text-sm text-blue-800 font-medium">
+                    🔴 {Math.floor(Math.random() * 10) + 3} people are viewing this now
+                  </span>
+                </div>
+              )}
+              
+              {section.widget === 'recent-signups' && (
+                <div className="bg-purple-50 border border-purple-200 rounded-lg px-4 py-2 inline-block mb-6">
+                  <span className="text-sm text-purple-800 font-medium">
+                    🔥 {Math.floor(Math.random() * 200) + 50} people joined in the last 24 hours
+                  </span>
+                </div>
+              )}
+              
+              {section.widget === 'limited-time' && (
+                <div className="bg-red-50 border-2 border-red-300 rounded-lg px-4 py-3 inline-block mb-6">
+                  <span className="text-sm text-red-800 font-bold">
+                    ⚡ LIMITED TIME OFFER - Ends Soon!
+                  </span>
+                </div>
+              )}
+              
+              {section.widget === 'featured-badge' && (
+                <div className="bg-yellow-50 border border-yellow-300 rounded-lg px-4 py-2 inline-block mb-6">
+                  <span className="text-sm text-yellow-900 font-semibold">
+                    ⭐ Featured in 12+ Publications
+                  </span>
+                </div>
+              )}
+              
+              {section.widget === 'testimonial-count' && (
+                <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-6">
+                  <span className="text-sm text-gray-700 font-medium">
+                    💬 Based on {Math.floor(Math.random() * 2000) + 500}+ reviews
+                  </span>
+                </div>
+              )}
+
               {/* Section Subtitle - Editable */}
               {isEditing('subtitle', sectionIndex) ? (
                 <div className="mb-6">
@@ -780,6 +934,8 @@ export function EditLandingPage({ user }) {
                   </>
                 )}
               </div>
+
+              {/* Widget Controls - Moved to top */}
             </section>
           ))}
 
