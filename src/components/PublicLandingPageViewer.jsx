@@ -4,6 +4,44 @@ import { Calendar, ExternalLink, Eye, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '../ui/Button';
 import { trackCtaClick, trackPageView } from '../utils/analytics';
 
+// Seeded random number generator using slug
+function seededRandom(seed, min, max) {
+  // Create a hash from the seed string
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = ((hash << 5) - hash) + seed.charCodeAt(i);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  
+  // Normalize to 0-1 range using sine
+  const normalized = Math.abs(Math.sin(hash) * 10000) % 1;
+  
+  // Scale to min-max range
+  return Math.floor(normalized * (max - min + 1)) + min;
+}
+
+// Generate stable metrics for a landing page based on slug
+function generateMetrics(slug, metricType) {
+  const seed = slug + metricType;
+  
+  switch(metricType) {
+    case 'viewsToday':
+      return seededRandom(seed, 200, 15600); // People viewed today
+    case 'rating':
+      return (seededRandom(seed, 89, 99) / 10).toFixed(1); // Rating 9.1-9.9
+    case 'viewingNow':
+      return seededRandom(seed, 3, 12); // People viewing now
+    case 'joinedToday':
+      return seededRandom(seed, 50, 25250); // Joined in last 24h
+    case 'reviews':
+      return seededRandom(seed, 150, 2500); // Total reviews
+    case 'articleViews':
+      return seededRandom(seed, 200, 17700); // Article views
+    default:
+      return 0;
+  }
+}
+
 export function PublicLandingPageViewer() {
   const { slug } = useParams();
   const [landingPage, setLandingPage] = useState(null);
@@ -114,7 +152,7 @@ export function PublicLandingPageViewer() {
         {section.widget === 'view-count' && (
           <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-6">
             <span className="text-sm text-gray-700 font-medium">
-              👁️ {Math.floor(Math.random() * 500) + 200} people viewed this today
+              👁️ {generateMetrics(slug, 'viewsToday')} people viewed this today
             </span>
           </div>
         )}
@@ -124,7 +162,7 @@ export function PublicLandingPageViewer() {
             <div className="flex items-center justify-between">
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="text-3xl font-bold text-gray-900">{(Math.random() * 0.8 + 9.1).toFixed(1)}</div>
+                  <div className="text-3xl font-bold text-gray-900">{generateMetrics(slug, 'rating')}</div>
                   <div className="flex text-yellow-400">
                     {[...Array(4)].map((_, i) => (
                       <svg key={i} className="w-5 h-5 fill-current" viewBox="0 0 20 20">
@@ -156,7 +194,7 @@ export function PublicLandingPageViewer() {
         {section.widget === 'live-activity' && (
           <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 inline-block mb-6">
             <span className="text-sm text-blue-800 font-medium">
-              🔴 {Math.floor(Math.random() * 10) + 3} people are viewing this now
+              🔴 {generateMetrics(slug, 'viewingNow')} people are viewing this now
             </span>
           </div>
         )}
@@ -164,7 +202,7 @@ export function PublicLandingPageViewer() {
         {section.widget === 'recent-signups' && (
           <div className="bg-purple-50 border border-purple-200 rounded-lg px-4 py-2 inline-block mb-6">
             <span className="text-sm text-purple-800 font-medium">
-              🔥 {Math.floor(Math.random() * 200) + 50} people joined in the last 24 hours
+              🔥 {generateMetrics(slug, 'joinedToday')} people joined in the last 24 hours
             </span>
           </div>
         )}
@@ -188,7 +226,7 @@ export function PublicLandingPageViewer() {
         {section.widget === 'testimonial-count' && (
           <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-6">
             <span className="text-sm text-gray-700 font-medium">
-              💬 Based on {Math.floor(Math.random() * 2000) + 500}+ reviews
+              💬 Based on {generateMetrics(slug, 'reviews')}+ reviews
             </span>
           </div>
         )}
@@ -569,7 +607,7 @@ export function PublicLandingPageViewer() {
             {/* Social Proof Counter */}
             <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-4">
               <span className="text-sm text-gray-700 font-medium">
-                {Math.floor(Math.random() * 500) + 200} people viewed this article today
+                {generateMetrics(slug, 'articleViews')} people viewed this article recently
               </span>
             </div>
             
