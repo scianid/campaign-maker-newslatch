@@ -299,23 +299,6 @@ export function LandingPagesPage({ user }) {
               <option value="active">Active</option>
               <option value="inactive">Inactive</option>
             </select>
-
-            {/* Sort */}
-            <select
-              value={`${filters.sortBy}-${filters.sortOrder}`}
-              onChange={(e) => {
-                const [sortBy, sortOrder] = e.target.value.split('-');
-                setFilters(prev => ({ ...prev, sortBy, sortOrder }));
-              }}
-              className="px-4 py-2 bg-gray-700/50 border border-gray-600/50 rounded-lg text-white focus:border-highlight focus:outline-none"
-            >
-              <option value="created_at-desc">Newest First</option>
-              <option value="created_at-asc">Oldest First</option>
-              <option value="title-asc">Title A-Z</option>
-              <option value="title-desc">Title Z-A</option>
-              <option value="view_count-desc">Most Views</option>
-              <option value="view_count-asc">Least Views</option>
-            </select>
           </div>
         </div>
 
@@ -515,7 +498,7 @@ export function LandingPagesPage({ user }) {
                           className="bg-blue-600 hover:bg-blue-700 text-gray-900 transition-all duration-200 text-xs font-medium px-4 py-2 flex items-center gap-1.5"
                         >
                           <Edit className="w-3.5 h-3.5" />
-                          Page Editor
+                          <span className="hidden sm:inline">Page </span>Editor
                         </Button>
                         
                         <Button

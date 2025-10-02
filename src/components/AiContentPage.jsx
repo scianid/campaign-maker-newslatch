@@ -274,7 +274,7 @@ export function AiContentPage({ user }) {
     <Layout 
       user={user}
       headerActions={
-        <Button onClick={fetchAiItems} variant="ghost" size="sm" className="text-gray-400 hover:text-white">
+        <Button onClick={fetchAiItems} variant="ghost" size="sm" className="hidden md:flex text-gray-400 hover:text-white">
           <RefreshCw className="w-4 h-4" />
         </Button>
       }
