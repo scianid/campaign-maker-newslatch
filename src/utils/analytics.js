@@ -107,3 +107,10 @@ export function trackEngagement(engagementType, data = {}) {
     console.error('Error tracking engagement:', error);
   }
 }
+
+// Default export for convenience
+export default {
+  trackCtaClick,
+  trackPageView,
+  trackEngagement
+};
