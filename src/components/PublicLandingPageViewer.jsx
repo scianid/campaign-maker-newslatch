@@ -458,40 +458,6 @@ export function PublicLandingPageViewer() {
             )}
           </>
         )}
-
-        {/* Legacy CTA support (for backward compatibility) */}
-        {!section.cta_config && section.cta && (
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-xl p-10 text-center mb-10 shadow-lg">
-            <div className="mb-6">
-              <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-base font-bold mb-4 animate-bounce">
-                EXCLUSIVE OPPORTUNITY
-              </div>
-            </div>
-            <Button
-              onClick={() => {
-                if (landingPage?.ai_generated_items?.campaigns?.url) {
-                  trackCtaClick(
-                    `section_${index + 1}_cta`,
-                    slug,
-                    landingPage?.ai_generated_items?.headline || 'Landing Page',
-                    section.cta,
-                    landingPage.ai_generated_items.campaigns.url
-                  );
-                  window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
-                }
-              }}
-              className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
-            >
-              {section.cta}
-            </Button>
-            <p className="text-base text-gray-700 mt-4 font-medium">
-              Click above to unlock your exclusive access now!
-            </p>
-            <p className="text-sm text-green-600 mt-2 font-semibold">
-              Join thousands of satisfied users!
-            </p>
-          </div>
-        )}
       </section>
     );
   };
