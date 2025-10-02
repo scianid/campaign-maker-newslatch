@@ -124,35 +124,6 @@ export function AuthComponent({ user, onAuthChange }) {
   if (user) {
     return (
       <div className="flex items-center gap-3">
-        {/* Navigation Links */}
-        <nav className="hidden md:flex items-center gap-4 mr-4">
-          <Link
-            to="/campaigns"
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-              location.pathname === '/campaigns'
-                ? 'bg-highlight/20 text-highlight'
-                : 'text-gray-300 hover:text-white hover:bg-gray-700/30'
-            }`}
-          >
-            <Home className="w-4 h-4" />
-            Campaigns
-          </Link>
-          
-          {isAdmin && (
-            <Link
-              to="/admin"
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                location.pathname === '/admin'
-                  ? 'bg-highlight/20 text-highlight'
-                  : 'text-gray-300 hover:text-white hover:bg-gray-700/30'
-              }`}
-            >
-              <Settings className="w-4 h-4" />
-              Admin
-            </Link>
-          )}
-        </nav>
-
         {/* User Menu */}
         <div className="relative user-menu-container">
           <button
@@ -183,29 +154,6 @@ export function AuthComponent({ user, onAuthChange }) {
           {showUserMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-card-bg rounded-lg shadow-lg border border-gray-700 z-50">
               <div className="py-2">
-                {/* Mobile navigation items */}
-                <div className="md:hidden">
-                  <Link
-                    to="/campaigns"
-                    className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700/30"
-                    onClick={() => setShowUserMenu(false)}
-                  >
-                    <Home className="w-4 h-4" />
-                    Campaigns
-                  </Link>
-                  {isAdmin && (
-                    <Link
-                      to="/admin"
-                      className="flex items-center gap-2 px-4 py-2 text-gray-300 hover:text-white hover:bg-gray-700/30"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      <Settings className="w-4 h-4" />
-                      Admin
-                    </Link>
-                  )}
-                  <hr className="my-2 border-gray-700" />
-                </div>
-                
                 <button
                   onClick={() => {
                     setShowUserMenu(false);

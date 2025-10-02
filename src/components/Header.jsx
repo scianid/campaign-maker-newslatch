@@ -1,13 +1,47 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileText, Target, User, Menu, X } from 'lucide-react';
+import { FileText, Target, User, Menu, X, Settings } from 'lucide-react';
 import { AuthComponent } from './AuthComponent';
 import { Button } from '../ui/Button';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 export function Header({ user, children }) {
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if user is admin
+  useEffect(() => {
+    if (user) {
+      checkAdminStatus();
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user]);
+
+  const checkAdminStatus = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/admin-users/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setIsAdmin(result?.data?.is_admin || false);
+      } else {
+        setIsAdmin(user.id === '81facc72-4b4d-4dfc-86ca-23572e7c0e4c');
+      }
+    } catch (error) {
+      setIsAdmin(user.id === '81facc72-4b4d-4dfc-86ca-23572e7c0e4c');
+    }
+  };
 
   const navigationItems = [
     {
@@ -22,6 +56,15 @@ export function Header({ user, children }) {
     }
   ];
 
+  // Add admin link if user is admin
+  if (isAdmin) {
+    navigationItems.push({
+      path: '/admin',
+      label: 'Admin',
+      icon: Settings
+    });
+  }
+
   const isActivePath = (path) => {
     return location.pathname === path || 
            (path === '/campaigns' && location.pathname.startsWith('/content/'));
@@ -32,16 +75,13 @@ export function Header({ user, children }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <button
-              onClick={() => navigate('/campaigns')}
-              className="flex-shrink-0"
-            >
+            <div className="flex-shrink-0">
               <img 
                 src="/toplogo.png" 
                 alt="NewsLatch Studio Logo" 
-                className="h-10 w-auto hover:opacity-80 transition-opacity"
+                className="h-10 w-auto"
               />
-            </button>
+            </div>
             
             {user && (
               <nav className="hidden md:flex items-center gap-1">
