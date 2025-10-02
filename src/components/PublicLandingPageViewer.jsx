@@ -236,7 +236,231 @@ export function PublicLandingPageViewer() {
           </div>
         )}
 
-        {section.cta && (
+        {/* CTA Section - Support multiple types */}
+        {section.cta_config && (
+          <>
+            {/* Simple CTA */}
+            {section.cta_config.type === 'simple' && (
+              <div className="bg-white border-2 border-gray-300 rounded-xl p-8 text-center mb-10 shadow-lg">
+                <Button
+                  onClick={() => {
+                    if (landingPage?.ai_generated_items?.campaigns?.url) {
+                      trackCtaClick(
+                        `section_${index + 1}_cta_simple`,
+                        slug,
+                        landingPage?.ai_generated_items?.headline || 'Landing Page',
+                        section.cta_config.buttonText,
+                        landingPage.ai_generated_items.campaigns.url
+                      );
+                      window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                    }
+                  }}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+                >
+                  {section.cta_config.buttonText || 'Get Started'}
+                </Button>
+                {section.cta_config.subtitleText && (
+                  <p className="text-sm text-gray-600 mt-4">
+                    {section.cta_config.subtitleText}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Exclusive Opportunity CTA */}
+            {section.cta_config.type === 'exclusive' && (
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-10 text-center mb-10 shadow-lg">
+                <div className="mb-6">
+                  <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                    {section.cta_config.badgeText || 'EXCLUSIVE OPPORTUNITY'}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    if (landingPage?.ai_generated_items?.campaigns?.url) {
+                      trackCtaClick(
+                        `section_${index + 1}_cta_exclusive`,
+                        slug,
+                        landingPage?.ai_generated_items?.headline || 'Landing Page',
+                        section.cta_config.buttonText,
+                        landingPage.ai_generated_items.campaigns.url
+                      );
+                      window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                    }
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+                >
+                  {section.cta_config.buttonText || 'Get Started'}
+                </Button>
+                <p className="text-base text-gray-700 mt-4 font-medium">
+                  {section.cta_config.subtitleText || 'Click above to unlock your exclusive access now!'}
+                </p>
+              </div>
+            )}
+
+            {/* Urgency CTA */}
+            {section.cta_config.type === 'urgency' && (
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-10 text-center mb-10 shadow-lg">
+                <div className="mb-6">
+                  <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4 animate-pulse">
+                    ⚡ {section.cta_config.badgeText || 'LIMITED TIME OFFER'}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    if (landingPage?.ai_generated_items?.campaigns?.url) {
+                      trackCtaClick(
+                        `section_${index + 1}_cta_urgency`,
+                        slug,
+                        landingPage?.ai_generated_items?.headline || 'Landing Page',
+                        section.cta_config.buttonText,
+                        landingPage.ai_generated_items.campaigns.url
+                      );
+                      window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                    }
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-xl hover:shadow-2xl"
+                >
+                  {section.cta_config.buttonText || 'Claim Your Spot Now'}
+                </Button>
+                <p className="text-base text-gray-700 mt-4 font-medium">
+                  {section.cta_config.subtitleText || 'Don\'t miss out - offer ends soon!'}
+                </p>
+              </div>
+            )}
+
+            {/* Testimonial CTA */}
+            {section.cta_config.type === 'testimonial' && (
+              <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-gray-300 rounded-xl p-10 text-center mb-10 shadow-lg">
+                <div className="mb-6 bg-white rounded-lg p-4 shadow-sm">
+                  <div className="text-yellow-400 mb-2">
+                    {'⭐'.repeat(5)}
+                  </div>
+                  <p className="text-gray-700 italic mb-2">
+                    "{section.cta_config.testimonialQuote || 'This product changed my life!'}"
+                  </p>
+                  <p className="text-sm text-gray-600 font-medium">
+                    — {section.cta_config.testimonialAuthor || 'Verified Customer'}
+                  </p>
+                </div>
+                <Button
+                  onClick={() => {
+                    if (landingPage?.ai_generated_items?.campaigns?.url) {
+                      trackCtaClick(
+                        `section_${index + 1}_cta_testimonial`,
+                        slug,
+                        landingPage?.ai_generated_items?.headline || 'Landing Page',
+                        section.cta_config.buttonText,
+                        landingPage.ai_generated_items.campaigns.url
+                      );
+                      window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                    }
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+                >
+                  {section.cta_config.buttonText || 'Get Started Today'}
+                </Button>
+                {section.cta_config.subtitleText && (
+                  <p className="text-sm text-gray-600 mt-4">
+                    {section.cta_config.subtitleText}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Discount CTA */}
+            {section.cta_config.type === 'discount' && (
+              <div className="bg-gradient-to-r from-blue-50 to-sky-50 border-2 border-blue-300 rounded-xl p-10 text-center mb-10 shadow-lg">
+                <div className="mb-6">
+                  <span className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                    {section.cta_config.badgeText || 'SPECIAL DISCOUNT'}
+                  </span>
+                </div>
+                <div className="bg-white border-2 border-blue-300 rounded-lg p-6 mb-6">
+                  <p className="text-sm text-gray-600 mb-2 font-medium">Use this code:</p>
+                  <div className="flex items-center justify-center gap-3">
+                    <div className="bg-gray-100 border-2 border-dashed border-gray-400 rounded-lg py-3 px-6">
+                      <code className="text-2xl font-bold text-gray-900 tracking-wider">
+                        {section.cta_config.discountCode || 'SAVE20'}
+                      </code>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(section.cta_config.discountCode || 'SAVE20');
+                        e.target.textContent = 'Copied!';
+                        setTimeout(() => {
+                          e.target.textContent = 'Copy';
+                        }, 2000);
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      title="Copy code"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    if (landingPage?.ai_generated_items?.campaigns?.url) {
+                      trackCtaClick(
+                        `section_${index + 1}_cta_discount`,
+                        slug,
+                        landingPage?.ai_generated_items?.headline || 'Landing Page',
+                        section.cta_config.buttonText,
+                        landingPage.ai_generated_items.campaigns.url
+                      );
+                      window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                    }
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+                >
+                  {section.cta_config.buttonText || 'Apply Discount'}
+                </Button>
+                <p className="text-base text-gray-700 mt-4 font-medium">
+                  {section.cta_config.subtitleText || 'Use code at checkout for instant savings'}
+                </p>
+              </div>
+            )}
+
+            {/* Guarantee CTA */}
+            {section.cta_config.type === 'guarantee' && (
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-10 text-center mb-10 shadow-lg">
+                <div className="mb-6">
+                  <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    {section.cta_config.guaranteeText || '30-Day Money-Back Guarantee'}
+                  </div>
+                </div>
+                <Button
+                  onClick={() => {
+                    if (landingPage?.ai_generated_items?.campaigns?.url) {
+                      trackCtaClick(
+                        `section_${index + 1}_cta_guarantee`,
+                        slug,
+                        landingPage?.ai_generated_items?.headline || 'Landing Page',
+                        section.cta_config.buttonText,
+                        landingPage.ai_generated_items.campaigns.url
+                      );
+                      window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                    }
+                  }}
+                  className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+                >
+                  {section.cta_config.buttonText || 'Try Risk-Free'}
+                </Button>
+                <p className="text-base text-gray-700 mt-4 font-medium">
+                  {section.cta_config.subtitleText || 'No questions asked - 100% satisfaction guaranteed'}
+                </p>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Legacy CTA support (for backward compatibility) */}
+        {!section.cta_config && section.cta && (
           <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-xl p-10 text-center mb-10 shadow-lg">
             <div className="mb-6">
               <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-base font-bold mb-4 animate-bounce">

@@ -255,6 +255,13 @@ export function EditLandingPage({ user }) {
     await saveField({ sections: updatedSections });
   };
 
+  const handleSaveCtaConfig = async (sectionIndex, ctaConfig) => {
+    const updatedSections = [...landingPage.sections];
+    updatedSections[sectionIndex].cta_config = ctaConfig;
+    setLandingPage({ ...landingPage, sections: updatedSections });
+    await saveField({ sections: updatedSections });
+  };
+
   const handleSetWidget = async (sectionIndex, widgetType) => {
     const updatedSections = [...landingPage.sections];
     const section = updatedSections[sectionIndex];
@@ -1063,26 +1070,382 @@ export function EditLandingPage({ user }) {
                 </div>
               )}
 
-              {/* CTA Section - Editable */}
+              {/* CTA Section - Editable with Multiple Types */}
               <div className="mb-8">
                 {isEditing('cta', sectionIndex) ? (
                   <div>
-                    <Input
-                      value={editingField.value}
-                      onChange={(e) => setEditingField({ ...editingField, value: e.target.value })}
-                      className="border-2 border-blue-600 rounded-lg p-3 bg-gray-100"
-                      style={{ color: '#111827' }}
-                      placeholder="Enter CTA text (leave empty for no CTA)"
-                      autoFocus
-                    />
-                    <div className="flex gap-2 mt-2">
+                    <div className="bg-gray-50 border-2 border-blue-600 rounded-lg p-6 mb-4">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-4">CTA Configuration</h3>
+                    
+                    {/* CTA Type Selector */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">CTA Type</label>
+                      <select
+                        value={editingField.value?.type || 'simple'}
+                        onChange={(e) => {
+                          const newType = e.target.value;
+                          const defaults = {
+                            simple: {
+                              type: 'simple',
+                              buttonText: 'Get Started',
+                              subtitleText: 'Join thousands of satisfied customers'
+                            },
+                            exclusive: {
+                              type: 'exclusive',
+                              buttonText: 'Get Access',
+                              badgeText: 'EXCLUSIVE OFFER',
+                              subtitleText: 'Unlock your exclusive access now'
+                            },
+                            urgency: {
+                              type: 'urgency',
+                              buttonText: 'Claim Now',
+                              badgeText: 'LIMITED TIME',
+                              subtitleText: "Don't miss out - offer ends soon"
+                            },
+                            testimonial: {
+                              type: 'testimonial',
+                              buttonText: 'Join Today',
+                              subtitleText: 'Join 10,000+ happy customers',
+                              testimonialQuote: 'This product changed my life!',
+                              testimonialAuthor: 'Sarah M., Verified Customer'
+                            },
+                            guarantee: {
+                              type: 'guarantee',
+                              buttonText: 'Try Risk-Free',
+                              guaranteeText: '30-Day Money-Back Guarantee',
+                              subtitleText: '100% satisfaction guaranteed'
+                            },
+                            discount: {
+                              type: 'discount',
+                              buttonText: 'Apply Discount',
+                              badgeText: 'SPECIAL DISCOUNT',
+                              discountCode: 'SAVE20',
+                              subtitleText: 'Use code at checkout for instant savings'
+                            }
+                          };
+                          
+                          // Keep existing values if they exist, otherwise use defaults
+                          const currentValues = editingField.value || {};
+                          const newDefaults = defaults[newType] || defaults.simple;
+                          
+                          setEditingField({
+                            ...editingField,
+                            value: {
+                              ...newDefaults,
+                              // Preserve common fields if they were already filled
+                              buttonText: currentValues.buttonText || newDefaults.buttonText,
+                              subtitleText: currentValues.subtitleText || newDefaults.subtitleText
+                            }
+                          });
+                        }}
+                        className="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm bg-white text-gray-700"
+                      >
+                        <option value="simple">Simple Button</option>
+                        <option value="exclusive">Exclusive Opportunity</option>
+                        <option value="urgency">Urgency/Limited Time</option>
+                        <option value="testimonial">With Testimonial</option>
+                        <option value="guarantee">Money-Back Guarantee</option>
+                        <option value="discount">Apply Discount Code</option>
+                      </select>
+                    </div>
+
+                    {/* Button Text */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Button Text</label>
+                      <Input
+                        value={editingField.value?.buttonText || ''}
+                        onChange={(e) => setEditingField({
+                          ...editingField,
+                          value: {
+                            ...editingField.value,
+                            buttonText: e.target.value
+                          }
+                        })}
+                        placeholder="e.g., Get Started, Visit Site, Learn More"
+                        className="border-2 border-gray-300 rounded-lg bg-white"
+                        style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                        maxLength={15}
+                      />
+                      <div className="text-xs text-gray-500 mt-1">
+                        {(editingField.value?.buttonText || '').length}/15 characters
+                      </div>
+                    </div>
+
+                    {/* Badge Text (for exclusive/urgency/discount types) */}
+                    {(editingField.value?.type === 'exclusive' || editingField.value?.type === 'urgency' || editingField.value?.type === 'discount') && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Badge Text</label>
+                        <Input
+                          value={editingField.value?.badgeText || ''}
+                          onChange={(e) => setEditingField({
+                            ...editingField,
+                            value: {
+                              ...editingField.value,
+                              badgeText: e.target.value
+                            }
+                          })}
+                          placeholder="e.g., EXCLUSIVE OFFER, LIMITED TIME ONLY"
+                          className="border-2 border-gray-300 rounded-lg bg-white"
+                          style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                          maxLength={30}
+                        />
+                      </div>
+                    )}
+
+                    {/* Discount Code (for discount type) */}
+                    {editingField.value?.type === 'discount' && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Discount Code</label>
+                        <Input
+                          value={editingField.value?.discountCode || ''}
+                          onChange={(e) => setEditingField({
+                            ...editingField,
+                            value: {
+                              ...editingField.value,
+                              discountCode: e.target.value.toUpperCase()
+                            }
+                          })}
+                          placeholder="e.g., SAVE20, WINTER25"
+                          className="border-2 border-gray-300 rounded-lg bg-white font-mono tracking-wider"
+                          style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                          maxLength={20}
+                        />
+                        <div className="text-xs text-gray-500 mt-1">
+                          {(editingField.value?.discountCode || '').length}/20 characters
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Subtitle Text */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Subtitle Text</label>
+                      <Input
+                        value={editingField.value?.subtitleText || ''}
+                        onChange={(e) => setEditingField({
+                          ...editingField,
+                          value: {
+                            ...editingField.value,
+                            subtitleText: e.target.value
+                          }
+                        })}
+                        placeholder="e.g., Join thousands of satisfied customers"
+                        className="border-2 border-gray-300 rounded-lg bg-white"
+                        style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                        maxLength={100}
+                      />
+                    </div>
+
+                    {/* Testimonial Quote (for testimonial type) */}
+                    {editingField.value?.type === 'testimonial' && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Testimonial Quote</label>
+                        <Textarea
+                          value={editingField.value?.testimonialQuote || ''}
+                          onChange={(e) => setEditingField({
+                            ...editingField,
+                            value: {
+                              ...editingField.value,
+                              testimonialQuote: e.target.value
+                            }
+                          })}
+                          placeholder="e.g., This product changed my life!"
+                          className="border-2 border-gray-300 rounded-lg bg-white"
+                          style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                          rows={2}
+                          maxLength={150}
+                        />
+                      </div>
+                    )}
+
+                    {/* Testimonial Author (for testimonial type) */}
+                    {editingField.value?.type === 'testimonial' && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Author Name</label>
+                        <Input
+                          value={editingField.value?.testimonialAuthor || ''}
+                          onChange={(e) => setEditingField({
+                            ...editingField,
+                            value: {
+                              ...editingField.value,
+                              testimonialAuthor: e.target.value
+                            }
+                          })}
+                          placeholder="e.g., Sarah M., Verified Customer"
+                          className="border-2 border-gray-300 rounded-lg bg-white"
+                          style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                          maxLength={50}
+                        />
+                      </div>
+                    )}
+
+                    {/* Guarantee Text (for guarantee type) */}
+                    {editingField.value?.type === 'guarantee' && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">Guarantee Text</label>
+                        <Input
+                          value={editingField.value?.guaranteeText || ''}
+                          onChange={(e) => setEditingField({
+                            ...editingField,
+                            value: {
+                              ...editingField.value,
+                              guaranteeText: e.target.value
+                            }
+                          })}
+                          placeholder="e.g., 30-Day Money-Back Guarantee"
+                          className="border-2 border-gray-300 rounded-lg bg-white"
+                          style={{ color: '#111827', backgroundColor: '#ffffff' }}
+                          maxLength={60}
+                        />
+                      </div>
+                    )}
+
+                    {/* Live Preview */}
+                    <div className="mt-6 pt-6 border-t border-gray-300">
+                      <h3 className="text-sm font-semibold text-gray-700 mb-3">Live Preview</h3>
+                    
+                    {/* Simple CTA Preview */}
+                    {editingField.value?.type === 'simple' && (
+                      <div className="bg-white border-2 border-gray-300 rounded-xl p-8 text-center shadow-lg">
+                        <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg pointer-events-none">
+                          {editingField.value?.buttonText || 'Get Started'}
+                        </Button>
+                        {editingField.value?.subtitleText && (
+                          <p className="text-sm text-gray-600 mt-4">
+                            {editingField.value.subtitleText}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Exclusive Opportunity CTA Preview */}
+                    {editingField.value?.type === 'exclusive' && (
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-10 text-center shadow-lg">
+                        <div className="mb-6">
+                          <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                            {editingField.value?.badgeText || 'EXCLUSIVE OPPORTUNITY'}
+                          </div>
+                        </div>
+                        <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg pointer-events-none">
+                          {editingField.value?.buttonText || 'Get Started'}
+                        </Button>
+                        <p className="text-base text-gray-700 mt-4 font-medium">
+                          {editingField.value?.subtitleText || 'Click above to unlock your exclusive access now!'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Urgency CTA Preview */}
+                    {editingField.value?.type === 'urgency' && (
+                      <div className="bg-gradient-to-r from-red-50 to-orange-50 border-2 border-red-400 rounded-xl p-10 text-center shadow-lg">
+                        <div className="mb-6">
+                          <div className="inline-block bg-red-100 text-red-800 px-4 py-2 rounded-full text-base font-bold mb-4 animate-pulse">
+                            ⚡ {editingField.value?.badgeText || 'LIMITED TIME OFFER'}
+                          </div>
+                        </div>
+                        <Button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-6 text-lg rounded-lg shadow-xl pointer-events-none">
+                          {editingField.value?.buttonText || 'Claim Your Spot Now'}
+                        </Button>
+                        <p className="text-base text-gray-700 mt-4 font-medium">
+                          {editingField.value?.subtitleText || 'Don\'t miss out - offer ends soon!'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Testimonial CTA Preview */}
+                    {editingField.value?.type === 'testimonial' && (
+                      <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-gray-300 rounded-xl p-10 text-center shadow-lg">
+                        <div className="mb-6 bg-white rounded-lg p-4 shadow-sm">
+                          <div className="text-yellow-400 mb-2">
+                            {'⭐'.repeat(5)}
+                          </div>
+                          <p className="text-gray-700 italic mb-2">
+                            "{editingField.value?.testimonialQuote || 'This product changed my life!'}"
+                          </p>
+                          <p className="text-sm text-gray-600 font-medium">
+                            — {editingField.value?.testimonialAuthor || 'Verified Customer'}
+                          </p>
+                        </div>
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 text-lg rounded-lg pointer-events-none">
+                          {editingField.value?.buttonText || 'Get Started Today'}
+                        </Button>
+                        {editingField.value?.subtitleText && (
+                          <p className="text-sm text-gray-600 mt-4">
+                            {editingField.value.subtitleText}
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Discount CTA Preview */}
+                    {editingField.value?.type === 'discount' && (
+                      <div className="bg-gradient-to-r from-blue-50 to-sky-50 border-2 border-blue-300 rounded-xl p-10 text-center shadow-lg">
+                        <div className="mb-6">
+                          <span className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                            {editingField.value?.badgeText || 'SPECIAL DISCOUNT'}
+                          </span>
+                        </div>
+                        <div className="bg-white border-2 border-blue-300 rounded-lg p-6 mb-6">
+                          <p className="text-sm text-gray-600 mb-2 font-medium">Use this code:</p>
+                          <div className="flex items-center justify-center gap-3">
+                            <div className="bg-gray-100 border-2 border-dashed border-gray-400 rounded-lg py-3 px-6">
+                              <code className="text-2xl font-bold text-gray-900 tracking-wider">
+                                {editingField.value?.discountCode || 'SAVE20'}
+                              </code>
+                            </div>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(editingField.value?.discountCode || 'SAVE20');
+                              }}
+                              className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors pointer-events-none"
+                              title="Copy code"
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        </div>
+                        <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg shadow-xl pointer-events-none">
+                          {editingField.value?.buttonText || 'Apply Discount'}
+                        </Button>
+                        <p className="text-base text-gray-700 mt-4 font-medium">
+                          {editingField.value?.subtitleText || 'Use code at checkout for instant savings'}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Guarantee CTA Preview */}
+                    {editingField.value?.type === 'guarantee' && (
+                      <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-10 text-center shadow-lg">
+                        <div className="mb-6">
+                          <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            {editingField.value?.guaranteeText || '30-Day Money-Back Guarantee'}
+                          </div>
+                        </div>
+                        <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg pointer-events-none">
+                          {editingField.value?.buttonText || 'Try Risk-Free'}
+                        </Button>
+                        <p className="text-base text-gray-700 mt-4 font-medium">
+                          {editingField.value?.subtitleText || 'No questions asked - 100% satisfaction guaranteed'}
+                        </p>
+                      </div>
+                    )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 mt-6 pt-4 border-t border-gray-300">
                       <Button
                         size="sm"
-                        onClick={() => handleSaveCTA(sectionIndex, editingField.value)}
-                        className="bg-green-600 hover:bg-green-700 text-white"
+                        onClick={() => {
+                          handleSaveCtaConfig(sectionIndex, editingField.value);
+                          setEditingField(null);
+                        }}
+                        style={{ backgroundColor: '#2563eb', color: 'white' }}
+                        className="hover:opacity-90"
                       >
                         <Check className="w-4 h-4 mr-1" />
-                        Save
+                        Save CTA
                       </Button>
                       <Button
                         size="sm"
@@ -1093,15 +1456,15 @@ export function EditLandingPage({ user }) {
                         <X className="w-4 h-4 mr-1" />
                         Cancel
                       </Button>
-                      {section.cta && (
+                      {section.cta_config && (
                         <Button
                           size="sm"
                           onClick={() => {
                             cancelEdit();
-                            handleSaveCTA(sectionIndex, null);
+                            handleSaveCtaConfig(sectionIndex, null);
                           }}
                           style={{ backgroundColor: '#dc2626', color: 'white' }}
-                          className="shadow-lg hover:opacity-90"
+                          className="shadow-lg hover:opacity-90 ml-auto"
                         >
                           <Trash2 className="w-4 h-4 mr-1" />
                           Remove CTA
@@ -1109,14 +1472,15 @@ export function EditLandingPage({ user }) {
                       )}
                     </div>
                   </div>
+                  </div>
                 ) : (
                   <>
-                    {section.cta ? (
-                      <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-300 rounded-xl p-10 text-center shadow-lg relative group">
+                    {section.cta_config ? (
+                      <div className="relative group">
                         <div className="absolute -left-16 top-4 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex flex-col gap-2">
                           <Button
                             size="sm"
-                            onClick={() => startEdit('cta', sectionIndex, null, section.cta)}
+                            onClick={() => startEdit('cta', sectionIndex, null, section.cta_config)}
                             style={{ backgroundColor: '#2563eb', color: 'white' }}
                             className="shadow-lg hover:opacity-90"
                           >
@@ -1124,31 +1488,150 @@ export function EditLandingPage({ user }) {
                           </Button>
                           <Button
                             size="sm"
-                            onClick={() => handleSaveCTA(sectionIndex, null)}
+                            onClick={() => handleSaveCtaConfig(sectionIndex, null)}
                             style={{ backgroundColor: '#dc2626', color: 'white' }}
                             className="shadow-lg hover:opacity-90"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
-                        <div className="mb-6">
-                          <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-base font-bold mb-4">
-                            EXCLUSIVE OPPORTUNITY
+                        
+                        {/* Simple CTA */}
+                        {section.cta_config.type === 'simple' && (
+                          <div className="bg-white border-2 border-gray-300 rounded-xl p-8 text-center shadow-lg">
+                            <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg">
+                              {section.cta_config.buttonText || 'Get Started'}
+                            </Button>
+                            {section.cta_config.subtitleText && (
+                              <p className="text-sm text-gray-600 mt-4">
+                                {section.cta_config.subtitleText}
+                              </p>
+                            )}
                           </div>
-                        </div>
-                        <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg">
-                          {section.cta}
-                        </Button>
-                        <p className="text-base text-gray-700 mt-4 font-medium">
-                          Click above to unlock your exclusive access now!
-                        </p>
-                        <p className="text-sm text-green-600 mt-2 font-semibold">
-                          Join thousands of satisfied users!
-                        </p>
+                        )}
+
+                        {/* Exclusive Opportunity CTA */}
+                        {section.cta_config.type === 'exclusive' && (
+                          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-10 text-center shadow-lg">
+                            <div className="mb-6">
+                              <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                                {section.cta_config.badgeText || 'EXCLUSIVE OPPORTUNITY'}
+                              </div>
+                            </div>
+                            <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg">
+                              {section.cta_config.buttonText || 'Get Started'}
+                            </Button>
+                            <p className="text-base text-gray-700 mt-4 font-medium">
+                              {section.cta_config.subtitleText || 'Click above to unlock your exclusive access now!'}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Urgency CTA */}
+                        {section.cta_config.type === 'urgency' && (
+                          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-10 text-center shadow-lg">
+                            <div className="mb-6">
+                              <div className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4 animate-pulse">
+                                ⚡ {section.cta_config.badgeText || 'LIMITED TIME OFFER'}
+                              </div>
+                            </div>
+                            <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg shadow-xl">
+                              {section.cta_config.buttonText || 'Claim Your Spot Now'}
+                            </Button>
+                            <p className="text-base text-gray-700 mt-4 font-medium">
+                              {section.cta_config.subtitleText || 'Don\'t miss out - offer ends soon!'}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Testimonial CTA */}
+                        {section.cta_config.type === 'testimonial' && (
+                          <div className="bg-gradient-to-r from-slate-50 to-gray-50 border-2 border-gray-300 rounded-xl p-10 text-center shadow-lg">
+                            <div className="mb-6 bg-white rounded-lg p-4 shadow-sm">
+                              <div className="text-yellow-400 mb-2">
+                                {'⭐'.repeat(5)}
+                              </div>
+                              <p className="text-gray-700 italic mb-2">
+                                "{section.cta_config.testimonialQuote || 'This product changed my life!'}"
+                              </p>
+                              <p className="text-sm text-gray-600 font-medium">
+                                — {section.cta_config.testimonialAuthor || 'Verified Customer'}
+                              </p>
+                            </div>
+                            <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 text-lg rounded-lg">
+                              {section.cta_config.buttonText || 'Get Started Today'}
+                            </Button>
+                            {section.cta_config.subtitleText && (
+                              <p className="text-sm text-gray-600 mt-4">
+                                {section.cta_config.subtitleText}
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Discount CTA */}
+                        {section.cta_config.type === 'discount' && (
+                          <div className="bg-gradient-to-r from-blue-50 to-sky-50 border-2 border-blue-300 rounded-xl p-10 text-center shadow-lg">
+                            <div className="mb-6">
+                              <span className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                                {section.cta_config.badgeText || 'SPECIAL DISCOUNT'}
+                              </span>
+                            </div>
+                            <div className="bg-white border-2 border-blue-300 rounded-lg p-6 mb-6">
+                              <p className="text-sm text-gray-600 mb-2 font-medium">Use this code:</p>
+                              <div className="flex items-center justify-center gap-3">
+                                <div className="bg-gray-100 border-2 border-dashed border-gray-400 rounded-lg py-3 px-6">
+                                  <code className="text-2xl font-bold text-gray-900 tracking-wider">
+                                    {section.cta_config.discountCode || 'SAVE20'}
+                                  </code>
+                                </div>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(section.cta_config.discountCode || 'SAVE20');
+                                  }}
+                                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                                  title="Copy code"
+                                >
+                                  Copy
+                                </button>
+                              </div>
+                            </div>
+                            <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg shadow-xl">
+                              {section.cta_config.buttonText || 'Apply Discount'}
+                            </Button>
+                            <p className="text-base text-gray-700 mt-4 font-medium">
+                              {section.cta_config.subtitleText || 'Use code at checkout for instant savings'}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Guarantee CTA */}
+                        {section.cta_config.type === 'guarantee' && (
+                          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-300 rounded-xl p-10 text-center shadow-lg">
+                            <div className="mb-6">
+                              <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-base font-bold mb-4">
+                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                                </svg>
+                                {section.cta_config.guaranteeText || '30-Day Money-Back Guarantee'}
+                              </div>
+                            </div>
+                            <Button className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg">
+                              {section.cta_config.buttonText || 'Try Risk-Free'}
+                            </Button>
+                            <p className="text-base text-gray-700 mt-4 font-medium">
+                              {section.cta_config.subtitleText || 'No questions asked - 100% satisfaction guaranteed'}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <Button
-                        onClick={() => startEdit('cta', sectionIndex, null, '')}
+                        onClick={() => startEdit('cta', sectionIndex, null, {
+                          type: 'simple',
+                          buttonText: 'Get Started',
+                          subtitleText: 'Join thousands of satisfied customers'
+                        })}
                         variant="outline"
                         size="sm"
                         className="border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-gray-900"
