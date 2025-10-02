@@ -131,8 +131,6 @@ export function MultiStepCampaignForm({ user }) {
     }));
 
     try {
-      console.log('🤖 Generating AI suggestions for:', formData.url);
-      
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session) {
         throw new Error('No session found');

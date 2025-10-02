@@ -179,8 +179,6 @@ export function AiContentPage({ user }) {
       if (!response.ok) {
         throw new Error(result.error || 'Failed to generate landing page');
       }
-
-      console.log('✅ Landing page generated:', result);
       
       // Navigate to edit page
       navigate(`/pages/edit/${result.landing_page.id}`);

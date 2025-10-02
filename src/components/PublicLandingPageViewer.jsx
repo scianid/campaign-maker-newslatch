@@ -43,8 +43,6 @@ export function PublicLandingPageViewer() {
       setLoading(true);
       setError(null);
 
-      console.log('🔍 Fetching landing page for slug:', slug);
-
       const response = await fetch(
         `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/public-landing-page/${slug}`,
         {
@@ -55,10 +53,7 @@ export function PublicLandingPageViewer() {
         }
       );
 
-      console.log('📡 Response status:', response.status);
-
       const result = await response.json();
-      console.log('📄 Response data:', result);
 
       if (!response.ok) {
         console.error('❌ API Error:', result);
@@ -69,7 +64,6 @@ export function PublicLandingPageViewer() {
         throw new Error('No landing page data received');
       }
 
-      console.log('✅ Landing page loaded successfully');
       setLandingPage(result.landing_page);
     } catch (err) {
       console.error('❌ Error fetching landing page:', err);
@@ -401,12 +395,12 @@ export function PublicLandingPageViewer() {
       {/* Sticky Bottom CTA */}
       {(landingPage.sticky_cta_visible !== false) && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-100" style={{ boxShadow: '0 -10px 30px -5px rgba(0, 0, 0, 0.3), 0 -4px 6px -2px rgba(0, 0, 0, 0.2)' }}>
-          <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <p className="text-gray-900 font-bold text-lg md:text-xl">
+          <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
+            <div className="flex-1 text-center sm:text-left">
+              <p className="text-gray-900 font-bold text-sm sm:text-base md:text-lg lg:text-xl leading-tight">
                 {landingPage.sticky_cta_title || 'Ready to Take Action?'}
               </p>
-              <p className="text-gray-700 text-sm">
+              <p className="text-gray-700 text-xs sm:text-sm mt-0.5">
                 {landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more'}
               </p>
             </div>
@@ -416,7 +410,7 @@ export function PublicLandingPageViewer() {
                   window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                 }
               }}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold px-8 py-4 text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105"
+              className="bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg rounded-lg shadow-xl hover:shadow-2xl transition-all hover:scale-105 whitespace-nowrap w-full sm:w-auto"
             >
               {landingPage.sticky_cta_button || 'Visit Site →'}
             </Button>

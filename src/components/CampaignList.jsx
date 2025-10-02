@@ -119,8 +119,6 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
       // Show success message
       const itemsGenerated = result.items_generated || 0;
       
-      console.log('✅ AI Content Generation completed:', result);
-      
       // Navigate to the AI content page for this campaign
       navigate(`/content/${campaign.id}`);
       

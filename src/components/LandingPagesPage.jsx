@@ -109,10 +109,7 @@ export function LandingPagesPage({ user }) {
         throw new Error('You must be logged in to delete landing pages');
       }
 
-      console.log('🗑️ Deleting landing page and images:', deleteConfirm.item.id);
-
-      // First, delete images from storage (via Edge Function or trigger will handle it)
-      // The database trigger will automatically delete images when the row is deleted
+      setIsDeleting(true);
       
       // Delete the landing page (trigger will cascade delete images)
       const { error } = await supabase
@@ -122,14 +119,14 @@ export function LandingPagesPage({ user }) {
 
       if (error) throw error;
 
-      console.log('✅ Landing page and images deleted successfully');
-
       // Update local state
       setLandingPages(prev => prev.filter(page => page.id !== deleteConfirm.item.id));
       setDeleteConfirm({ show: false, item: null });
     } catch (err) {
       console.error('Failed to delete landing page:', err);
       alert('Failed to delete landing page. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -182,8 +179,6 @@ export function LandingPagesPage({ user }) {
         throw new Error('You must be logged in to generate images');
       }
 
-      console.log('🎨 Generating image for section:', sectionIndex);
-
       const response = await fetch(
         'https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/generate-landing-page-image',
         {
@@ -206,9 +201,7 @@ export function LandingPagesPage({ user }) {
         throw new Error(result.error || 'Failed to generate image');
       }
 
-      console.log('✅ Image generated successfully:', result.image_url);
-
-      // Refresh landing pages to show the new image
+      // Update the landing page with the new image
       await fetchLandingPages();
 
       alert('Image generated successfully!');
@@ -530,8 +523,6 @@ export function LandingPagesPage({ user }) {
                           size="sm"
                           onClick={() => {
                             const url = getPublicUrl(page.slug);
-                            console.log('🔗 Opening public URL:', url);
-                            console.log('📄 Page data:', page);
                             window.open(url, '_blank');
                           }}
                           className="h-10 w-10 p-0 text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 transition-all duration-200"
