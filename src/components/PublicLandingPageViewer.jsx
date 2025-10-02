@@ -230,6 +230,13 @@ export function PublicLandingPageViewer() {
             <Button
               onClick={() => {
                 if (landingPage?.ai_generated_items?.campaigns?.url) {
+                  trackCtaClick(
+                    `section_${index + 1}_cta`,
+                    slug,
+                    landingPage?.ai_generated_items?.headline || 'Landing Page',
+                    section.cta,
+                    landingPage.ai_generated_items.campaigns.url
+                  );
                   window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                 }
               }}
@@ -367,6 +374,13 @@ export function PublicLandingPageViewer() {
               <Button
                 onClick={() => {
                   if (landingPage?.ai_generated_items?.campaigns?.url) {
+                    trackCtaClick(
+                      'hero_cta',
+                      slug,
+                      landingPage?.ai_generated_items?.headline || 'Landing Page',
+                      'Visit Site →',
+                      landingPage.ai_generated_items.campaigns.url
+                    );
                     window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                   }
                 }}
@@ -407,6 +421,13 @@ export function PublicLandingPageViewer() {
             <Button
               onClick={() => {
                 if (landingPage?.ai_generated_items?.campaigns?.url) {
+                  trackCtaClick(
+                    'sticky_cta',
+                    slug,
+                    landingPage?.ai_generated_items?.headline || 'Landing Page',
+                    landingPage.sticky_cta_button || 'Visit Site →',
+                    landingPage.ai_generated_items.campaigns.url
+                  );
                   window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                 }
               }}
