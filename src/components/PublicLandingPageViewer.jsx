@@ -9,12 +9,24 @@ export function PublicLandingPageViewer() {
   const [landingPage, setLandingPage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showStickyCta, setShowStickyCta] = useState(false);
 
   useEffect(() => {
     if (slug) {
       fetchLandingPage();
     }
   }, [slug]);
+
+  // Scroll detection for sticky CTA
+  useEffect(() => {
+    const handleScroll = () => {
+      // Show sticky CTA when scrolled down more than 300px
+      setShowStickyCta(window.scrollY > 300);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Update page title and meta tags when landing page loads
   useEffect(() => {
@@ -411,8 +423,8 @@ export function PublicLandingPageViewer() {
       </main>
 
       {/* Sticky Bottom CTA */}
-      {(landingPage.sticky_cta_visible !== false) && (
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-100" style={{ boxShadow: '0 -10px 30px -5px rgba(0, 0, 0, 0.3), 0 -4px 6px -2px rgba(0, 0, 0, 0.2)' }}>
+      {showStickyCta && (landingPage.sticky_cta_visible !== false) && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-100 transition-transform duration-300" style={{ boxShadow: '0 -10px 30px -5px rgba(0, 0, 0, 0.3), 0 -4px 6px -2px rgba(0, 0, 0, 0.2)' }}>
           <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
             <div className="flex-1 text-center sm:text-left">
               <p className="text-gray-900 font-bold text-sm sm:text-base md:text-lg lg:text-xl leading-tight">

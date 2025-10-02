@@ -1,11 +1,13 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileText, Target, User } from 'lucide-react';
+import { FileText, Target, User, Menu, X } from 'lucide-react';
 import { AuthComponent } from './AuthComponent';
 import { Button } from '../ui/Button';
+import { useState } from 'react';
 
 export function Header({ user, children }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigationItems = [
     {
@@ -69,10 +71,51 @@ export function Header({ user, children }) {
           </div>
           
           <div className="flex items-center gap-4">
+            {user && (
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden text-gray-300 hover:text-white p-2"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            )}
             {children}
             <AuthComponent user={user} />
           </div>
         </div>
+        
+        {/* Mobile Navigation */}
+        {user && mobileMenuOpen && (
+          <div className="md:hidden border-t border-gray-700/30 py-2">
+            <nav className="flex flex-col gap-1">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = isActivePath(item.path);
+                
+                return (
+                  <Button
+                    key={item.path}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      navigate(item.path);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors justify-start ${
+                      isActive
+                        ? 'text-highlight bg-highlight/10 border border-highlight/20'
+                        : 'text-gray-300 hover:text-white hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    {item.label}
+                  </Button>
+                );
+              })}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );
