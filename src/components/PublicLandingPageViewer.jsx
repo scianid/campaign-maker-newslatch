@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Calendar, ExternalLink, Eye, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { trackCtaClick, trackPageView } from '../utils/analytics';
 
 export function PublicLandingPageViewer() {
   const { slug } = useParams();
@@ -65,6 +66,9 @@ export function PublicLandingPageViewer() {
       }
 
       setLandingPage(result.landing_page);
+      
+      // Track page view
+      trackPageView(slug, result.landing_page?.ai_generated_items?.headline || 'Landing Page');
     } catch (err) {
       console.error('❌ Error fetching landing page:', err);
       setError(err.message);
