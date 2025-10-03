@@ -13,7 +13,8 @@ import {
   Check,
   X,
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  Pencil
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
@@ -33,6 +34,7 @@ export function EditLandingPage({ user }) {
   const [showSaved, setShowSaved] = useState(false);
   const [showAddParagraphMenu, setShowAddParagraphMenu] = useState(null); // sectionIndex
   const [showAddImageMenu, setShowAddImageMenu] = useState(null); // sectionIndex
+  const [showAddSectionMenu, setShowAddSectionMenu] = useState(null); // position index
   const [generatingParagraph, setGeneratingParagraph] = useState(false);
 
   // Content types for AI paragraph generation
@@ -192,6 +194,74 @@ export function EditLandingPage({ user }) {
       message: 'Choose the type of content you want to generate:'
     });
     setShowAddParagraphMenu(null);
+  };
+
+  const handleAddSectionWithAI = (position, contentType) => {
+    setModal({
+      type: 'aiSection',
+      title: `Generate ${contentType.charAt(0).toUpperCase() + contentType.slice(1)} Section`,
+      message: `Describe what you want in this ${contentType} section:`,
+      value: '',
+      position,
+      contentType,
+      step: 1
+    });
+    setShowAddSectionMenu(null);
+  };
+
+  const generateSectionWithAI = async (position, contentType, prompt) => {
+    setGeneratingParagraph(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(`https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/generate-paragraph`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          landingPageId: pageId,
+          prompt: prompt || `Create a compelling ${contentType} section for this landing page.`,
+          contentType: contentType
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+      }
+
+      const result = await response.json();
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      // Add the new section at the specified position
+      const updatedSections = [...landingPage.sections];
+      updatedSections.splice(position, 0, result.section);
+      
+      const { error } = await supabase
+        .from('landing_pages')
+        .update({ sections: updatedSections })
+        .eq('id', pageId);
+
+      if (error) throw error;
+
+      setLandingPage(prev => ({
+        ...prev,
+        sections: updatedSections
+      }));
+
+      setModal(null);
+      setShowSaved(true);
+      setTimeout(() => setShowSaved(false), 2000);
+    } catch (error) {
+      console.error('Error generating section:', error);
+      alert('Failed to generate section. Please try again.');
+    } finally {
+      setGeneratingParagraph(false);
+    }
   };
 
   const generateParagraphWithAI = async (sectionIndex, contentType, prompt) => {
@@ -769,8 +839,58 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
 
         {/* Article Content */}
         <article className="max-w-none">
+          {/* Add Section at the beginning */}
+          <div className="relative mb-8 add-section-dropdown">
+            <Button
+              onClick={() => setShowAddSectionMenu(showAddSectionMenu === 0 ? null : 0)}
+              size="sm" 
+              className="border-2 border-dashed border-blue-400 !text-blue-600 hover:!bg-blue-50 !bg-white w-full py-3"
+            >
+              <Plus className="w-4 h-4 mr-2 !text-blue-600" />
+              Create New Section With AI
+              <ChevronDown className="w-4 h-4 ml-2 !text-blue-600" />
+            </Button>
+            
+            {showAddSectionMenu === 0 && (
+              <div className="absolute left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-10 max-h-96 overflow-y-auto">
+                <div className="p-2">
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2 px-2">AI Section Types</h3>
+                  <button onClick={() => handleAddSectionWithAI(0, 'hero')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                    <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Hero Section</div>
+                    <div className="text-xs text-gray-500 mt-1">Compelling headline, hook, and main CTA</div>
+                  </button>
+                  <button onClick={() => handleAddSectionWithAI(0, 'problem')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                    <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Problem Section</div>
+                    <div className="text-xs text-gray-500 mt-1">Problem amplification + authority</div>
+                  </button>
+                  <button onClick={() => handleAddSectionWithAI(0, 'solution')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                    <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Solution Section</div>
+                    <div className="text-xs text-gray-500 mt-1">Unique mechanism + how it works</div>
+                  </button>
+                  <button onClick={() => handleAddSectionWithAI(0, 'benefits')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                    <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Benefits Section</div>
+                    <div className="text-xs text-gray-500 mt-1">Benefits + social proof</div>
+                  </button>
+                  <button onClick={() => handleAddSectionWithAI(0, 'social-proof')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                    <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Social Proof</div>
+                    <div className="text-xs text-gray-500 mt-1">Testimonials + credibility</div>
+                  </button>
+                  <button onClick={() => handleAddSectionWithAI(0, 'urgency')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                    <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Final Offer</div>
+                    <div className="text-xs text-gray-500 mt-1">Pricing + urgency + final CTA</div>
+                  </button>
+                  <button onClick={() => handleAddSectionWithAI(0, 'custom')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                    <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Custom Section</div>
+                    <div className="text-xs text-gray-500 mt-1">Describe your specific needs</div>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          
           {landingPage.sections?.map((section, sectionIndex) => (
-            <section key={sectionIndex} className="mb-12">
+            <div key={sectionIndex}>
+              <section className="mb-12">
               {/* Widget Controls */}
               <div className="mb-8 p-4 bg-gray-50 border border-gray-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-gray-700 mb-3">Section Widget</h3>
@@ -1040,39 +1160,16 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                 </div>
               ))}
 
-              {/* Add Paragraph Button with Dropdown */}
-              <div className="relative mt-2 mb-6 add-paragraph-dropdown">
+              {/* Add Paragraph Button (Manual Only) */}
+              <div className="mt-2 mb-6">
                 <Button
-                  onClick={() => setShowAddParagraphMenu(showAddParagraphMenu === sectionIndex ? null : sectionIndex)}
+                  onClick={() => handleAddParagraph(sectionIndex)}
                   size="sm"
                   className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 hover:!text-blue-700 !bg-white"
                 >
-                  Add Paragraph
-                  <ChevronDown className="w-4 h-4 ml-1 !text-blue-600" />
+                  <Pencil className="w-4 h-4 mr-1 !text-blue-600" />
+                  Write Another Paragraph
                 </Button>
-
-                {/* Dropdown Menu */}
-                {showAddParagraphMenu === sectionIndex && (
-                  <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
-                    <button
-                      onClick={() => handleAddParagraph(sectionIndex)}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-50 rounded-t-lg border-b border-gray-100 transition-colors"
-                    >
-                      <div className="font-medium text-gray-900">Manual</div>
-                      <div className="text-xs text-gray-500 mt-1">Add a text box for manual writing</div>
-                    </button>
-                    <button
-                      onClick={() => handleAddParagraphWithAI(sectionIndex)}
-                      className="w-full px-4 py-3 text-left hover:bg-gray-50 rounded-b-lg transition-colors"
-                    >
-                      <div className="font-medium text-blue-600 flex items-center gap-2">
-                        <Sparkles className="w-4 h-4" />
-                        AI Generate
-                      </div>
-                      <div className="text-xs text-gray-500 mt-1">Let AI write based on your prompt</div>
-                    </button>
-                  </div>
-                )}
               </div>
 
               {/* Image Section */}
@@ -1792,18 +1889,57 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
 
               {/* Widget Controls - Moved to top */}
             </section>
+            
+            {/* Add Section after this section */}
+            <div className="relative mb-8 add-section-dropdown">
+              <Button
+                onClick={() => setShowAddSectionMenu(showAddSectionMenu === (sectionIndex + 1) ? null : (sectionIndex + 1))}
+                size="sm" 
+                className="border-2 border-dashed border-blue-400 !text-blue-600 hover:!bg-blue-50 !bg-white w-full py-3"
+              >
+                <Plus className="w-4 h-4 mr-2 !text-blue-600" />
+                Create New Section With AI
+                <ChevronDown className="w-4 h-4 ml-2 !text-blue-600" />
+              </Button>
+              
+              {showAddSectionMenu === (sectionIndex + 1) && (
+                <div className="absolute left-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 z-10 max-h-96 overflow-y-auto">
+                  <div className="p-2">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-2 px-2">AI Section Types</h3>
+                    <button onClick={() => handleAddSectionWithAI(sectionIndex + 1, 'hero')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                      <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Hero Section</div>
+                      <div className="text-xs text-gray-500 mt-1">Compelling headline, hook, and main CTA</div>
+                    </button>
+                    <button onClick={() => handleAddSectionWithAI(sectionIndex + 1, 'problem')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                      <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Problem Section</div>
+                      <div className="text-xs text-gray-500 mt-1">Problem amplification + authority</div>
+                    </button>
+                    <button onClick={() => handleAddSectionWithAI(sectionIndex + 1, 'solution')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                      <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Solution Section</div>
+                      <div className="text-xs text-gray-500 mt-1">Unique mechanism + how it works</div>
+                    </button>
+                    <button onClick={() => handleAddSectionWithAI(sectionIndex + 1, 'benefits')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                      <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Benefits Section</div>
+                      <div className="text-xs text-gray-500 mt-1">Benefits + social proof</div>
+                    </button>
+                    <button onClick={() => handleAddSectionWithAI(sectionIndex + 1, 'social-proof')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                      <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Social Proof</div>
+                      <div className="text-xs text-gray-500 mt-1">Testimonials + credibility</div>
+                    </button>
+                    <button onClick={() => handleAddSectionWithAI(sectionIndex + 1, 'urgency')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                      <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Final Offer</div>
+                      <div className="text-xs text-gray-500 mt-1">Pricing + urgency + final CTA</div>
+                    </button>
+                    <button onClick={() => handleAddSectionWithAI(sectionIndex + 1, 'custom')} className="w-full px-3 py-2 text-left hover:bg-gray-50 rounded transition-colors">
+                      <div className="font-medium text-blue-600 flex items-center gap-2"><Sparkles className="w-4 h-4" />Custom Section</div>
+                      <div className="text-xs text-gray-500 mt-1">Describe your specific needs</div>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            </div>
           ))}
-
-          {/* Add New Section Button */}
-          <div className="my-12">
-            <Button
-              onClick={handleAddSection}
-              className="w-full border-2 border-dashed border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white py-6 rounded-lg"
-            >
-              <Plus className="w-5 h-5 mr-2 !text-blue-600" />
-              Add New Section
-            </Button>
-          </div>
         </article>
       </main>
 
@@ -1898,6 +2034,24 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                 )}
               </div>
             )}
+
+            {/* AI Section Generation Modal */}
+            {modal.type === 'aiSection' && (
+              <div className="mb-6">
+                <Textarea
+                  value={modal.value}
+                  onChange={(e) => setModal({ ...modal, value: e.target.value })}
+                  className="w-full border-2 border-blue-600 rounded-lg p-4 focus:border-blue-600 focus:ring-2 focus:ring-blue-200 transition-all bg-white"
+                  style={{ color: '#111827', fontSize: '14px', backgroundColor: '#ffffff' }}
+                  rows={4}
+                  placeholder={`Optional: Add specific requirements for this ${modal.contentType} section...`}
+                  autoFocus
+                />
+                <div className="mt-3 text-xs text-gray-500">
+                  💡 <strong>Text is optional!</strong> You can click "Generate Section" immediately for a standard {modal.contentType} section, or add specific requirements above for customized content.
+                </div>
+              </div>
+            )}
             
             <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
               <Button
@@ -1968,6 +2122,25 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                   className="px-6 py-2.5 font-medium transition-all border-2 border-blue-600 !bg-white hover:!bg-blue-50 !text-blue-600"
                 >
                   OK
+                </Button>
+              )}
+              {modal.type === 'aiSection' && (
+                <Button
+                  onClick={() => generateSectionWithAI(modal.position, modal.contentType, modal.value)}
+                  disabled={generatingParagraph}
+                  className="px-6 py-2.5 font-medium transition-all border-2 border-blue-600 !bg-white hover:!bg-blue-50 !text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {generatingParagraph ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin !text-blue-600" />
+                      Generating Section...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 !text-blue-600" />
+                      Generate Section
+                    </>
+                  )}
                 </Button>
               )}
             </div>
