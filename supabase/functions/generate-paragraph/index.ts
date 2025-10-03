@@ -6,7 +6,7 @@ import { runGpt } from '../rss-feeds/ai.ts';
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
 
-interface GenerateParagraphRequest {
+interface GenerateSectionRequest {
   landingPageId: string;
   prompt: string;
   contentType: string;
@@ -47,7 +47,7 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(authResult.error!, '', 401);
     }
 
-    const { landingPageId, prompt, contentType, context }: GenerateParagraphRequest = await req.json();
+    const { landingPageId, prompt, contentType, context }: GenerateSectionRequest = await req.json();
 
     if (!landingPageId || !prompt || !contentType) {
       return createErrorResponse(
@@ -57,7 +57,7 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.log('📝 Generating paragraph:', { landingPageId, contentType, promptLength: prompt.length });
+    console.log('📝 Generating section:', { landingPageId, contentType, promptLength: prompt.length });
 
     // Fetch landing page to get context
     const { data: landingPage, error: pageError } = await supabaseClient
@@ -97,14 +97,14 @@ Current Content: ${landingPage.sections?.map((s: any) => s.paragraphs?.join(' ')
       'Write a persuasive paragraph for a sales landing page.';
 
     // Build prompt for AI (using JSON format since runGpt expects JSON response)
-    const aiPrompt = `You are an expert copywriter specializing in high-converting sales and advertising content. 
-Your task is to write compelling paragraphs for landing pages that drive conversions.
+    const aiPrompt = `You are an expert direct-response copywriter specializing in high-converting sales and advertising content. 
+Your task is to create compelling landing page sections that drive conversions.
 
 Follow these guidelines:
 - Write in a clear, persuasive, and engaging style
 - Focus on benefits, not just features
 - Use emotional triggers and power words
-- Keep paragraphs concise (3-5 sentences typically)
+- Each section should have 2-4 substantial paragraphs
 - Maintain a professional yet conversational tone
 - Avoid generic or clichéd phrases
 - Make every sentence count
@@ -119,11 +119,18 @@ USER'S SPECIFIC REQUEST: ${prompt}
 CONTEXT ABOUT THIS LANDING PAGE:
 ${fullContext}
 
-Write ONE compelling paragraph (3-5 sentences) that fits naturally into this landing page. 
+Create ONE complete landing page section that fits naturally into this landing page.
 
 CRITICAL: Return response as valid JSON in this exact format:
 {
-  "paragraph": "[Your generated paragraph text here]"
+  "subtitle": "Compelling section headline or subhead",
+  "paragraphs": [
+    "First compelling paragraph here",
+    "Second compelling paragraph here",
+    "Third paragraph if needed"
+  ],
+  "image_prompt": "Description for generating a relevant image (visual elements only, no text/words/letters)",
+  "cta": "Call to action text if this section needs a button, otherwise null"
 }
 
 Return ONLY valid JSON, no additional text or explanation.`;
@@ -145,24 +152,37 @@ Return ONLY valid JSON, no additional text or explanation.`;
       throw new Error('Failed to parse AI response as JSON');
     }
     
-    const generatedParagraph = parsedResponse.paragraph?.trim() || '';
+    // Validate section structure
+    if (!parsedResponse.subtitle || !parsedResponse.paragraphs || !Array.isArray(parsedResponse.paragraphs)) {
+      throw new Error('Invalid section structure in AI response');
+    }
     
-    if (!generatedParagraph) {
+    if (parsedResponse.paragraphs.length === 0) {
       throw new Error('No paragraph content in AI response');
     }
 
-    console.log('✅ Paragraph generated successfully, length:', generatedParagraph.length);
+    console.log('✅ Section generated successfully:', {
+      subtitle: parsedResponse.subtitle.substring(0, 50) + '...',
+      paragraphCount: parsedResponse.paragraphs.length,
+      hasImagePrompt: !!parsedResponse.image_prompt,
+      hasCTA: !!parsedResponse.cta
+    });
 
     return createSuccessResponse({
       success: true,
-      paragraph: generatedParagraph,
+      section: {
+        subtitle: parsedResponse.subtitle,
+        paragraphs: parsedResponse.paragraphs,
+        image_prompt: parsedResponse.image_prompt,
+        cta: parsedResponse.cta
+      },
       contentType,
     });
 
   } catch (error) {
-    console.error('Error generating paragraph:', error);
+    console.error('Error generating section:', error);
     return createErrorResponse(
-      'Paragraph generation failed',
+      'Section generation failed',
       error instanceof Error ? error.message : 'Unknown error'
     );
   }
