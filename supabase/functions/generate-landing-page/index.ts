@@ -88,7 +88,9 @@ function buildLandingPagePrompt(aiItem: any, campaign: any, newsContent: string,
 PRODUCT INFO:
 Campaign: ${campaign.name}
 Website: ${campaign.url}
-Description: ${campaign.description || 'No description provided'}
+Business Description: ${campaign.description || 'No description provided'}
+Product/Service Description: ${campaign.product_description || 'No product description provided'}
+Target Audience: ${campaign.target_audience || 'No target audience specified'}
 Tags: ${campaign.tags?.join(', ') || 'None'}
 Categories: ${campaign.rss_categories?.join(', ') || 'None'}
 
@@ -101,13 +103,15 @@ Product Details:
 `;
 
   return `You are a professional direct-response copywriter. 
-I will give you two inputs:
+I will give you three inputs:
 1. A news article text.
-2. A product I want to sell.
+2. A product/service I want to sell with detailed information including target audience.
 3. The logic behind the product and why it is relevant to the news article.
 
 Your task:
 - Transform the news article into a concise but powerful advertorial-style landing page article that sells the product.
+- Use the provided target audience information to tailor your messaging, tone, and appeals specifically to that demographic.
+- Leverage the detailed product/service description to highlight specific features, benefits, and unique value propositions.
 - The structure must follow this sequence (MAX 5 SECTIONS):
    1. Hero section (headline, subheadline, compelling intro story with hook, CTA)
    2. Problem amplification + Authority/credibility (combine the problem with your expertise)
@@ -117,6 +121,8 @@ Your task:
 
 - Each section should be substantial with 3-5 paragraphs of compelling copy
 - Focus on emotional storytelling and strong benefits in each section
+- Speak directly to the target audience using language and examples that resonate with them
+- Highlight specific product features and benefits mentioned in the product description
 
 - Output everything as a JSON object.
 - Each section should contain:
