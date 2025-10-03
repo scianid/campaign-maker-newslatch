@@ -1,13 +1,15 @@
 export function buildPrompt(
     newsArray: Array<{ headline: string; link: string }>,
     tags: string[],
-    campaignInfo?: { name: string; description: string; url: string; tags: string[] }
+    campaignInfo?: { name: string; description: string; url: string; tags: string[]; product_description?: string; target_audience?: string }
 ): string {
     // Use campaign info if provided, otherwise fallback to generic approach
     const companyName = campaignInfo?.name || "the business";
     const companyUrl = campaignInfo?.url || "their website";
     const companyDesc = campaignInfo?.description || "their services";
     const companyTags = campaignInfo?.tags || [];
+    const productDesc = campaignInfo?.product_description || "";
+    const targetAudience = campaignInfo?.target_audience || "";
 
     return `
 You are an expert AI marketing analyst creating targeted ad placements for lead generation campaigns.
@@ -16,6 +18,8 @@ CAMPAIGN CONTEXT:
 Company/Campaign: ${companyName}
 Website: ${companyUrl}
 Business Description: ${companyDesc}
+Product/Service Description: ${productDesc}
+Target Audience: ${targetAudience}
 Campaign Tags: ${companyTags.join(", ")}
 Target Categories: ${tags.join(", ")}
 
