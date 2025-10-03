@@ -4,6 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Import shared utilities
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
+import { runGpt } from '../rss-feeds/ai.ts';
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -44,11 +45,16 @@ Analyze the company website at "${url}" ${name ? `(company name: "${name}")` : '
    - What the company does
    - The main problem they solve for their customers
    - Their target market or industry focus
+3. A 2-3 sentence product description that focuses on:
+   - The specific product or service offering
+   - Key features or benefits
+   - What makes it unique or valuable
 
 Return your response in this exact JSON format:
 {
   "suggested_tags": ["tag1", "tag2", "tag3", ...15 tags],
-  "suggested_description": "3-4 sentence description here"
+  "suggested_description": "3-4 sentence description here",
+  "product_description": "2-3 sentence product description here"
 }
 
 Guidelines for tags:
@@ -63,44 +69,18 @@ Guidelines for description:
 - Keep it professional and informative
 - 3-4 sentences maximum
 
+Guidelines for product description:
+- Focus on the actual product or service
+- Highlight key features or benefits
+- Keep it concise and compelling
+- 2-5 sentences maximum
+
 If you cannot access the website, provide general business-appropriate suggestions based on the URL domain and company name.
 `;
 
     try {
-      // Call OpenAI API (you'll need to add your API key to environment variables)
-      const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4',
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a marketing expert who analyzes companies and creates campaign suggestions. Always respond with valid JSON only.'
-            },
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
-          temperature: 0.7,
-          max_tokens: 1000
-        }),
-      });
-
-      if (!openaiResponse.ok) {
-        throw new Error(`OpenAI API error: ${openaiResponse.status}`);
-      }
-
-      const openaiResult = await openaiResponse.json();
-      const aiContent = openaiResult.choices[0]?.message?.content;
-
-      if (!aiContent) {
-        throw new Error('No content received from AI');
-      }
+      // Call OpenAI API using shared utility
+      const aiContent = await runGpt(prompt);
 
       // Parse AI response
       const suggestions = JSON.parse(aiContent.trim());
@@ -113,18 +93,24 @@ If you cannot access the website, provide general business-appropriate suggestio
       if (!suggestions.suggested_description || typeof suggestions.suggested_description !== 'string') {
         throw new Error('Invalid AI response: missing or invalid description');
       }
+      
+      if (!suggestions.product_description || typeof suggestions.product_description !== 'string') {
+        throw new Error('Invalid AI response: missing or invalid product description');
+      }
 
       // Use only the tags provided by AI, no fallbacks
       const tags = suggestions.suggested_tags;
 
       console.log('✅ AI suggestions generated successfully:', {
         tags: tags.length,
-        descriptionLength: suggestions.suggested_description.length
+        descriptionLength: suggestions.suggested_description.length,
+        productDescriptionLength: suggestions.product_description.length
       });
 
       return createSuccessResponse({
         suggested_tags: tags,
         suggested_description: suggestions.suggested_description,
+        product_description: suggestions.product_description,
         source: 'ai-generated'
       });
 
@@ -137,6 +123,7 @@ If you cannot access the website, provide general business-appropriate suggestio
       return createSuccessResponse({
         suggested_tags: [],
         suggested_description: '',
+        product_description: '',
         source: 'ai-failed'
       });
     }

@@ -42,9 +42,11 @@ export function MultiStepCampaignForm({ user }) {
     // Step 2: AI Generated
     tags: [],
     description: '',
+    productDescription: '',
     aiSuggestions: {
       tags: [],
       description: '',
+      productDescription: '',
       loading: false
     },
     
@@ -66,6 +68,7 @@ export function MultiStepCampaignForm({ user }) {
         url: campaign.url || '',
         tags: campaign.tags || [],
         description: campaign.description || '',
+        productDescription: campaign.product_description || '',
         rssCategories: campaign.rss_categories || ['all'],
         rssCountries: campaign.rss_countries || [DEFAULT_COUNTRY]
       }));
@@ -167,9 +170,11 @@ export function MultiStepCampaignForm({ user }) {
         aiSuggestions: {
           tags: result.suggested_tags || [],
           description: result.suggested_description || '',
+          productDescription: result.product_description || '',
           loading: false
         },
-        description: result.suggested_description || prev.description
+        description: result.suggested_description || prev.description,
+        productDescription: result.product_description || prev.productDescription
       }));
 
     } catch (error) {
@@ -179,6 +184,7 @@ export function MultiStepCampaignForm({ user }) {
         aiSuggestions: {
           tags: [],
           description: '',
+          productDescription: '',
           loading: false
         }
       }));
@@ -210,6 +216,7 @@ export function MultiStepCampaignForm({ user }) {
         name: formData.name,
         url: formData.url,
         description: formData.description,
+        product_description: formData.productDescription,
         tags: formData.tags,
         rssCategories: formData.rssCategories,
         rssCountries: formData.rssCountries
@@ -484,6 +491,26 @@ export function MultiStepCampaignForm({ user }) {
               className={`mt-1 ${errors.description ? 'border-red-500' : ''}`}
             />
             {errors.description && <p className="text-red-400 text-sm mt-1">{errors.description}</p>}
+          </div>
+
+          {/* AI Suggested Product Description */}
+          <div>
+            <Label htmlFor="productDescription" className="text-white mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              Suggested Product Description
+            </Label>
+            <p className="text-text-paragraph text-sm mb-3">
+              A focused description of your product or service offering. Feel free to edit it.
+            </p>
+            
+            <Textarea
+              id="productDescription"
+              value={formData.productDescription}
+              onChange={(e) => updateFormData('productDescription', e.target.value)}
+              placeholder="Product description..."
+              rows={3}
+              className="mt-1"
+            />
           </div>
         </div>
       )}
