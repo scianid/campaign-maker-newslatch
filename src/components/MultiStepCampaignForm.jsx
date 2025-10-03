@@ -43,10 +43,12 @@ export function MultiStepCampaignForm({ user }) {
     tags: [],
     description: '',
     productDescription: '',
+    targetAudience: '',
     aiSuggestions: {
       tags: [],
       description: '',
       productDescription: '',
+      targetAudience: '',
       loading: false
     },
     
@@ -69,6 +71,7 @@ export function MultiStepCampaignForm({ user }) {
         tags: campaign.tags || [],
         description: campaign.description || '',
         productDescription: campaign.product_description || '',
+        targetAudience: campaign.target_audience || '',
         rssCategories: campaign.rss_categories || ['all'],
         rssCountries: campaign.rss_countries || [DEFAULT_COUNTRY]
       }));
@@ -171,10 +174,12 @@ export function MultiStepCampaignForm({ user }) {
           tags: result.suggested_tags || [],
           description: result.suggested_description || '',
           productDescription: result.product_description || '',
+          targetAudience: result.target_audience || '',
           loading: false
         },
         description: result.suggested_description || prev.description,
-        productDescription: result.product_description || prev.productDescription
+        productDescription: result.product_description || prev.productDescription,
+        targetAudience: result.target_audience || prev.targetAudience
       }));
 
     } catch (error) {
@@ -185,6 +190,7 @@ export function MultiStepCampaignForm({ user }) {
           tags: [],
           description: '',
           productDescription: '',
+          targetAudience: '',
           loading: false
         }
       }));
@@ -217,6 +223,7 @@ export function MultiStepCampaignForm({ user }) {
         url: formData.url,
         description: formData.description,
         product_description: formData.productDescription,
+        target_audience: formData.targetAudience,
         tags: formData.tags,
         rssCategories: formData.rssCategories,
         rssCountries: formData.rssCountries
@@ -509,6 +516,26 @@ export function MultiStepCampaignForm({ user }) {
               onChange={(e) => updateFormData('productDescription', e.target.value)}
               placeholder="Product description..."
               rows={3}
+              className="mt-1"
+            />
+          </div>
+
+          {/* AI Suggested Target Audience */}
+          <div>
+            <Label htmlFor="targetAudience" className="text-white mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+              Suggested Target Audience
+            </Label>
+            <p className="text-text-paragraph text-sm mb-3">
+              Who your ideal customers are based on your business. This helps optimize ad targeting.
+            </p>
+            
+            <Textarea
+              id="targetAudience"
+              value={formData.targetAudience}
+              onChange={(e) => updateFormData('targetAudience', e.target.value)}
+              placeholder="Target audience description..."
+              rows={2}
               className="mt-1"
             />
           </div>

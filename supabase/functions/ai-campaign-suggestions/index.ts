@@ -49,12 +49,16 @@ Analyze the company website at "${url}" ${name ? `(company name: "${name}")` : '
    - The specific product or service offering
    - Key features or benefits
    - What makes it unique or valuable
+4. A 1-2 sentence target audience description that identifies:
+   - Who would most benefit from this product/service
+   - Key demographic or psychographic characteristics
 
 Return your response in this exact JSON format:
 {
   "suggested_tags": ["tag1", "tag2", "tag3", ...15 tags],
   "suggested_description": "3-4 sentence description here",
-  "product_description": "2-3 sentence product description here"
+  "product_description": "2-3 sentence product description here",
+  "target_audience": "1-2 sentence target audience description here"
 }
 
 Guidelines for tags:
@@ -74,6 +78,12 @@ Guidelines for product description:
 - Highlight key features or benefits
 - Keep it concise and compelling
 - 2-5 sentences maximum
+
+Guidelines for target audience:
+- Identify the primary demographic who would buy/use this product
+- Include relevant characteristics (age range, profession, interests, pain points)
+- Keep it concise and actionable for marketing
+- 1-2 sentences maximum
 
 If you cannot access the website, provide general business-appropriate suggestions based on the URL domain and company name.
 `;
@@ -97,6 +107,10 @@ If you cannot access the website, provide general business-appropriate suggestio
       if (!suggestions.product_description || typeof suggestions.product_description !== 'string') {
         throw new Error('Invalid AI response: missing or invalid product description');
       }
+      
+      if (!suggestions.target_audience || typeof suggestions.target_audience !== 'string') {
+        throw new Error('Invalid AI response: missing or invalid target audience');
+      }
 
       // Use only the tags provided by AI, no fallbacks
       const tags = suggestions.suggested_tags;
@@ -104,13 +118,15 @@ If you cannot access the website, provide general business-appropriate suggestio
       console.log('✅ AI suggestions generated successfully:', {
         tags: tags.length,
         descriptionLength: suggestions.suggested_description.length,
-        productDescriptionLength: suggestions.product_description.length
+        productDescriptionLength: suggestions.product_description.length,
+        targetAudienceLength: suggestions.target_audience.length
       });
 
       return createSuccessResponse({
         suggested_tags: tags,
         suggested_description: suggestions.suggested_description,
         product_description: suggestions.product_description,
+        target_audience: suggestions.target_audience,
         source: 'ai-generated'
       });
 
@@ -124,6 +140,7 @@ If you cannot access the website, provide general business-appropriate suggestio
         suggested_tags: [],
         suggested_description: '',
         product_description: '',
+        target_audience: '',
         source: 'ai-failed'
       });
     }
