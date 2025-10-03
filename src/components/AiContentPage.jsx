@@ -620,43 +620,6 @@ export function AiContentPage({ user }) {
                       </div>
                     </div>
 
-                    {/* AI Reasoning Section */}
-                    <div className="mb-4">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleReason(item.id)}
-                        className="text-gray-400 hover:text-white transition-colors text-sm h-auto p-2 -ml-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          {expandedReasons[item.id] ? (
-                            <ChevronUp className="w-4 h-4" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4" />
-                          )}
-                          <span>Why AI thinks this is good ad copy?</span>
-                        </div>
-                      </Button>
-                      
-                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
-                        expandedReasons[item.id] ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
-                      }`}>
-                        <div className="bg-yellow-900/10 border border-yellow-600/30 rounded-lg p-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 bg-yellow-900/30 border border-yellow-600/50 rounded-full flex items-center justify-center flex-shrink-0">
-                              <span className="text-yellow-400 text-sm">AI</span>
-                            </div>
-                            <div>
-                              <h5 className="text-sm font-medium text-yellow-400 mb-2">AI Analysis</h5>
-                              <p className="text-sm text-yellow-200 leading-relaxed">
-                                {item.description}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Main Content - Always Visible */}
                     <div className="mb-6">
                       {/* Ad Preview Demo */}
@@ -768,7 +731,7 @@ export function AiContentPage({ user }) {
 
                                   {/* Headline */}
                                   <div style={{
-                                    fontSize: '20px',
+                                    fontSize: '18px',
                                     fontWeight: '600',
                                     lineHeight: '1.2em',
                                     maxHeight: '2.4em',
@@ -785,10 +748,10 @@ export function AiContentPage({ user }) {
                                     fontSize: '14px',
                                     fontWeight: '400',
                                     lineHeight: '1.3em',
-                                    maxHeight: '3.9em',
+                                    maxHeight: '5.2em',
                                     overflow: 'hidden',
                                     display: '-webkit-box',
-                                    WebkitLineClamp: 3,
+                                    WebkitLineClamp: 4,
                                     WebkitBoxOrient: 'vertical',
                                     opacity: 0.9
                                   }}>
@@ -939,9 +902,47 @@ export function AiContentPage({ user }) {
                       )}
                     </div>
 
+                    
+                    {/* AI Reasoning Section */}
+                    <div className="mb-4">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleReason(item.id)}
+                        className="text-gray-400 hover:text-white transition-colors text-sm h-auto p-2 -ml-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          {expandedReasons[item.id] ? (
+                            <ChevronUp className="w-4 h-4" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4" />
+                          )}
+                          <span>Why AI thinks this is good ad copy?</span>
+                        </div>
+                      </Button>
+                      
+                      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                        expandedReasons[item.id] ? 'max-h-96 opacity-100 mt-3' : 'max-h-0 opacity-0'
+                      }`}>
+                        <div className="bg-yellow-900/10 border border-yellow-600/30 rounded-lg p-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-8 h-8 bg-yellow-900/30 border border-yellow-600/50 rounded-full flex items-center justify-center flex-shrink-0">
+                              <span className="text-yellow-400 text-sm">AI</span>
+                            </div>
+                            <div>
+                              <h5 className="text-sm font-medium text-yellow-400 mb-2">AI Analysis</h5>
+                              <p className="text-sm text-yellow-200 leading-relaxed">
+                                {item.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Generated Timestamp */}
                     <div className="mb-4">
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <div className="ml-2 flex items-center gap-1 text-xs text-gray-500">
                         <Clock className="w-3 h-3" />
                         <span>Generated {formatDate(item.created_at)}</span>
                       </div>
