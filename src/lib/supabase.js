@@ -86,6 +86,7 @@ export const campaignService = {
         url: campaign.url,
         tags: campaign.tags,
         description: campaign.description,
+        product_description: campaign.product_description,
         rss_categories: campaign.rssCategories,
         rss_countries: campaign.rssCountries
       }])
@@ -105,6 +106,7 @@ export const campaignService = {
         url: campaign.url,
         tags: campaign.tags,
         description: campaign.description,
+        product_description: campaign.product_description,
         rss_categories: campaign.rssCategories,
         rss_countries: campaign.rssCountries,
         updated_at: new Date().toISOString()
