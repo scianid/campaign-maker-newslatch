@@ -815,7 +815,8 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
             </div>
           ) : (
             <div className="group mb-8 relative">
-              <div className="absolute -left-12 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              {/* Desktop hover button */}
+              <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity z-10">
                 <Button
                   size="sm"
                   onClick={() => startEdit('title', null, null, landingPage.title)}
@@ -827,6 +828,17 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
               <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
                 {landingPage.title}
               </h1>
+              {/* Mobile always-visible button */}
+              <div className="sm:hidden flex justify-center mt-4">
+                <Button
+                  size="sm"
+                  onClick={() => startEdit('title', null, null, landingPage.title)}
+                  className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-3 py-2 flex items-center gap-1"
+                >
+                  <Edit2 className="w-3 h-3 !text-blue-600" />
+                  Edit Title
+                </Button>
+              </div>
             </div>
           )}
 
@@ -1063,7 +1075,8 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                 </div>
               ) : (
                 <div className="mb-6 relative group">
-                  <div className="absolute -left-20 top-0 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  {/* Desktop hover buttons */}
+                  <div className="absolute -left-20 top-0 hidden sm:flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                     <Button
                       size="sm"
                       onClick={() => startEdit('subtitle', sectionIndex, null, section.subtitle)}
@@ -1082,6 +1095,25 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                   <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
                     {section.subtitle || 'Untitled Section'}
                   </h2>
+                  {/* Mobile always-visible buttons */}
+                  <div className="sm:hidden flex gap-2 mt-3">
+                    <Button
+                      size="sm"
+                      onClick={() => startEdit('subtitle', sectionIndex, null, section.subtitle)}
+                      className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-2 py-1 flex items-center gap-1"
+                    >
+                      <Edit2 className="w-3 h-3 !text-blue-600" />
+                      Edit Subtitle
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleDeleteSection(sectionIndex)}
+                      className="border-2 border-red-600 !text-red-600 hover:!bg-red-50 !bg-white text-xs px-2 py-1 flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3 h-3 !text-red-600" />
+                      Delete Subtitle
+                    </Button>
+                  </div>
                 </div>
               )}
 
@@ -1134,7 +1166,7 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                     </div>
                   ) : (
                     <div className="relative hover:bg-gray-50 transition-colors rounded px-2 py-1 -mx-2 group">
-                      <div className="absolute -left-14 top-1 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                      <div className="absolute -left-14 top-1 hidden sm:flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                         <Button
                           size="sm"
                           onClick={() => startEdit('paragraph', sectionIndex, pIndex, paragraph)}
@@ -1155,6 +1187,27 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                       <p className="text-lg text-gray-700 leading-relaxed">
                         {paragraph}
                       </p>
+                      {/* Mobile always-visible buttons */}
+                      <div className="sm:hidden flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => startEdit('paragraph', sectionIndex, pIndex, paragraph)}
+                          className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-2 py-1 flex items-center gap-1"
+                        >
+                          <Edit2 className="w-3 h-3 !text-blue-600" />
+                          Edit
+                        </Button>
+                        {section.paragraphs.length > 1 && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleDeleteParagraph(sectionIndex, pIndex)}
+                            className="border-2 border-red-600 !text-red-600 hover:!bg-red-50 !bg-white text-xs px-2 py-1 flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3 h-3 !text-red-600" />
+                            Delete
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -1181,7 +1234,8 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                       alt={section.image_prompt || section.subtitle || "Section image"}
                       className="w-full h-auto object-cover"
                     />
-                    <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                    {/* Desktop hover buttons */}
+                    <div className="absolute top-2 right-2 hidden sm:flex gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity">
                       <Button
                         onClick={() => {
                           setModal({
@@ -1959,7 +2013,7 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
           onClick={() => setModal(null)}
         >
           <div 
-            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-8 transform transition-all"
+            className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-4 sm:p-8 transform transition-all max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mb-6">
@@ -2053,11 +2107,11 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
               </div>
             )}
             
-            <div className="flex gap-3 justify-end pt-4 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-3 justify-end pt-4 border-t border-gray-200">
               <Button
                 onClick={() => setModal(null)}
                 disabled={generatingParagraph}
-                className="px-6 py-2.5 border-2 border-gray-300 !text-gray-700 hover:!bg-gray-50 !bg-white transition-colors font-medium disabled:opacity-50"
+                className="w-full sm:w-auto px-6 py-2.5 border-2 border-gray-300 !text-gray-700 hover:!bg-gray-50 !bg-white transition-colors font-medium disabled:opacity-50"
               >
                 Cancel
               </Button>
@@ -2128,17 +2182,19 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                 <Button
                   onClick={() => generateSectionWithAI(modal.position, modal.contentType, modal.value)}
                   disabled={generatingParagraph}
-                  className="px-6 py-2.5 font-medium transition-all border-2 border-blue-600 !bg-white hover:!bg-blue-50 !text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="w-full sm:w-auto px-6 py-2.5 font-medium transition-all border-2 border-blue-600 !bg-white hover:!bg-blue-50 !text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {generatingParagraph ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin !text-blue-600" />
-                      Generating Section...
+                      <span className="hidden sm:inline">Generating Section...</span>
+                      <span className="sm:hidden">Generating...</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 !text-blue-600" />
-                      Generate Section
+                      <span className="hidden sm:inline">Generate Section</span>
+                      <span className="sm:hidden">Generate</span>
                     </>
                   )}
                 </Button>
