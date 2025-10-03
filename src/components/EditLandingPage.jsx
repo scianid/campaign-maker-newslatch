@@ -8,6 +8,7 @@ import {
   Image as ImageIcon, 
   Loader2,
   Eye,
+  EyeOff,
   Edit2,
   Check,
   X,
@@ -512,41 +513,19 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
       {/* Sticky Bottom CTA */}
       {(landingPage.sticky_cta_visible !== false) && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-gray-100" style={{ boxShadow: '0 -10px 30px -5px rgba(0, 0, 0, 0.3), 0 -4px 6px -2px rgba(0, 0, 0, 0.2)' }}>
-          <div className="max-w-4xl mx-auto px-4 py-4">
-            {!isEditing('sticky-cta-title') && !isEditing('sticky-cta-subtitle') && !isEditing('sticky-cta-button') && (
-              <div className="mb-3 flex gap-2 items-center justify-center flex-wrap">
-                <span className="text-xs text-gray-600 font-medium">Sticky CTA Editor:</span>
-                <Button
-                  size="sm"
-                  onClick={() => startEdit('sticky-cta-title', null, null, landingPage.sticky_cta_title || 'Ready to Take Action?')}
-                  className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-2 py-1"
-                >
-                  Edit Title
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => startEdit('sticky-cta-subtitle', null, null, landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more')}
-                  className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-2 py-1"
-                >
-                  Edit Subtitle
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => startEdit('sticky-cta-button', null, null, landingPage.sticky_cta_button || 'Visit Site →')}
-                  className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-2 py-1"
-                >
-                  Edit Button
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={handleToggleStickyCtaVisible}
-                  className="border-2 border-red-600 !text-red-600 hover:!bg-red-50 !bg-white text-xs px-2 py-1 ml-2"
-                >
-                  <Eye className="w-3 h-3 mr-1 !text-red-600" />
-                  Hide CTA
-                </Button>
-              </div>
-            )}
+          {/* Hide CTA Button - Floating above the bar */}
+          {!isEditing('sticky-cta-title') && !isEditing('sticky-cta-subtitle') && !isEditing('sticky-cta-button') && (
+            <Button
+              size="sm"
+              onClick={handleToggleStickyCtaVisible}
+              className="absolute -top-10 right-4 border-2 border-red-600 !text-red-600 hover:!bg-red-50 !bg-white text-xs px-3 py-2 z-10 shadow-lg"
+              title="Hide Sticky CTA"
+            >
+              <EyeOff className="w-3 h-3 mr-1 !text-red-600" />
+              Hide
+            </Button>
+          )}
+          <div className="max-w-4xl mx-auto px-4 py-4 relative">
           
           {/* Edit Mode for Title */}
           {isEditing('sticky-cta-title') && (
@@ -655,23 +634,50 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
           
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
             <div className="flex-1 text-center sm:text-left">
-              <p className="text-gray-900 font-bold text-sm sm:text-base md:text-lg lg:text-xl leading-tight">
-                {landingPage.sticky_cta_title || 'Ready to Take Action?'}
-              </p>
-              <p className="text-gray-700 text-xs sm:text-sm mt-0.5">
-                {landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more'}
-              </p>
+              <div className="group relative inline-block w-full">
+                <Button
+                  size="sm"
+                  onClick={() => startEdit('sticky-cta-title', null, null, landingPage.sticky_cta_title || 'Ready to Take Action?')}
+                  className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-2 py-1"
+                >
+                  <Edit2 className="w-3 h-3 !text-blue-600" />
+                </Button>
+                <p className="text-gray-900 font-bold text-sm sm:text-base md:text-lg lg:text-xl leading-tight">
+                  {landingPage.sticky_cta_title || 'Ready to Take Action?'}
+                </p>
+              </div>
+              <div className="group relative inline-block w-full mt-0.5">
+                <Button
+                  size="sm"
+                  onClick={() => startEdit('sticky-cta-subtitle', null, null, landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more')}
+                  className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-2 py-1"
+                >
+                  <Edit2 className="w-3 h-3 !text-blue-600" />
+                </Button>
+                <p className="text-gray-700 text-xs sm:text-sm">
+                  {landingPage.sticky_cta_subtitle || 'Click to visit the site and learn more'}
+                </p>
+              </div>
             </div>
-            <Button
-              onClick={() => {
-                if (landingPage?.ai_generated_items?.campaigns?.url) {
-                  window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
-                }
-              }}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg rounded-lg shadow-lg transition-all hover:scale-105 whitespace-nowrap w-full sm:w-auto"
-            >
-              {landingPage.sticky_cta_button || 'Visit Site →'}
-            </Button>
+            <div className="group relative">
+              <Button
+                size="sm"
+                onClick={() => startEdit('sticky-cta-button', null, null, landingPage.sticky_cta_button || 'Visit Site →')}
+                className="absolute -left-8 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-2 py-1 hidden sm:block"
+              >
+                <Edit2 className="w-3 h-3 !text-blue-600" />
+              </Button>
+              <Button
+                onClick={() => {
+                  if (landingPage?.ai_generated_items?.campaigns?.url) {
+                    window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                  }
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white font-bold px-6 py-3 sm:px-8 sm:py-4 text-sm sm:text-base md:text-lg rounded-lg shadow-lg transition-all hover:scale-105 whitespace-nowrap w-full sm:w-auto"
+              >
+                {landingPage.sticky_cta_button || 'Visit Site →'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -1289,9 +1295,9 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                         <option value="simple">Simple Button</option>
                         <option value="exclusive">Exclusive Opportunity</option>
                         <option value="urgency">Urgency/Limited Time</option>
-                        <option value="testimonial">With Testimonial</option>
                         <option value="guarantee">Money-Back Guarantee</option>
                         <option value="discount">Apply Discount Code</option>
+                        <option value="testimonial">With Testimonial</option>
                       </select>
                     </div>
 
