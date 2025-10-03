@@ -2,6 +2,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Import shared utilities from rss-feeds function
+import { runGpt } from '../rss-feeds/ai.ts';
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
 import { handleCors, createErrorResponse, createSuccessResponse, getUrlParams, validateRequiredParams } from '../rss-feeds/http-utils.ts';
 
@@ -81,46 +82,7 @@ interface Database {
   };
 }
 
-// OpenAI API call
-async function callOpenAI(prompt: string): Promise<string> {
-  const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-  if (!openaiApiKey) {
-    throw new Error('OPENAI_API_KEY environment variable is not set');
-  }
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a professional direct-response copywriter. Always respond with valid JSON only, no additional text or formatting.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 4000
-    })
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`OpenAI API error: ${error}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0].message.content;
-}
-
-// Build the copywriting prompt
+// Build the copywriting prompt (now returns JSON format for runGpt)
 function buildLandingPagePrompt(aiItem: any, campaign: any, newsContent: string, description: string): string {
   const productInfo = `
 PRODUCT INFO:
@@ -170,9 +132,7 @@ Inputs:
 
 [LOGIC]: ${description}
 
-Output:
-A complete JSON object with the following structure:
-
+CRITICAL: Return response as valid JSON in this exact format:
 {
   "title": "The overall article title",
   "sections": [
@@ -186,7 +146,9 @@ A complete JSON object with the following structure:
       "cta": "A CALL TO ACTION"
     }
   ]
-}`;
+}
+
+Return ONLY valid JSON, no additional text or explanation.`;
 }
 
 // Fetch news content from the link
@@ -331,8 +293,8 @@ Deno.serve(async (req: Request) => {
 
     console.log('🤖 Calling OpenAI to generate landing page...');
 
-    // Call OpenAI
-    const openaiResponse = await callOpenAI(prompt);
+    // Use shared runGpt function
+    const openaiResponse = await runGpt(prompt);
     
     console.log('✅ OpenAI response received');
 
@@ -342,6 +304,7 @@ Deno.serve(async (req: Request) => {
       landingPageData = JSON.parse(openaiResponse);
     } catch (parseError) {
       console.error('❌ Failed to parse OpenAI response:', parseError);
+      console.error('Response was:', openaiResponse);
       return createErrorResponse(
         'Failed to parse AI response',
         'The AI generated invalid JSON response',
