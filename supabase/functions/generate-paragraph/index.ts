@@ -70,7 +70,9 @@ Deno.serve(async (req: Request) => {
           campaigns (
             name,
             url,
-            description
+            description,
+            product_description,
+            target_audience
           )
         )
       `)
@@ -85,7 +87,9 @@ Deno.serve(async (req: Request) => {
     const fullContext = context || `
 Landing Page Title: ${landingPage.title}
 Campaign: ${landingPage.ai_generated_items?.campaigns?.name || 'N/A'}
-Product/Service: ${landingPage.ai_generated_items?.campaigns?.description || 'N/A'}
+Business Description: ${landingPage.ai_generated_items?.campaigns?.description || 'N/A'}
+Product/Service Description: ${landingPage.ai_generated_items?.campaigns?.product_description || 'N/A'}
+Target Audience: ${landingPage.ai_generated_items?.campaigns?.target_audience || 'N/A'}
 Current Content: ${landingPage.sections?.map((s: any) => s.paragraphs?.join(' ')).join(' ') || 'N/A'}
     `.trim();
 
@@ -104,6 +108,9 @@ Follow these guidelines:
 - Maintain a professional yet conversational tone
 - Avoid generic or clichéd phrases
 - Make every sentence count
+- Tailor your language and messaging to speak directly to the target audience
+- Highlight specific product features and benefits from the product description
+- Use the target audience information to choose appropriate examples and appeals
 
 CONTENT TYPE: ${contentTypeInstruction}
 
