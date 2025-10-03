@@ -360,7 +360,7 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 mr-1 lg:mr-2" />
-                        <span className="hidden sm:inline">Generate AI</span>
+                        <span className="hidden sm:inline">Generate Ads</span>
                         <span className="sm:hidden">Gen AI</span>
                       </>
                     )}
@@ -373,7 +373,7 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                     title="View AI Content"
                   >
                     <Zap className="w-4 h-4 mr-1 lg:mr-2" />
-                    <span className="hidden sm:inline">View AI</span>
+                    <span className="hidden sm:inline">View Ads</span>
                     <span className="sm:hidden">View</span>
                   </Button>
                   <Button
