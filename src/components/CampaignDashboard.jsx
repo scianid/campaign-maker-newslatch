@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CampaignForm } from './CampaignForm';
 import { CampaignList } from './CampaignList';
 import { Layout } from './Layout';
 import { Button } from '../ui/Button';
@@ -10,8 +9,6 @@ import { campaignService } from '../lib/supabase';
 export function CampaignDashboard({ user }) {
   const navigate = useNavigate();
   const [campaigns, setCampaigns] = useState([]);
-  const [editingCampaign, setEditingCampaign] = useState(null);
-  const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -34,28 +31,6 @@ export function CampaignDashboard({ user }) {
     }
   };
 
-  const handleSaveCampaign = async (campaignData) => {
-    try {
-      if (editingCampaign) {
-        // Update existing campaign
-        const updatedCampaign = await campaignService.updateCampaign(editingCampaign.id, campaignData);
-        setCampaigns(prev => 
-          prev.map(c => c.id === editingCampaign.id ? updatedCampaign : c)
-        );
-      } else {
-        // Create new campaign
-        const newCampaign = await campaignService.createCampaign(campaignData);
-        setCampaigns(prev => [newCampaign, ...prev]);
-      }
-      
-      setShowForm(false);
-      setEditingCampaign(null);
-    } catch (error) {
-      console.error('Error saving campaign:', error);
-      alert('Error saving campaign. Please try again.');
-    }
-  };
-
   const handleEditCampaign = (campaign) => {
     navigate(`/edit/${campaign.id}`, { state: { campaign } });
   };
@@ -68,16 +43,6 @@ export function CampaignDashboard({ user }) {
       console.error('Error deleting campaign:', error);
       alert('Error deleting campaign. Please try again.');
     }
-  };
-
-  const handleNewCampaign = () => {
-    setEditingCampaign(null);
-    setShowForm(true);
-  };
-
-  const handleCancelForm = () => {
-    setShowForm(false);
-    setEditingCampaign(null);
   };
 
   return (
@@ -114,19 +79,8 @@ export function CampaignDashboard({ user }) {
           </div>
         )}
 
-        {/* Form View */}
-        {showForm && !loading && (
-          <div className="max-w-2xl mx-auto">
-            <CampaignForm 
-              campaign={editingCampaign}
-              onSave={handleSaveCampaign}
-              onCancel={handleCancelForm}
-            />
-          </div>
-        )}
-
         {/* List View */}
-        {!showForm && !loading && !error && (
+        {!loading && !error && (
           <div>
             {/* Welcome Section for Empty State */}
             {campaigns.length === 0 && (
@@ -142,7 +96,7 @@ export function CampaignDashboard({ user }) {
                   configure RSS feed categories, and track everything in one place.
                 </p>
                 <Button 
-                  onClick={handleNewCampaign}
+                  onClick={() => navigate('/new')}
                   size="lg"
                   className="bg-gradient-to-r from-highlight to-purple-600 hover:from-highlight/90 hover:to-purple-700 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300"
                 >

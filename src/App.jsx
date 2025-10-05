@@ -70,11 +70,37 @@ function App() {
     authService.getCurrentUser().then(user => {
       setUser(user);
       setLoading(false);
+    }).catch(err => {
+      console.error('Error getting user:', err);
+      setUser(null);
+      setLoading(false);
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = authService.onAuthStateChange((event, session) => {
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = authService.onAuthStateChange(async (event, session) => {
+      console.log('Auth event:', event);
+      
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
+      }
+      
+      // Handle sign out or invalid sessions
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+        setUser(null);
+      }
+      
+      // Handle token refresh errors - sign out if refresh fails
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setUser(session?.user ?? null);
+      }
+      
+      // Default handling
+      if (!session?.user && event !== 'SIGNED_OUT' && event !== 'USER_DELETED') {
+        setUser(null);
+      } else if (session?.user) {
+        setUser(session.user);
+      }
+      
       setLoading(false);
     });
 

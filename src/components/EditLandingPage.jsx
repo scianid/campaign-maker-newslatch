@@ -212,7 +212,14 @@ export function EditLandingPage({ user }) {
   const generateSectionWithAI = async (position, contentType, prompt) => {
     setGeneratingParagraph(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError || !session) {
+        console.error('Session error:', sessionError);
+        await supabase.auth.signOut();
+        navigate('/');
+        return;
+      }
       
       const response = await fetch(`https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/generate-paragraph`, {
         method: 'POST',
@@ -268,7 +275,14 @@ export function EditLandingPage({ user }) {
     setGeneratingParagraph(true);
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        await supabase.auth.signOut();
+        navigate('/');
+        return;
+      }
       
       if (!session) {
         throw new Error('You must be logged in to generate content');
@@ -364,7 +378,14 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
     setGeneratingImage(sectionIndex);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        await supabase.auth.signOut();
+        navigate('/');
+        return;
+      }
       
       if (!session) {
         throw new Error('You must be logged in to generate images');

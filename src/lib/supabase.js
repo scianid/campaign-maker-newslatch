@@ -4,7 +4,15 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = 'https://emvwmwdsaakdnweyhmki.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key-here'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true,
+    storage: typeof window !== 'undefined' ? window.localStorage : null,
+    storageKey: 'supabase.auth.token',
+  }
+})
 
 // Database table schema for campaigns
 export const CAMPAIGNS_TABLE = 'campaigns'
