@@ -293,7 +293,7 @@ export function PublicLandingPageViewer() {
                       window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
                     }
                   }}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+                  className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
                 >
                   {section.cta_config.buttonText || 'Get Started'}
                 </Button>

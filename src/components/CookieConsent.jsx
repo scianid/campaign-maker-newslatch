@@ -88,7 +88,7 @@ export function CookieConsent() {
           <div className="flex flex-col sm:flex-row gap-1.5 sm:gap-2">
             <Button
               onClick={handleAccept}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-3 text-xs rounded-md transition-colors shadow-md hover:shadow-lg"
+              className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-3 text-xs rounded-md transition-colors shadow-md hover:shadow-lg"
             >
               Accept All
             </Button>
