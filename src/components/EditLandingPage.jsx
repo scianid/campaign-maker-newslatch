@@ -788,6 +788,17 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
         </div>
       )}
 
+      {/* Advertorial Notice */}
+      <div className="bg-gray-50 border-b border-gray-200 py-2">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <span className="text-xs text-gray-500">
+              We earn commissions from brands listed on this site, which influences how listings are presented. <span className="underline cursor-pointer">Advertising Disclosure</span>.
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content - Matching Public Landing Page Style */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
         {/* Article Header */}
@@ -1306,100 +1317,122 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                 </Button>
               </div>
 
-              {/* Image Section */}
-              {section.image_url && (
-                <div className="mb-8">
-                  <div className="rounded-lg overflow-hidden shadow-lg relative group/img">
-                    <img 
-                      src={section.image_url}
-                      alt={section.image_prompt || section.subtitle || "Section image"}
-                      className="w-full h-auto object-cover"
-                    />
-                    {/* Desktop hover buttons */}
-                    <div className="absolute top-2 right-2 hidden sm:flex gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity">
-                      <Button
-                        onClick={() => {
-                          setModal({
-                            type: 'prompt',
-                            title: 'Regenerate Image',
-                            message: 'Enter a prompt to generate a new image:',
-                            value: section.image_prompt || '',
-                            onConfirm: (prompt) => {
-                              if (prompt) {
-                                handleGenerateImage(sectionIndex, prompt);
+              {/* Image Section - Show section image or fallback to hero image in specific sections */}
+              {(() => {
+                const hasHeroImage = landingPage.ai_generated_items?.image_url;
+                const hasSectionImage = section.image_url;
+                
+                // Show section image if it exists, or fallback to hero image in specific sections (matching live view)
+                const shouldShowImage = hasSectionImage || (!hasSectionImage && hasHeroImage && (sectionIndex === 2 || sectionIndex === 4));
+                const imageToShow = hasSectionImage ? section.image_url : landingPage.ai_generated_items?.image_url;
+                const isHeroImage = !hasSectionImage && hasHeroImage && (sectionIndex === 2 || sectionIndex === 4);
+
+                return shouldShowImage ? (
+                  <div className="mb-8">
+                    <div className="rounded-lg overflow-hidden shadow-lg relative group/img">
+                      <img 
+                        src={imageToShow}
+                        alt={section.image_prompt || section.subtitle || "Section image"}
+                        className="w-full h-auto object-cover"
+                      />
+                      {/* Badge showing it's the hero image */}
+                      {isHeroImage && (
+                        <div className="absolute top-2 left-2 bg-green-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                          Article Image
+                        </div>
+                      )}
+                      {/* Desktop hover buttons */}
+                      <div className="absolute top-2 right-2 hidden sm:flex gap-2 opacity-0 group-hover/img:opacity-100 transition-opacity">
+                        <Button
+                          onClick={() => {
+                            setModal({
+                              type: 'prompt',
+                              title: 'Regenerate Image',
+                              message: 'Enter a prompt to generate a new image:',
+                              value: section.image_prompt || '',
+                              onConfirm: (prompt) => {
+                                if (prompt) {
+                                  handleGenerateImage(sectionIndex, prompt);
+                                }
                               }
-                            }
-                          });
-                        }}
-                        disabled={generatingImage === sectionIndex}
-                        size="sm"
-                        className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white shadow-lg"
-                      >
-                        {generatingImage === sectionIndex ? (
-                          <>
-                            <Loader2 className="w-4 h-4 mr-1 animate-spin !text-blue-600" />
-                            Regenerating...
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="w-4 h-4 mr-1 !text-blue-600" />
-                            Regenerate
-                          </>
-                        )}
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setModal({
-                            type: 'prompt',
-                            title: 'Edit Image URL',
-                            message: 'Add an image here by providing a URL',
-                            value: section.image_url || '',
-                            onConfirm: (url) => {
-                              if (url) {
-                                handleSetImageUrl(sectionIndex, url);
+                            });
+                          }}
+                          disabled={generatingImage === sectionIndex}
+                          size="sm"
+                          className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white shadow-lg"
+                        >
+                          {generatingImage === sectionIndex ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-1 animate-spin !text-blue-600" />
+                              Regenerating...
+                            </>
+                          ) : (
+                            <>
+                              <RefreshCw className="w-4 h-4 mr-1 !text-blue-600" />
+                              Regenerate
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setModal({
+                              type: 'prompt',
+                              title: 'Edit Image URL',
+                              message: 'Add an image here by providing a URL',
+                              value: section.image_url || '',
+                              onConfirm: (url) => {
+                                if (url) {
+                                  handleSetImageUrl(sectionIndex, url);
+                                }
                               }
-                            }
-                          });
-                        }}
-                        size="sm"
-                        className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white shadow-lg"
-                      >
-                        <Edit2 className="w-4 h-4 !text-blue-600" />
-                      </Button>
-                      <Button
-                        onClick={() => handleRemoveImage(sectionIndex)}
-                        size="sm"
-                        className="border-2 border-red-600 !text-red-600 hover:!bg-red-50 !bg-white shadow-lg"
-                      >
-                        <Trash2 className="w-4 h-4 !text-red-600" />
-                      </Button>
+                            });
+                          }}
+                          size="sm"
+                          className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white shadow-lg"
+                        >
+                          <Edit2 className="w-4 h-4 !text-blue-600" />
+                        </Button>
+                        <Button
+                          onClick={() => handleRemoveImage(sectionIndex)}
+                          size="sm"
+                          className="border-2 border-red-600 !text-red-600 hover:!bg-red-50 !bg-white shadow-lg"
+                        >
+                          <Trash2 className="w-4 h-4 !text-red-600" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                ) : null;
+              })()}
 
-              {/* Generate Image Button if no image */}
-              {!section.image_url && (
-                <div className="mb-8 relative add-image-dropdown">
-                  <Button
-                    onClick={() => setShowAddImageMenu(showAddImageMenu === sectionIndex ? null : sectionIndex)}
-                    size="sm"
-                    className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white"
-                    disabled={generatingImage === sectionIndex}
-                  >
-                    {generatingImage === sectionIndex ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin !text-blue-600" />
-                        Generating Image...
-                      </>
-                    ) : (
-                      <>
-                        <ImageIcon className="w-4 h-4 mr-1 !text-blue-600" />
-                        Add Image
-                        <ChevronDown className="w-4 h-4 ml-1 !text-blue-600" />
-                      </>
-                    )}
-                  </Button>
+              {/* Generate Image Button if no image (and not showing fallback hero image) */}
+              {(() => {
+                const hasHeroImage = landingPage.ai_generated_items?.image_url;
+                const hasSectionImage = section.image_url;
+                const showingHeroImageFallback = !hasSectionImage && hasHeroImage && (sectionIndex === 2 || sectionIndex === 4);
+                
+                // Only show "Add Image" button if there's no section image AND not showing hero fallback
+                return !hasSectionImage && !showingHeroImageFallback ? (
+                  <div className="mb-8 relative add-image-dropdown">
+                    <Button
+                      onClick={() => setShowAddImageMenu(showAddImageMenu === sectionIndex ? null : sectionIndex)}
+                      size="sm"
+                      className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white"
+                      disabled={generatingImage === sectionIndex}
+                    >
+                      {generatingImage === sectionIndex ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin !text-blue-600" />
+                          Generating Image...
+                        </>
+                      ) : (
+                        <>
+                          <ImageIcon className="w-4 h-4 mr-1 !text-blue-600" />
+                          Add Image
+                          <ChevronDown className="w-4 h-4 ml-1 !text-blue-600" />
+                        </>
+                      )}
+                    </Button>
 
                   {/* Dropdown Menu */}
                   {showAddImageMenu === sectionIndex && (
@@ -1467,7 +1500,8 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                     </div>
                   )}
                 </div>
-              )}
+                ) : null;
+              })()}
 
               {/* CTA Section - Editable with Multiple Types */}
               <div className="mb-8">
@@ -2096,8 +2130,41 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
       {/* Footer */}
       <footer className="bg-gray-100 border-t border-gray-200 mt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-sm text-gray-500">
-            <p>Powered by AI-driven content generation</p>
+          {/* Disclaimers */}
+          <div className="mb-8 space-y-6 text-xs text-gray-600 leading-relaxed">
+            <div className="bg-white border border-gray-300 rounded-lg p-4">
+              <p className="font-bold text-gray-800 mb-2">ADVERTISEMENT NOTICE</p>
+              <p>THIS IS AN ADVERTISEMENT AND NOT AN ACTUAL NEWS ARTICLE, BLOG, OR CONSUMER PROTECTION UPDATE.</p>
+            </div>
+            
+            <div className="bg-white border border-gray-300 rounded-lg p-4">
+              <p className="font-bold text-gray-800 mb-2">MARKETING DISCLOSURE</p>
+              <p>This website is a market place. As such you should know that the owner has a monetary connection to the product and services advertised on the site. The owner receives payment whenever a qualified lead is referred but that is the extent of it.</p>
+            </div>
+            
+            <div className="bg-white border border-gray-300 rounded-lg p-4">
+              <p className="font-bold text-gray-800 mb-2">ADVERTISING DISCLOSURE</p>
+              <p>This website and the products & services referred to on the site are advertising marketplaces. This website is an advertisement and not a news publication. Any photographs of persons used on this site are models. The owner of this site and of the products and services referred to on this site only provides a service where consumers can obtain and compare.</p>
+            </div>
+          </div>
+
+          <div className="text-center text-sm text-gray-500 space-y-2 border-t border-gray-300 pt-6">
+            <p>
+              Powered by AI-driven content generation
+            </p>
+            {landingPage.ai_generated_items?.link && (
+              <p className="text-xs text-gray-400">
+                <span className="mr-2">Based on news from:</span>
+                <a
+                  href={landingPage.ai_generated_items.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-500 hover:text-gray-600 transition-colors underline"
+                >
+                  Original Source
+                </a>
+              </p>
+            )}
           </div>
         </div>
       </footer>
