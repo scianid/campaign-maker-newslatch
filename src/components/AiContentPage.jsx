@@ -666,6 +666,17 @@ export function AiContentPage({ user }) {
                                 <span className="hidden sm:inline">Social</span>
                                 <span className="sm:hidden">Mobile</span>
                               </button>
+                              <button
+                                onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'adword' }))}
+                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                  previewStyles[item.id] === 'adword'
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                              >
+                                <span className="hidden sm:inline">AdWord</span>
+                                <span className="sm:hidden">Ad</span>
+                              </button>
                             </div>
                           </div>
                           
@@ -893,6 +904,47 @@ export function AiContentPage({ user }) {
                                     </button>
                                   </div>
                                 </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* AdWord Text-Only Style */}
+                          {previewStyles[item.id] === 'adword' && (
+                            <div className="flex justify-center">
+                              <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm w-full max-w-2xl">
+                                {/* Sponsored Header */}
+                                <div className="mb-3">
+                                  <span className="text-gray-600 text-sm font-normal">
+                                    Sponsored
+                                  </span>
+                                </div>
+                                
+                                {/* Logo/Icon and Brand Info */}
+                                <div className="flex items-start gap-3 mb-3">
+                                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span className="text-white text-sm font-bold">
+                                      {campaign?.name?.charAt(0).toUpperCase() || 'A'}
+                                    </span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="text-gray-900 text-sm font-medium">
+                                      {campaign?.name || 'Campaign'}
+                                    </div>
+                                    <div className="text-[#006621] text-xs">
+                                      {campaign?.url ? new URL(campaign.url).hostname.replace('www.', '') : 'example.com'}
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {/* Headline - Clickable Blue Link */}
+                                <h5 className="text-[#1a0dab] hover:underline cursor-pointer text-xl font-normal mb-2 leading-tight">
+                                  {item.ad_placement.headline}
+                                </h5>
+                                
+                                {/* Body Text/Description */}
+                                <p className="text-[#4d5156] text-sm leading-relaxed">
+                                  {item.ad_placement.body}
+                                </p>
                               </div>
                             </div>
                           )}
