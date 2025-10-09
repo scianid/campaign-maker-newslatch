@@ -87,6 +87,7 @@ export function EditLandingPage({ user }) {
             clickbait,
             description,
             link,
+            image_url,
             campaign_id,
             campaigns (
               id,
@@ -804,7 +805,7 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
             </div>
           </div>
 
-          {/* Page Title - Editable */}
+          {/* Hero Section with Title Overlay - Matching Live View */}
           {isEditing('title') ? (
             <div className="mb-8">
               <Textarea
@@ -835,37 +836,96 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
               </div>
             </div>
           ) : (
-            <div className="group mb-8 relative">
-              {/* Desktop hover button */}
-              <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                <Button
-                  size="sm"
-                  onClick={() => startEdit('title', null, null, landingPage.title)}
-                  className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white shadow-lg"
-                >
-                  <Edit2 className="w-4 h-4 !text-blue-600" />
-                </Button>
-              </div>
-              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
-                {landingPage.title}
-              </h1>
-              {/* Mobile always-visible button */}
-              <div className="sm:hidden flex justify-center mt-4">
-                <Button
-                  size="sm"
-                  onClick={() => startEdit('title', null, null, landingPage.title)}
-                  className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-3 py-2 flex items-center gap-1"
-                >
-                  <Edit2 className="w-3 h-3 !text-blue-600" />
-                  Edit Title
-                </Button>
-              </div>
-            </div>
+            <>
+              {landingPage.ai_generated_items?.image_url ? (
+                <div className="relative mb-8 group">
+                  <div className="rounded-xl overflow-hidden shadow-lg">
+                    <img 
+                      src={landingPage.ai_generated_items.image_url}
+                      alt={landingPage.title}
+                      className="w-full h-80 md:h-96 object-cover"
+                    />
+                    {/* Title Overlay with Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent flex items-end">
+                      <div className="p-6 md:p-8 w-full">
+                        <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                          {landingPage.title}
+                        </h1>
+                      </div>
+                    </div>
+                  </div>
+                  {/* Edit button */}
+                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <Button
+                      size="sm"
+                      onClick={() => startEdit('title', null, null, landingPage.title)}
+                      className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white shadow-lg"
+                    >
+                      <Edit2 className="w-4 h-4 !text-blue-600" />
+                    </Button>
+                  </div>
+                  {/* Mobile edit button */}
+                  <div className="sm:hidden flex justify-center mt-4">
+                    <Button
+                      size="sm"
+                      onClick={() => startEdit('title', null, null, landingPage.title)}
+                      className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-3 py-2 flex items-center gap-1"
+                    >
+                      <Edit2 className="w-3 h-3 !text-blue-600" />
+                      Edit Title
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                // Fallback if no hero image
+                <div className="group mb-8 relative">
+                  <div className="absolute -left-12 top-1/2 -translate-y-1/2 hidden sm:flex opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <Button
+                      size="sm"
+                      onClick={() => startEdit('title', null, null, landingPage.title)}
+                      className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white shadow-lg"
+                    >
+                      <Edit2 className="w-4 h-4 !text-blue-600" />
+                    </Button>
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
+                    {landingPage.title}
+                  </h1>
+                  <div className="sm:hidden flex justify-center mt-4">
+                    <Button
+                      size="sm"
+                      onClick={() => startEdit('title', null, null, landingPage.title)}
+                      className="border-2 border-blue-600 !text-blue-600 hover:!bg-blue-50 !bg-white text-xs px-3 py-2 flex items-center gap-1"
+                    >
+                      <Edit2 className="w-3 h-3 !text-blue-600" />
+                      Edit Title
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
           <div className="text-center mb-8">
-            <div className="flex items-center justify-center text-sm text-gray-500 mb-4">
-              <span>Powered by NewsLatch</span>
+            {/* Social Proof Counter */}
+            <div className="bg-gray-50 rounded-lg px-4 py-2 inline-block mb-4">
+              <span className="text-sm text-gray-700 font-medium">
+                {Math.floor(Math.random() * 500) + 200} people viewed this article recently
+              </span>
+            </div>
+
+            {/* Above the Fold CTA Button */}
+            <div className="max-w-md mx-auto">
+              <Button
+                onClick={() => {
+                  if (landingPage?.ai_generated_items?.campaigns?.url) {
+                    window.open(landingPage.ai_generated_items.campaigns.url, '_blank');
+                  }
+                }}
+                className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-4 px-6 text-lg rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
+              >
+                Visit Site →
+              </Button>
             </div>
           </div>
         </header>
@@ -1344,6 +1404,21 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                   {/* Dropdown Menu */}
                   {showAddImageMenu === sectionIndex && (
                     <div className="absolute left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 z-10">
+                      {landingPage.ai_generated_items?.image_url && (
+                        <button
+                          onClick={() => {
+                            handleSetImageUrl(sectionIndex, landingPage.ai_generated_items.image_url);
+                            setShowAddImageMenu(null);
+                          }}
+                          className="w-full px-4 py-3 text-left hover:bg-gray-50 rounded-t-lg border-b border-gray-100 transition-colors"
+                        >
+                          <div className="font-medium text-green-600 flex items-center gap-2">
+                            <ImageIcon className="w-4 h-4" />
+                            Article Image
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">Use the hero image from this article</div>
+                        </button>
+                      )}
                       <button
                         onClick={() => {
                           setModal({
@@ -1361,7 +1436,7 @@ Existing Content: ${landingPage.sections?.map(s => s.paragraphs?.join(' ')).join
                           });
                           setShowAddImageMenu(null);
                         }}
-                        className="w-full px-4 py-3 text-left hover:bg-gray-50 rounded-t-lg border-b border-gray-100 transition-colors"
+                        className={`w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 transition-colors ${landingPage.ai_generated_items?.image_url ? '' : 'rounded-t-lg'}`}
                       >
                         <div className="font-medium text-blue-600 flex items-center gap-2">
                           <Sparkles className="w-4 h-4" />
