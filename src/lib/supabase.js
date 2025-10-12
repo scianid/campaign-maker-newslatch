@@ -92,6 +92,8 @@ export const campaignService = {
         user_id: user.id,
         name: campaign.name,
         url: campaign.url,
+        impression_pixel: campaign.impression_pixel,
+        click_pixel: campaign.click_pixel,
         tags: campaign.tags,
         description: campaign.description,
         product_description: campaign.product_description,
@@ -113,6 +115,8 @@ export const campaignService = {
       .update({
         name: campaign.name,
         url: campaign.url,
+        impression_pixel: campaign.impression_pixel,
+        click_pixel: campaign.click_pixel,
         tags: campaign.tags,
         description: campaign.description,
         product_description: campaign.product_description,

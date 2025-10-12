@@ -38,6 +38,8 @@ export function MultiStepCampaignForm({ user }) {
     // Step 1: Basic Info
     name: '',
     url: '',
+    impressionPixel: '',
+    clickPixel: '',
     
     // Step 2: AI Generated
     tags: [],
@@ -60,6 +62,7 @@ export function MultiStepCampaignForm({ user }) {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [newTag, setNewTag] = useState('');
+  const [showPixelFields, setShowPixelFields] = useState(false);
 
   // Initialize form for editing
   useEffect(() => {
@@ -68,6 +71,8 @@ export function MultiStepCampaignForm({ user }) {
         ...prev,
         name: campaign.name || '',
         url: campaign.url || '',
+        impressionPixel: campaign.impression_pixel || '',
+        clickPixel: campaign.click_pixel || '',
         tags: campaign.tags || [],
         description: campaign.description || '',
         productDescription: campaign.product_description || '',
@@ -221,6 +226,8 @@ export function MultiStepCampaignForm({ user }) {
       const campaignData = {
         name: formData.name,
         url: formData.url,
+        impression_pixel: formData.impressionPixel,
+        click_pixel: formData.clickPixel,
         description: formData.description,
         product_description: formData.productDescription,
         target_audience: formData.targetAudience,
@@ -342,6 +349,53 @@ export function MultiStepCampaignForm({ user }) {
           <p className="text-text-paragraph text-sm mt-1">
             We'll analyze this URL to generate intelligent suggestions for your campaign
           </p>
+        </div>
+
+        <div className="bg-gray-800/30 border border-gray-700 rounded-lg overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowPixelFields(!showPixelFields)}
+            className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-800/50 transition-colors"
+          >
+            <h3 className="text-white font-medium text-sm">Tracking Pixels (Optional)</h3>
+            <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${
+              showPixelFields ? 'rotate-90' : ''
+            }`} />
+          </button>
+          
+          {showPixelFields && (
+            <div className="p-4 pt-0 space-y-4">
+              <div>
+                <Label htmlFor="impressionPixel" className="text-white">Impression Pixel URL</Label>
+                <Input
+                  id="impressionPixel"
+                  type="url"
+                  value={formData.impressionPixel}
+                  onChange={(e) => updateFormData('impressionPixel', e.target.value)}
+                  placeholder="https://tracking.example.com/impression?id=123"
+                  className="mt-1"
+                />
+                <p className="text-text-paragraph text-xs mt-1">
+                  Pixel URL that fires when your ad is displayed
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="clickPixel" className="text-white">Click Pixel URL</Label>
+                <Input
+                  id="clickPixel"
+                  type="url"
+                  value={formData.clickPixel}
+                  onChange={(e) => updateFormData('clickPixel', e.target.value)}
+                  placeholder="https://tracking.example.com/click?id=123"
+                  className="mt-1"
+                />
+                <p className="text-text-paragraph text-xs mt-1">
+                  Pixel URL that fires when your ad is clicked
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

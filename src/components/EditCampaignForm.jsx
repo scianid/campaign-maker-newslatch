@@ -6,7 +6,7 @@ import { Label } from '../ui/Label';
 import { Textarea } from '../ui/Textarea';
 import { MultiSelect } from '../ui/MultiSelect';
 import { Badge } from '../ui/Badge';
-import { Plus, X, Save, ArrowLeft, Loader2 } from 'lucide-react';
+import { Plus, X, Save, ArrowLeft, Loader2, ChevronRight } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY } from '../constants/locales';
 import { Layout } from './Layout';
@@ -30,6 +30,8 @@ export function EditCampaignForm({ user }) {
   const [formData, setFormData] = useState({
     name: '',
     url: '',
+    impressionPixel: '',
+    clickPixel: '',
     tags: [],
     description: '',
     rssCategories: ['all'],
@@ -39,6 +41,7 @@ export function EditCampaignForm({ user }) {
   const [newTag, setNewTag] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [showPixelFields, setShowPixelFields] = useState(false);
 
   // Initialize form with campaign data
   useEffect(() => {
@@ -46,6 +49,8 @@ export function EditCampaignForm({ user }) {
       setFormData({
         name: campaign.name || '',
         url: campaign.url || '',
+        impressionPixel: campaign.impression_pixel || '',
+        clickPixel: campaign.click_pixel || '',
         tags: campaign.tags || [],
         description: campaign.description || '',
         rssCategories: campaign.rss_categories || ['all'],
@@ -103,6 +108,8 @@ export function EditCampaignForm({ user }) {
       const campaignData = {
         name: formData.name,
         url: formData.url,
+        impression_pixel: formData.impressionPixel,
+        click_pixel: formData.clickPixel,
         description: formData.description,
         tags: formData.tags,
         rssCategories: formData.rssCategories,
@@ -226,6 +233,55 @@ export function EditCampaignForm({ user }) {
                 />
                 {errors.url && <p className="text-red-400 text-sm mt-1">{errors.url}</p>}
               </div>
+            </div>
+
+            <div className="bg-gray-800/30 border border-gray-700 rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setShowPixelFields(!showPixelFields)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-800/50 transition-colors"
+              >
+                <h3 className="text-white font-medium text-sm">Tracking Pixels (Optional)</h3>
+                <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${
+                  showPixelFields ? 'rotate-90' : ''
+                }`} />
+              </button>
+              
+              {showPixelFields && (
+                <div className="p-4 pt-0 space-y-4">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="impressionPixel" className="text-white">Impression Pixel URL</Label>
+                      <Input
+                        id="impressionPixel"
+                        type="url"
+                        value={formData.impressionPixel}
+                        onChange={(e) => updateFormData('impressionPixel', e.target.value)}
+                        placeholder="https://tracking.example.com/impression?id=123"
+                        className="mt-1"
+                      />
+                      <p className="text-text-paragraph text-xs mt-1">
+                        Pixel URL that fires when your ad is displayed
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="clickPixel" className="text-white">Click Pixel URL</Label>
+                      <Input
+                        id="clickPixel"
+                        type="url"
+                        value={formData.clickPixel}
+                        onChange={(e) => updateFormData('clickPixel', e.target.value)}
+                        placeholder="https://tracking.example.com/click?id=123"
+                        className="mt-1"
+                      />
+                      <p className="text-text-paragraph text-xs mt-1">
+                        Pixel URL that fires when your ad is clicked
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
