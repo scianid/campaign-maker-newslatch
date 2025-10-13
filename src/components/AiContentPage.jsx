@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X, FileText } from 'lucide-react';
+import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X, FileText, Clipboard } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
+import { Label } from '../ui/Label';
 import { Layout } from './Layout';
 import { supabase } from '../lib/supabase';
 
@@ -21,6 +22,7 @@ export function AiContentPage({ user }) {
   const [previewStyles, setPreviewStyles] = useState({}); // Track preview style for each item
   const [expandedDetails, setExpandedDetails] = useState({}); // Track which cards have details expanded
   const [expandedReasons, setExpandedReasons] = useState({}); // Track which cards have AI reasoning expanded
+  const [copiedFields, setCopiedFields] = useState({}); // Track which fields have been copied
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
   const [generatingLandingPage, setGeneratingLandingPage] = useState({}); // Track which items are generating landing pages
   const [filters, setFilters] = useState({
@@ -677,12 +679,54 @@ export function AiContentPage({ user }) {
                                 <span className="hidden sm:inline">AdWord</span>
                                 <span className="sm:hidden">Ad</span>
                               </button>
+                              <button
+                                onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'manual' }))}
+                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                  previewStyles[item.id] === 'manual'
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'text-gray-400 hover:text-gray-300'
+                                }`}
+                              >
+                                <Clipboard className="w-3 h-3" />
+                                <span className="hidden sm:inline">Manual</span>
+                                <span className="sm:hidden">Copy</span>
+                              </button>
                             </div>
                           </div>
                           
                           {/* Banner/Image Overlay Style */}
                           {(previewStyles[item.id] || 'banner') === 'banner' && (
-                            <div className="flex justify-center">
+                            <div>
+                              <div className="flex justify-center mb-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const bannerHTML = `<div style="margin: 0; padding: 0; position: relative; display: block; width: 300px; height: 250px; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-decoration: none; cursor: pointer; font-family: Arial, Helvetica, sans-serif; background-color: #f8f9fa;">
+  <img src="${item.image_url || 'https://via.placeholder.com/600x500.jpg?text=Your+Product+Image'}" alt="Ad Background" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" />
+  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 35%, rgba(0,0,0,0.4) 65%, rgba(0,0,0,0.1) 100%);"></div>
+  <div style="position: absolute; bottom: 16px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; color: #fff;">
+    <div style="font-size: 18px; font-weight: 600; line-height: 1.2em; max-height: 2.4em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${item.ad_placement.headline}</div>
+    <div style="font-size: 14px; font-weight: 400; line-height: 1.3em; max-height: 5.2em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; opacity: 0.9;">${item.ad_placement.body}</div>
+    <div style="align-self: start; padding: 8px 16px; background: linear-gradient(90deg, #00c6ff 0%, #7d2cff 100%); color: #fff; font-size: 14px; font-weight: 600; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.5px;">${item.ad_placement.cta}</div>
+  </div>
+</div>`;
+                                    navigator.clipboard.writeText(bannerHTML);
+                                    setCopiedFields(prev => ({ ...prev, [`${item.id}-banner-html`]: true }));
+                                    setTimeout(() => {
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-banner-html`]: false }));
+                                    }, 2000);
+                                  }}
+                                  className="text-gray-400 hover:text-white"
+                                >
+                                  {copiedFields[`${item.id}-banner-html`] ? (
+                                    <><Check className="w-4 h-4 mr-1" /> HTML Copied</>
+                                  ) : (
+                                    <><Copy className="w-4 h-4 mr-1" /> Copy HTML</>
+                                  )}
+                                </Button>
+                              </div>
+                              <div className="flex justify-center">
                               <div 
                                 style={{
                                   margin: 0,
@@ -787,10 +831,51 @@ export function AiContentPage({ user }) {
                                 </div>
                               </div>
                             </div>
+                            </div>
                           )}
 
                           {/* Desktop/Web Ad Style */}
                           {previewStyles[item.id] === 'desktop' && (
+                            <div>
+                              <div className="flex justify-center mb-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const desktopHTML = `<div style="background: white; border-radius: 8px; padding: 16px; border: 1px solid #d1d5db; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+  <div style="background: linear-gradient(to right, #eff6ff, #faf5ff); border-radius: 6px; padding: 16px; border: 1px solid #bfdbfe;">
+    <div style="display: flex; gap: 12px;">
+      <div style="width: 40px; height: 40px; background: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <span style="color: white; font-size: 14px; font-weight: bold;">Ad</span>
+      </div>
+      <div style="flex: 1;">
+        <h5 style="font-weight: 600; color: #111827; font-size: 16px; margin-bottom: 8px; line-height: 1.2;">${item.ad_placement.headline}</h5>
+        <p style="color: #374151; font-size: 14px; margin-bottom: 12px; line-height: 1.5;">${item.ad_placement.body}</p>
+        ${item.image_url ? `<img src="${item.image_url}" alt="Article image" style="width: 100%; height: 128px; object-fit: cover; border-radius: 6px; border: 1px solid #e5e7eb; margin-bottom: 12px;" />` : ''}
+        <button style="background: #2563eb; color: white; font-weight: 500; padding: 8px 16px; border-radius: 6px; font-size: 14px; border: none; cursor: pointer;">${item.ad_placement.cta}</button>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(191, 219, 254, 0.3);">
+      <span style="font-size: 12px; color: #6b7280; background: #f3f4f6; padding: 4px 8px; border-radius: 4px;">Sponsored</span>
+      <span style="font-size: 12px; color: #9ca3af;">${campaign?.name || 'Campaign'}</span>
+    </div>
+  </div>
+</div>`;
+                                    navigator.clipboard.writeText(desktopHTML);
+                                    setCopiedFields(prev => ({ ...prev, [`${item.id}-desktop-html`]: true }));
+                                    setTimeout(() => {
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-desktop-html`]: false }));
+                                    }, 2000);
+                                  }}
+                                  className="text-gray-400 hover:text-white"
+                                >
+                                  {copiedFields[`${item.id}-desktop-html`] ? (
+                                    <><Check className="w-4 h-4 mr-1" /> HTML Copied</>
+                                  ) : (
+                                    <><Copy className="w-4 h-4 mr-1" /> Copy HTML</>
+                                  )}
+                                </Button>
+                              </div>
                             <div className="bg-white rounded-lg p-4 border border-gray-300 shadow-md">
                               <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-md p-4 border border-blue-200">
                                 <div className="flex items-start gap-3">
@@ -846,10 +931,55 @@ export function AiContentPage({ user }) {
                                 </div>
                               </div>
                             </div>
+                            </div>
                           )}
 
                           {/* Mobile/Social Style */}
                           {previewStyles[item.id] === 'mobile' && (
+                            <div>
+                              <div className="flex justify-center mb-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    const mobileHTML = `<div style="display: flex; justify-content: center;">
+  <div style="background: white; border-radius: 8px; padding: 12px; border: 1px solid #d1d5db; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; max-width: 384px;">
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+      <div style="padding: 12px; border-bottom: 1px solid #f3f4f6;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 32px; height: 32px; background: linear-gradient(to bottom right, #3b82f6, #9333ea); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <span style="color: white; font-size: 12px; font-weight: bold;">${campaign?.name?.substring(0, 2).toUpperCase() || 'AD'}</span>
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <p style="font-size: 14px; font-weight: 500; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${campaign?.name || 'Campaign'}</p>
+            <p style="font-size: 12px; color: #6b7280;">Sponsored</p>
+          </div>
+        </div>
+      </div>
+      <div style="padding: 12px;">
+        <h6 style="font-weight: 600; color: #111827; font-size: 14px; margin-bottom: 8px; line-height: 1.2;">${item.ad_placement.headline}</h6>
+        <p style="color: #374151; font-size: 12px; margin-bottom: 12px; line-height: 1.5;">${item.ad_placement.body}</p>
+        ${item.image_url ? `<img src="${item.image_url}" alt="Article image" style="width: 100%; height: 96px; object-fit: cover; border-radius: 4px; border: 1px solid #e5e7eb; margin-bottom: 12px;" />` : ''}
+        <button style="width: 100%; background: #2563eb; color: white; font-weight: 500; padding: 8px 16px; border-radius: 6px; font-size: 12px; border: none; cursor: pointer;">${item.ad_placement.cta}</button>
+      </div>
+    </div>
+  </div>
+</div>`;
+                                    navigator.clipboard.writeText(mobileHTML);
+                                    setCopiedFields(prev => ({ ...prev, [`${item.id}-mobile-html`]: true }));
+                                    setTimeout(() => {
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-mobile-html`]: false }));
+                                    }, 2000);
+                                  }}
+                                  className="text-gray-400 hover:text-white"
+                                >
+                                  {copiedFields[`${item.id}-mobile-html`] ? (
+                                    <><Check className="w-4 h-4 mr-1" /> HTML Copied</>
+                                  ) : (
+                                    <><Copy className="w-4 h-4 mr-1" /> Copy HTML</>
+                                  )}
+                                </Button>
+                              </div>
                             <div className="flex justify-center">
                               <div className="bg-white rounded-lg p-3 border border-gray-300 shadow-sm w-full max-w-sm">
                                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -906,6 +1036,7 @@ export function AiContentPage({ user }) {
                                 </div>
                               </div>
                             </div>
+                            </div>
                           )}
 
                           {/* AdWord Text-Only Style */}
@@ -945,6 +1076,175 @@ export function AiContentPage({ user }) {
                                 <p className="text-[#4d5156] text-sm leading-relaxed">
                                   {item.ad_placement.body}
                                 </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Manual Copy Style */}
+                          {previewStyles[item.id] === 'manual' && (
+                            <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 space-y-4">
+                              {/* Headline */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <Label className="text-blue-400 text-sm font-medium">Headline</Label>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(item.ad_placement.headline);
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-headline`]: true }));
+                                      setTimeout(() => {
+                                        setCopiedFields(prev => ({ ...prev, [`${item.id}-headline`]: false }));
+                                      }, 2000);
+                                    }}
+                                    className="h-8 px-2 text-gray-400 hover:text-white"
+                                  >
+                                    {copiedFields[`${item.id}-headline`] ? (
+                                      <><Check className="w-4 h-4 mr-1" /> Copied</>
+                                    ) : (
+                                      <><Copy className="w-4 h-4 mr-1" /> Copy</>
+                                    )}
+                                  </Button>
+                                </div>
+                                <div className="bg-card-bg border border-gray-600 rounded p-3 text-white text-sm">
+                                  {item.ad_placement.headline}
+                                </div>
+                              </div>
+
+                              {/* Body/Description */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <Label className="text-blue-400 text-sm font-medium">Body Text</Label>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(item.ad_placement.body);
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-body`]: true }));
+                                      setTimeout(() => {
+                                        setCopiedFields(prev => ({ ...prev, [`${item.id}-body`]: false }));
+                                      }, 2000);
+                                    }}
+                                    className="h-8 px-2 text-gray-400 hover:text-white"
+                                  >
+                                    {copiedFields[`${item.id}-body`] ? (
+                                      <><Check className="w-4 h-4 mr-1" /> Copied</>
+                                    ) : (
+                                      <><Copy className="w-4 h-4 mr-1" /> Copy</>
+                                    )}
+                                  </Button>
+                                </div>
+                                <div className="bg-card-bg border border-gray-600 rounded p-3 text-white text-sm leading-relaxed">
+                                  {item.ad_placement.body}
+                                </div>
+                              </div>
+
+                              {/* CTA */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <Label className="text-blue-400 text-sm font-medium">Call to Action</Label>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(item.ad_placement.cta);
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-cta`]: true }));
+                                      setTimeout(() => {
+                                        setCopiedFields(prev => ({ ...prev, [`${item.id}-cta`]: false }));
+                                      }, 2000);
+                                    }}
+                                    className="h-8 px-2 text-gray-400 hover:text-white"
+                                  >
+                                    {copiedFields[`${item.id}-cta`] ? (
+                                      <><Check className="w-4 h-4 mr-1" /> Copied</>
+                                    ) : (
+                                      <><Copy className="w-4 h-4 mr-1" /> Copy</>
+                                    )}
+                                  </Button>
+                                </div>
+                                <div className="bg-card-bg border border-gray-600 rounded p-3 text-white text-sm font-medium">
+                                  {item.ad_placement.cta}
+                                </div>
+                              </div>
+
+                              {/* Campaign URL */}
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <Label className="text-blue-400 text-sm font-medium">Campaign URL</Label>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(campaign?.url || '');
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-url`]: true }));
+                                      setTimeout(() => {
+                                        setCopiedFields(prev => ({ ...prev, [`${item.id}-url`]: false }));
+                                      }, 2000);
+                                    }}
+                                    className="h-8 px-2 text-gray-400 hover:text-white"
+                                  >
+                                    {copiedFields[`${item.id}-url`] ? (
+                                      <><Check className="w-4 h-4 mr-1" /> Copied</>
+                                    ) : (
+                                      <><Copy className="w-4 h-4 mr-1" /> Copy</>
+                                    )}
+                                  </Button>
+                                </div>
+                                <div className="bg-card-bg border border-gray-600 rounded p-3 text-blue-400 text-sm break-all">
+                                  {campaign?.url || 'No URL'}
+                                </div>
+                              </div>
+
+                              {/* Image URL if available */}
+                              {item.image_url && (
+                                <div>
+                                  <div className="flex items-center justify-between mb-2">
+                                    <Label className="text-blue-400 text-sm font-medium">Image URL</Label>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(item.image_url);
+                                        setCopiedFields(prev => ({ ...prev, [`${item.id}-image`]: true }));
+                                        setTimeout(() => {
+                                          setCopiedFields(prev => ({ ...prev, [`${item.id}-image`]: false }));
+                                        }, 2000);
+                                      }}
+                                      className="h-8 px-2 text-gray-400 hover:text-white"
+                                    >
+                                      {copiedFields[`${item.id}-image`] ? (
+                                        <><Check className="w-4 h-4 mr-1" /> Copied</>
+                                      ) : (
+                                        <><Copy className="w-4 h-4 mr-1" /> Copy</>
+                                      )}
+                                    </Button>
+                                  </div>
+                                  <div className="bg-card-bg border border-gray-600 rounded p-3 text-blue-400 text-sm break-all">
+                                    {item.image_url}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Copy All Button */}
+                              <div className="pt-2 border-t border-gray-600">
+                                <Button
+                                  variant="outline"
+                                  className="w-full"
+                                  onClick={() => {
+                                    const allText = `Headline: ${item.ad_placement.headline}\n\nBody: ${item.ad_placement.body}\n\nCTA: ${item.ad_placement.cta}\n\nURL: ${campaign?.url || ''}${item.image_url ? `\n\nImage: ${item.image_url}` : ''}`;
+                                    navigator.clipboard.writeText(allText);
+                                    setCopiedFields(prev => ({ ...prev, [`${item.id}-all`]: true }));
+                                    setTimeout(() => {
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-all`]: false }));
+                                    }, 2000);
+                                  }}
+                                >
+                                  {copiedFields[`${item.id}-all`] ? (
+                                    <><Check className="w-4 h-4 mr-2" /> All Content Copied!</>
+                                  ) : (
+                                    <><Copy className="w-4 h-4 mr-2" /> Copy All Content</>
+                                  )}
+                                </Button>
                               </div>
                             </div>
                           )}
