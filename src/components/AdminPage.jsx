@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
+import { SUPPORTED_COUNTRIES } from '../constants/locales';
 
 export function AdminPage() {
   const [activeTab, setActiveTab] = useState('rss-feeds');
@@ -221,7 +222,7 @@ export function AdminPage() {
       name: feed.name,
       url: feed.url,
       categories: feed.categories || [],
-      countries: feed.countries || [],
+      countries: feed.country || [],
       is_active: feed.is_active
     });
     setShowAddFeed(true);
@@ -371,10 +372,19 @@ export function AdminPage() {
                         </Badge>
                       </div>
                       <p className="text-gray-400 mb-3 break-all">{feed.url}</p>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <span className="text-sm text-gray-500">Categories:</span>
                         {feed.categories?.map((category) => (
                           <Badge key={category} variant="outline" className="text-xs">
                             {category}
+                          </Badge>
+                        ))}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <span className="text-sm text-gray-500">Countries:</span>
+                        {feed.country?.map((country) => (
+                          <Badge key={country} variant="secondary" className="text-xs">
+                            {country}
                           </Badge>
                         ))}
                       </div>

@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
 }
 
 serve(async (req) => {
@@ -122,7 +123,7 @@ async function handleGetRssFeeds(supabaseClient: any) {
 // Create a new RSS feed
 async function handleCreateRssFeed(supabaseClient: any, req: Request) {
   const body = await req.json()
-  const { name, url, categories, is_active = true } = body
+  const { name, url, categories, countries, is_active = true } = body
 
   if (!name || !url) {
     return new Response(
@@ -140,6 +141,7 @@ async function handleCreateRssFeed(supabaseClient: any, req: Request) {
       name,
       url,
       categories: categories || [],
+      country: countries || [],
       is_active
     }])
     .select()
@@ -177,12 +179,13 @@ async function handleUpdateRssFeed(supabaseClient: any, req: Request, url: URL) 
   }
 
   const body = await req.json()
-  const { name, url: feedUrl, categories, is_active } = body
+  const { name, url: feedUrl, categories, countries, is_active } = body
 
   const updates: any = {}
   if (name !== undefined) updates.name = name
   if (feedUrl !== undefined) updates.url = feedUrl
   if (categories !== undefined) updates.categories = categories
+  if (countries !== undefined) updates.country = countries
   if (is_active !== undefined) updates.is_active = is_active
 
   const { data, error } = await supabaseClient

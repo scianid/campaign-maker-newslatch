@@ -1,7 +1,8 @@
 // Supported countries for campaign targeting
 export const SUPPORTED_COUNTRIES = [
   { code: 'US', label: 'United States' },
-  { code: 'GB', label: 'United Kingdom' }
+  { code: 'GB', label: 'United Kingdom' },
+  { code: 'DE', label: 'Germany' }
 ];
 
 // Default country
