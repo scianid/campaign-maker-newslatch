@@ -55,7 +55,7 @@ export function MultiStepCampaignForm({ user }) {
     },
     
     // Step 3: Manual Selection
-    rssCategories: ['all'],
+    rssCategories: [],
     rssCountries: [DEFAULT_COUNTRY]
   });
 
@@ -77,7 +77,7 @@ export function MultiStepCampaignForm({ user }) {
         description: campaign.description || '',
         productDescription: campaign.product_description || '',
         targetAudience: campaign.target_audience || '',
-        rssCategories: campaign.rss_categories || ['all'],
+        rssCategories: (campaign.rss_categories || []).filter(cat => cat !== 'all'),
         rssCountries: campaign.rss_countries || [DEFAULT_COUNTRY]
       }));
       
@@ -630,7 +630,7 @@ export function MultiStepCampaignForm({ user }) {
             RSS Feed Categories
           </Label>
           <MultiSelect
-            options={['all', ...RSS_CATEGORIES]}
+            options={RSS_CATEGORIES}
             value={formData.rssCategories}
             onChange={(value) => updateFormData('rssCategories', value)}
             placeholder="Select RSS categories"

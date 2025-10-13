@@ -26,19 +26,27 @@ export function MultiSelect({ options, value = [], onChange, placeholder = "Sele
   }, []);
 
   const handleToggle = (optionValue) => {
+    // If clicking on 'all', don't add it to the array
+    if (optionValue === 'all') {
+      return;
+    }
+    
     const newValue = value.includes(optionValue) 
       ? value.filter(v => v !== optionValue)
       : [...value, optionValue];
     onChange(newValue);
   };
 
-  const isAllSelected = value.includes('all') || value.length === normalizedOptions.length;
+  // Check if all non-'all' options are selected
+  const actualOptions = normalizedOptions.filter(opt => opt.value !== 'all');
+  const isAllSelected = actualOptions.length > 0 && actualOptions.every(opt => value.includes(opt.value));
 
   const handleSelectAll = () => {
     if (isAllSelected) {
       onChange([]);
     } else {
-      onChange(['all']);
+      // Select all actual categories, not 'all'
+      onChange(actualOptions.map(opt => opt.value));
     }
   };
 

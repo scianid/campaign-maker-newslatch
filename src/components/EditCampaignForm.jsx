@@ -5,7 +5,6 @@ import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Textarea } from '../ui/Textarea';
 import { MultiSelect } from '../ui/MultiSelect';
-import { Badge } from '../ui/Badge';
 import { Plus, X, Save, ArrowLeft, Loader2, ChevronRight } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY } from '../constants/locales';
@@ -34,7 +33,7 @@ export function EditCampaignForm({ user }) {
     clickPixel: '',
     tags: [],
     description: '',
-    rssCategories: ['all'],
+    rssCategories: [],
     rssCountries: [DEFAULT_COUNTRY]
   });
 
@@ -53,7 +52,7 @@ export function EditCampaignForm({ user }) {
         clickPixel: campaign.click_pixel || '',
         tags: campaign.tags || [],
         description: campaign.description || '',
-        rssCategories: campaign.rss_categories || ['all'],
+        rssCategories: (campaign.rss_categories || []),
         rssCountries: campaign.rss_countries || [DEFAULT_COUNTRY]
       });
     }
@@ -372,12 +371,12 @@ export function EditCampaignForm({ user }) {
 
               {/* RSS Categories */}
               <div>
-                <Label className="text-white mb-3">RSS Feed Categories</Label>
-                <MultiSelect
-                  options={['all', ...RSS_CATEGORIES]}
-                  value={formData.rssCategories}
-                  onChange={(value) => updateFormData('rssCategories', value)}
-                  placeholder="Select RSS categories"
+              <Label className="text-white mb-3">RSS Feed Categories</Label>
+              <MultiSelect
+                options={RSS_CATEGORIES}
+                value={formData.rssCategories}
+                onChange={(value) => updateFormData('rssCategories', value)}
+                placeholder="Select RSS categories"
                   className={errors.rssCategories ? 'border-red-500' : ''}
                 />
                 {errors.rssCategories && <p className="text-red-400 text-sm mt-1">{errors.rssCategories}</p>}
