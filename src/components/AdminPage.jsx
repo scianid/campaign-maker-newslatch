@@ -3,8 +3,6 @@ import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
-import { Textarea } from '../ui/Textarea';
-import { MultiSelect } from '../ui/MultiSelect';
 import { LoadingModal } from '../ui/LoadingModal';
 import { 
   Plus, 
@@ -22,7 +20,6 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
-import { SUPPORTED_COUNTRIES } from '../constants/locales';
 
 export function AdminPage() {
   const [activeTab, setActiveTab] = useState('rss-feeds');
@@ -39,7 +36,7 @@ export function AdminPage() {
     name: '',
     url: '',
     categories: ['news'],
-    countries: ['US'],
+    countries: ['FR'],
     is_active: true
   });
 
@@ -54,7 +51,17 @@ export function AdminPage() {
     { value: 'sport', label: 'Sport' },
     { value: 'politics', label: 'Politics' },
     { value: 'technology', label: 'Technology' },
+    { value: 'education', label: 'Education' },
+    { value: 'science', label: 'Science' },
+    { value: 'auto', label: 'Auto' },
     { value: 'health', label: 'Health' }
+  ];
+
+  const countryOptions = [
+    { value: 'US', label: 'United States' },
+    { value: 'DE', label: 'Germany' },
+    { value: 'GB', label: 'United Kingdom' },
+    { value: 'FR', label: 'France' }
   ];
 
   // Check if user is admin on component mount
@@ -235,7 +242,7 @@ export function AdminPage() {
       name: '',
       url: '',
       categories: ['news'],
-      countries: ['US'],
+      countries: ['FR'],
       is_active: true
     });
   };
@@ -482,11 +489,7 @@ export function AdminPage() {
                     <div className="mb-6">
                       <Label className="block mb-3">Countries</Label>
                       <div className="grid grid-cols-3 gap-3 p-4 border border-gray-600 rounded-lg bg-gray-800/30">
-                        {[
-                          { value: 'US', label: 'United States' },
-                          { value: 'DE', label: 'Germany' },
-                          { value: 'GB', label: 'United Kingdom' }
-                        ].map((country) => (
+                        {countryOptions.map((country) => (
                           <label
                             key={country.value}
                             className="flex items-center gap-2 cursor-pointer hover:bg-gray-700/30 p-2 rounded transition-colors"
@@ -510,11 +513,7 @@ export function AdminPage() {
                       {feedForm.countries && feedForm.countries.length > 0 && (
                         <div className="mt-2 text-xs text-gray-400">
                           Selected: {feedForm.countries.map(code => {
-                            const country = [
-                              { value: 'US', label: 'United States' },
-                              { value: 'DE', label: 'Germany' },
-                              { value: 'GB', label: 'United Kingdom' }
-                            ].find(c => c.value === code);
+                            const country = countryOptions.find(c => c.value === code);
                             return country?.label;
                           }).join(', ')}
                         </div>
