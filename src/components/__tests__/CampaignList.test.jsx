@@ -413,8 +413,8 @@ describe('CampaignList - Integration Tests', () => {
         />
       );
 
-      // View AI button should be present
-      const viewButton = screen.getByRole('button', { name: /View AI/i });
+      // View Ads button should be present (shows as 'View' on mobile, 'View Ads' on desktop)
+      const viewButton = screen.getByRole('button', { name: /View Ads|View/i });
       expect(viewButton).toBeInTheDocument();
       expect(viewButton).toHaveAttribute('title', 'View AI Content');
     });
@@ -570,8 +570,8 @@ describe('CampaignList - Integration Tests', () => {
       await user.click(generateButton);
 
       await waitFor(() => {
-        // After generation, View AI button should still be present
-        const viewButton = screen.getByRole('button', { name: /View AI/i });
+        // After generation, View Ads button should still be present
+        const viewButton = screen.getByRole('button', { name: /View Ads|View/i });
         expect(viewButton).toBeInTheDocument();
       });
     });
