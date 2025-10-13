@@ -137,7 +137,8 @@ export async function getFilteredRssFeeds(
 }
 
 /**
- * Get the latest 30 RSS items from all feeds matching the campaign
+ * Get the latest RSS items from all feeds matching the campaign
+ * Limited to 10 items per feed and only items from the last 24 hours
  */
 export async function getLatestRssContent(
   supabaseClient: any,
@@ -213,13 +214,14 @@ export async function getLatestRssContent(
 
     console.log(`📊 Total items collected: ${allItems.length}`);
     
-    // Sort by publication date (newest first) and take the latest 30
+    // Sort by publication date (newest first) and take the latest items
+    // Note: Items are already limited to 10 per feed and within last 24 hours
     const sortedItems = allItems
       .filter(item => item.pubDateISO) // Only include items with valid dates
       .sort((a, b) => new Date(b.pubDateISO).getTime() - new Date(a.pubDateISO).getTime())
-      .slice(0, 30); // Take latest 30
+      .slice(0, 30); // Take latest 30 across all feeds
 
-    console.log(`🎯 Returning ${sortedItems.length} latest items`);
+    console.log(`🎯 Returning ${sortedItems.length} latest items (max 10 per feed, last 24 hours only)`);
 
     return {
       success: true,

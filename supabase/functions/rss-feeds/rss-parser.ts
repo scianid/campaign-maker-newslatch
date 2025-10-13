@@ -143,12 +143,14 @@ function extractCategories(xml: string): string[] {
 export function parseRssXml(xmlContent: string, source: { name: string; url: string; feedUrl: string }): RssParseResult {
   try {
     const items: RssItem[] = [];
+    const oneDayAgo = new Date();
+    oneDayAgo.setHours(oneDayAgo.getHours() - 24);
     
     // Use regex to extract RSS items (both <item> and <entry> for Atom)
     const itemRegex = /<(?:item|entry)[^>]*?>([\s\S]*?)<\/(?:item|entry)>/gi;
     let match;
     
-    while ((match = itemRegex.exec(xmlContent)) !== null && items.length < 50) {
+    while ((match = itemRegex.exec(xmlContent)) !== null && items.length < 10) {
       const itemXml = match[1];
       
       try {
@@ -229,14 +231,24 @@ export function parseRssXml(xmlContent: string, source: { name: string; url: str
           imageUrl: imageUrl.trim()
         };
 
-        // Only add items that have meaningful content
+        // Only add items that have meaningful content and are within 24 hours
         const hasTitle = rssItem.title && rssItem.title !== 'Untitled Article';
         const hasDescription = rssItem.description && rssItem.description.trim().length > 0;
         const hasContent = rssItem.content && rssItem.content.trim().length > 0;
         const hasLink = rssItem.link && rssItem.link.trim().length > 0;
         
-        if (hasTitle || hasDescription || hasContent || hasLink) {
+        // Check if the item is within the last 24 hours
+        const itemDate = new Date(rssItem.pubDateISO);
+        const isRecent = itemDate >= oneDayAgo;
+        
+        if ((hasTitle || hasDescription || hasContent || hasLink) && isRecent) {
           items.push(rssItem);
+        } else if (!isRecent) {
+          console.warn('Skipping RSS item older than 24 hours:', { 
+            guid: rssItem.guid,
+            pubDate: rssItem.pubDateISO,
+            source: rssItem.source.name 
+          });
         } else {
           console.warn('Skipping RSS item with no meaningful content:', { 
             guid: rssItem.guid, 
