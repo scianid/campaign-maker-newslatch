@@ -18,6 +18,8 @@ CREATE TABLE public.ai_generated_items (
   updated_at timestamp with time zone DEFAULT now(),
   image_url text,
   tags ARRAY,
+  image_prompt text,
+  original_image_url text,
   CONSTRAINT ai_generated_items_pkey PRIMARY KEY (id),
   CONSTRAINT ai_generated_items_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id)
 );
@@ -32,6 +34,10 @@ CREATE TABLE public.campaigns (
   updated_at timestamp with time zone DEFAULT now(),
   rss_categories ARRAY,
   rss_countries ARRAY,
+  product_description text,
+  target_audience text,
+  impression_pixel text,
+  click_pixel text,
   CONSTRAINT campaigns_pkey PRIMARY KEY (id),
   CONSTRAINT campaigns_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );

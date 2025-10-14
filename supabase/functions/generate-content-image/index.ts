@@ -57,6 +57,18 @@ async function uploadImageToStorage(
 ): Promise<string> {
   console.log('📦 Processing base64 image...');
   
+  // Create a service role client for storage operations to bypass RLS
+  const serviceClient = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      }
+    }
+  );
+  
   // Decode base64 to binary
   const binaryString = atob(base64Image);
   const bytes = new Uint8Array(binaryString.length);
@@ -100,8 +112,8 @@ async function uploadImageToStorage(
   
   console.log('☁️ Uploading to Supabase Storage:', filePath);
   
-  // Upload to Supabase Storage in public-files bucket
-  const { data, error } = await supabaseClient
+  // Upload to Supabase Storage in public-files bucket using service client
+  const { data, error } = await serviceClient
     .storage
     .from('public-files')
     .upload(filePath, finalBuffer, {
@@ -114,8 +126,8 @@ async function uploadImageToStorage(
     throw new Error(`Failed to upload image: ${error.message}`);
   }
   
-  // Get public URL
-  const { data: { publicUrl } } = supabaseClient
+  // Get public URL using service client
+  const { data: { publicUrl } } = serviceClient
     .storage
     .from('public-files')
     .getPublicUrl(filePath);
