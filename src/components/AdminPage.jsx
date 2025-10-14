@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
+import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY } from '../constants/locales';
 
 export function AdminPage() {
   const [activeTab, setActiveTab] = useState('rss-feeds');
@@ -30,13 +31,14 @@ export function AdminPage() {
   
   // RSS Feeds state
   const [rssFeeds, setRssFeeds] = useState([]);
+  const [countryFilter, setCountryFilter] = useState('all');
   const [editingFeed, setEditingFeed] = useState(null);
   const [showAddFeed, setShowAddFeed] = useState(false);
   const [feedForm, setFeedForm] = useState({
     name: '',
     url: '',
     categories: ['news'],
-    countries: ['FR'],
+    countries: [DEFAULT_COUNTRY],
     is_active: true
   });
 
@@ -57,12 +59,11 @@ export function AdminPage() {
     { value: 'health', label: 'Health' }
   ];
 
-  const countryOptions = [
-    { value: 'US', label: 'United States' },
-    { value: 'DE', label: 'Germany' },
-    { value: 'GB', label: 'United Kingdom' },
-    { value: 'FR', label: 'France' }
-  ];
+  // Filter RSS feeds by country
+  const filteredRssFeeds = countryFilter === 'all' 
+    ? rssFeeds 
+    : rssFeeds.filter(feed => feed.country?.includes(countryFilter));
+
 
   // Check if user is admin on component mount
   useEffect(() => {
@@ -242,7 +243,7 @@ export function AdminPage() {
       name: '',
       url: '',
       categories: ['news'],
-      countries: ['FR'],
+      countries: [DEFAULT_COUNTRY],
       is_active: true
     });
   };
@@ -358,17 +359,37 @@ export function AdminPage() {
         {/* RSS Feeds Tab */}
         {activeTab === 'rss-feeds' && (
           <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-white">RSS Feeds Management</h2>
-              <Button onClick={() => setShowAddFeed(true)} className="flex items-center gap-2">
-                <Plus className="h-4 w-4" />
-                Add RSS Feed
-              </Button>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+              <div className="flex items-center gap-4">
+                <h2 className="text-xl font-semibold text-white">RSS Feeds Management</h2>
+                <Badge variant="outline" className="text-sm">
+                  {filteredRssFeeds.length} {filteredRssFeeds.length === 1 ? 'feed' : 'feeds'}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-3">
+                {/* Country Filter */}
+                <select
+                  value={countryFilter}
+                  onChange={(e) => setCountryFilter(e.target.value)}
+                  className="h-10 rounded-lg border border-gray-600 bg-card-bg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent"
+                >
+                  <option value="all">All Countries</option>
+                  {SUPPORTED_COUNTRIES.map((country) => (
+                    <option key={country.code} value={country.code}>
+                      {country.label}
+                    </option>
+                  ))}
+                </select>
+                <Button onClick={() => setShowAddFeed(true)} className="flex items-center gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add RSS Feed
+                </Button>
+              </div>
             </div>
 
             {/* RSS Feeds List */}
             <div className="grid gap-4">
-              {rssFeeds.map((feed) => (
+              {filteredRssFeeds.map((feed) => (
                 <div key={feed.id} className="bg-card-bg rounded-lg p-6">
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
@@ -489,19 +510,19 @@ export function AdminPage() {
                     <div className="mb-6">
                       <Label className="block mb-3">Countries</Label>
                       <div className="grid grid-cols-3 gap-3 p-4 border border-gray-600 rounded-lg bg-gray-800/30">
-                        {countryOptions.map((country) => (
+                        {SUPPORTED_COUNTRIES.map((country) => (
                           <label
-                            key={country.value}
+                            key={country.code}
                             className="flex items-center gap-2 cursor-pointer hover:bg-gray-700/30 p-2 rounded transition-colors"
                           >
                             <input
                               type="checkbox"
-                              checked={feedForm.countries?.includes(country.value) || false}
+                              checked={feedForm.countries?.includes(country.code) || false}
                               onChange={(e) => {
                                 const currentCountries = feedForm.countries || [];
                                 const newCountries = e.target.checked
-                                  ? [...currentCountries, country.value]
-                                  : currentCountries.filter(c => c !== country.value);
+                                  ? [...currentCountries, country.code]
+                                  : currentCountries.filter(c => c !== country.code);
                                 setFeedForm(prev => ({ ...prev, countries: newCountries }));
                               }}
                               className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-highlight focus:ring-highlight focus:ring-1"
@@ -513,7 +534,7 @@ export function AdminPage() {
                       {feedForm.countries && feedForm.countries.length > 0 && (
                         <div className="mt-2 text-xs text-gray-400">
                           Selected: {feedForm.countries.map(code => {
-                            const country = countryOptions.find(c => c.value === code);
+                            const country = SUPPORTED_COUNTRIES.find(c => c.code === code);
                             return country?.label;
                           }).join(', ')}
                         </div>

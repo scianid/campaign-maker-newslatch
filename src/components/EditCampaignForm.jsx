@@ -360,7 +360,7 @@ export function EditCampaignForm({ user }) {
               <div>
                 <Label className="text-white mb-3">Target Countries</Label>
                 <MultiSelect
-                  options={SUPPORTED_COUNTRIES.map(country => country.code)}
+                  options={SUPPORTED_COUNTRIES.map(country => ({ value: country.code, label: country.label }))}
                   value={formData.rssCountries}
                   onChange={(value) => updateFormData('rssCountries', value)}
                   placeholder="Select target countries"
