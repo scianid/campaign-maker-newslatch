@@ -54,7 +54,8 @@ OUTPUT FORMAT (JSON only):
                 "headline": "[Compelling ad headline that connects news to ${companyName}]",
                 "body": "[Persuasive ad body text explaining the connection and value proposition]",
                 "cta": "[Short action text ONLY - no URLs, no links, just 2-4 words like 'Get Started' or 'Learn More']"
-            }
+            },
+            "image_prompt": "[Detailed Stable Diffusion prompt for generating a professional marketing image that combines the news topic with ${companyName}'s services. Make it visually compelling, professional, and relevant to the ad. Include style, composition, and key visual elements.]"
         }
     ],
     "trend_summary": "[Marketing strategy overview for ${companyName} based on identified trends]",

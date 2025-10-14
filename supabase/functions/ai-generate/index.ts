@@ -143,6 +143,7 @@ Deno.serve(async (req: Request) => {
           tooltip: item.tooltip,
           ad_placement: item.ad_placement || null,
           image_url: imageMap.get(item.link) || null,
+          image_prompt: item.image_prompt || null,
           is_published: false // Default to unpublished
         }));
         

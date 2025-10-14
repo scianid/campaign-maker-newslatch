@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X, FileText, Clipboard } from 'lucide-react';
+import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X, FileText, Clipboard, ImagePlus } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
@@ -25,6 +25,7 @@ export function AiContentPage({ user }) {
   const [copiedFields, setCopiedFields] = useState({}); // Track which fields have been copied
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
   const [generatingLandingPage, setGeneratingLandingPage] = useState({}); // Track which items are generating landing pages
+  const [generatingImage, setGeneratingImage] = useState({}); // Track which items are generating AI images
   const [filters, setFilters] = useState({
     status: 'all', // 'all', 'published', 'unpublished'
     scoreRange: 'all', // 'all', 'high', 'medium', 'low'
@@ -196,6 +197,53 @@ export function AiContentPage({ user }) {
       alert(`Failed to generate landing page: ${errorMessage}`);
     } finally {
       setGeneratingLandingPage(prev => ({ ...prev, [aiItem.id]: false }));
+    }
+  };
+
+  const generateAIImage = async (item) => {
+    try {
+      setGeneratingImage(prev => ({ ...prev, [item.id]: true }));
+
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(
+        'https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/generate-content-image',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session?.access_token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            content_id: item.id
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to generate image');
+      }
+      
+      // Update the local state with the new image URL
+      setAiItems(prevItems => prevItems.map(i => 
+        i.id === item.id ? { ...i, image_url: result.image_url } : i
+      ));
+
+      console.log('✅ Image generated successfully:', result.image_url);
+
+    } catch (err) {
+      console.error('❌ Failed to generate AI image:', err);
+      
+      let errorMessage = 'Unknown error occurred';
+      if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      alert(`Failed to generate AI image: ${errorMessage}`);
+    } finally {
+      setGeneratingImage(prev => ({ ...prev, [item.id]: false }));
     }
   };
 
@@ -595,6 +643,20 @@ export function AiContentPage({ user }) {
                           />
                         </div>
                         <div className="lg:order-1 flex gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => generateAIImage(item)}
+                            disabled={generatingImage[item.id] || !item.image_prompt}
+                            className="h-10 w-10 p-0 text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 transition-all duration-200 disabled:opacity-50"
+                            title={item.image_prompt ? "Generate Image with AI" : "No image prompt available - regenerate content"}
+                          >
+                            {generatingImage[item.id] ? (
+                              <RefreshCw className="w-4 h-4 lg:w-5 lg:h-5 animate-spin" />
+                            ) : (
+                              <ImagePlus className="w-4 h-4 lg:w-5 lg:h-5" />
+                            )}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="sm"
