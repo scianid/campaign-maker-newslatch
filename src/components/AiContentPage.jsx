@@ -771,29 +771,6 @@ export function AiContentPage({ user }) {
                             </>
                           )}
                           
-                          {item.keywords && item.keywords.length > 0 && (
-                            <>
-                              {item.keywords.slice(0, 3).map((keyword, index) => (
-                                <Badge 
-                                  key={index}
-                                  variant="outline" 
-                                  className="text-xs bg-emerald-900/20 text-emerald-400 border-emerald-600/30"
-                                >
-                                  🔑 {keyword}
-                                </Badge>
-                              ))}
-                              {item.keywords.length > 3 && (
-                                <Badge 
-                                  variant="outline" 
-                                  className="text-xs bg-emerald-900/20 text-emerald-400 border-emerald-600/30"
-                                  title={`Additional keywords: ${item.keywords.slice(3).join(', ')}`}
-                                >
-                                  +{item.keywords.length - 3} more
-                                </Badge>
-                              )}
-                            </>
-                          )}
-                          
                           <a
                             href={item.link}
                             target="_blank"
@@ -1714,6 +1691,56 @@ export function AiContentPage({ user }) {
                         </Button>
                       </div>
                     </div>
+
+                    {/* Keywords Section */}
+                    {item.keywords && item.keywords.length > 0 && (
+                      <div className="mb-4">
+                        <div className="bg-emerald-900/10 border border-emerald-600/30 rounded-lg p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-6 h-6 bg-emerald-900/30 border border-emerald-600/50 rounded flex items-center justify-center">
+                              <span className="text-emerald-400 text-xs font-bold">🔑</span>
+                            </div>
+                            <h5 className="text-sm font-medium text-emerald-400">Targeting Keywords</h5>
+                            <span className="text-xs text-emerald-500/70">({item.keywords.length} keywords)</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {item.keywords.map((keyword, index) => (
+                              <div
+                                key={index}
+                                className="inline-flex items-center gap-1 group"
+                              >
+                                <Badge 
+                                  variant="outline" 
+                                  className="text-xs bg-emerald-900/20 text-emerald-300 border-emerald-600/40 hover:bg-emerald-900/30 transition-colors"
+                                >
+                                  {keyword}
+                                </Badge>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(keyword);
+                                    setCopiedFields(prev => ({ ...prev, [`${item.id}-keyword-${index}`]: true }));
+                                    setTimeout(() => {
+                                      setCopiedFields(prev => ({ ...prev, [`${item.id}-keyword-${index}`]: false }));
+                                    }, 1500);
+                                  }}
+                                  className="p-0.5 hover:bg-emerald-900/30 rounded transition-colors"
+                                  title={`Copy "${keyword}"`}
+                                >
+                                  {copiedFields[`${item.id}-keyword-${index}`] ? (
+                                    <Check className="w-3 h-3 text-emerald-400" />
+                                  ) : (
+                                    <Copy className="w-3 h-3 text-emerald-500/50 hover:text-emerald-400" />
+                                  )}
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                          <p className="text-xs text-emerald-500/60 mt-2 italic">
+                            Article-specific keywords for lower-cost ad targeting
+                          </p>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Details Toggle Button */}
                     <div className="flex items-center justify-center mb-4">
