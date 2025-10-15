@@ -9,6 +9,17 @@ const corsHeaders = {
 // OpenAI API configuration
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
+// Country to language mapping
+const COUNTRY_LANGUAGES: Record<string, { language: string; name: string }> = {
+  'US': { language: 'English', name: 'United States' },
+  'GB': { language: 'English', name: 'United Kingdom' },
+  'DE': { language: 'German', name: 'Germany' },
+  'FR': { language: 'French', name: 'France' },
+  'ES': { language: 'Spanish', name: 'Spain' },
+  'IT': { language: 'Italian', name: 'Italy' },
+  'CA': { language: 'English', name: 'Switzerland' },
+};
+
 interface VariantGenerationRequest {
   ai_item_id: string;
   count: number;
@@ -68,6 +79,13 @@ async function callOpenAI(prompt: string): Promise<string> {
 function buildVariantPrompt(aiItem: any, campaign: any, options: any): string {
   const tones = options.tones?.join(', ') || 'professional, casual, urgent';
   
+  // Determine target language based on campaign countries
+  const countries = campaign.rss_countries || ['US'];
+  const primaryCountry = countries[0] || 'US';
+  const targetLanguageInfo = COUNTRY_LANGUAGES[primaryCountry] || COUNTRY_LANGUAGES['US'];
+  const targetLanguage = targetLanguageInfo.language;
+  const isEnglish = targetLanguage === 'English';
+  
   return `Create ${options.count || 3} different ad variations for A/B testing based on this content:
 
 ORIGINAL CONTENT:
@@ -82,9 +100,15 @@ CAMPAIGN CONTEXT:
 - Product/Service: ${campaign.product_description}
 - Tags: ${aiItem.tags?.join(', ') || 'None'}
 - Keywords: ${aiItem.keywords?.join(', ') || 'None'}
+- Target Country: ${targetLanguageInfo.name}
+- Target Language: ${targetLanguage}
+
+⚠️ CRITICAL LANGUAGE REQUIREMENT:
+ALL ad variants (headline, body, CTA) MUST be written in ${targetLanguage} for the ${targetLanguageInfo.name} market.
+${!isEnglish ? 'You MUST also provide English translations for headline and body in separate fields (headline_en, body_en).' : 'Since the target language is English, translation fields should be left empty.'}
 
 VARIATION REQUIREMENTS:
-- Generate ${options.count || 3} distinct variations
+- Generate ${options.count || 3} distinct variations in ${targetLanguage}
 - Each variation should test a different approach:
   * Benefit-focused (what they gain)
   * Pain-point/urgency focused (what they lose)
@@ -92,27 +116,29 @@ VARIATION REQUIREMENTS:
   * Feature-focused
   * Emotional focused
 - Use these tones appropriately: ${tones}
-${options.vary_headline ? '- Vary headlines significantly' : ''}
-${options.vary_body ? '- Vary body copy approach' : ''}
-${options.vary_cta ? '- Vary call-to-action wording' : ''}
+${options.vary_headline ? `- Vary headlines significantly (in ${targetLanguage})` : ''}
+${options.vary_body ? `- Vary body copy approach (in ${targetLanguage})` : ''}
+${options.vary_cta ? `- Vary call-to-action wording (in ${targetLanguage})` : ''}
 
 For each variation, create:
-1. A descriptive label (e.g., "Benefit Focus", "Urgency Appeal")
-2. Headline (attention-grabbing, relevant)
-3. Body text (2-3 sentences, compelling)
-4. Call-to-action (action-oriented)
-5. Image prompt (detailed description for AI image generation)
-6. Tone classification
-7. Focus classification
+1. A descriptive label in English (e.g., "Benefit Focus", "Urgency Appeal")
+2. Headline in ${targetLanguage} (attention-grabbing, relevant)
+3. Body text in ${targetLanguage} (2-3 sentences, compelling)
+4. Call-to-action in ${targetLanguage} (action-oriented)
+5. Image prompt in English (detailed description for AI image generation)
+6. Tone classification (professional/casual/urgent/friendly/authoritative)
+7. Focus classification (benefit/urgency/social-proof/feature/emotional)
+${!isEnglish ? '8. headline_en: English translation of the headline\n9. body_en: English translation of the body' : ''}
 
 RESPONSE FORMAT (JSON only):
 {
   "variants": [
     {
       "variant_label": "Benefit Focus",
-      "headline": "Transform Your Business with New Opportunities",
-      "body": "Discover how these changes can boost your profits and streamline operations. Don't miss out on competitive advantages.",
-      "cta": "Get Started Today",
+      "headline": ${!isEnglish ? `"[Headline in ${targetLanguage}]"` : `"Transform Your Business with New Opportunities"`},
+      "body": ${!isEnglish ? `"[Body text in ${targetLanguage}]"` : `"Discover how these changes can boost your profits and streamline operations. Don't miss out on competitive advantages."`},
+      "cta": ${!isEnglish ? `"[CTA in ${targetLanguage}]"` : `"Get Started Today"`},
+      ${!isEnglish ? `"headline_en": "Transform Your Business with New Opportunities",\n      "body_en": "Discover how these changes can boost your profits and streamline operations. Don't miss out on competitive advantages.",` : ''}
       "image_prompt": "Professional business team celebrating success in modern office, diverse group looking at positive charts and graphs, bright lighting, corporate success imagery",
       "tone": "professional",
       "focus": "benefit"
@@ -128,26 +154,41 @@ serve(async (req) => {
   }
 
   try {
-    // Create Supabase client
+    // Get the authorization header to verify the user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Extract JWT token from Authorization header
+    const jwt = authHeader.replace('Bearer ', '');
+
+    // Create Supabase client with anon key
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
         global: {
-          headers: { Authorization: req.headers.get('Authorization')! },
+          headers: { Authorization: authHeader },
         },
       }
     );
 
-    // Verify user authentication
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    // Verify user authentication using the JWT token directly
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(jwt);
     
     if (authError || !user) {
+      console.error('Auth error:', authError);
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: authError?.message || 'Invalid token' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    console.log('✅ Authenticated user:', user.id);
 
     // Parse request body
     const requestData: VariantGenerationRequest = await req.json();

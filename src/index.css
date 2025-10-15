@@ -49,3 +49,44 @@
   outline: 2px solid transparent;
   outline-offset: 2px;
 }
+
+/* Custom Range Slider Styling */
+.slider-with-notches {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+
+.slider-with-notches::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+  transition: all 0.2s ease;
+}
+
+.slider-with-notches::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.6);
+}
+
+.slider-with-notches::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+  transition: all 0.2s ease;
+}
+
+.slider-with-notches::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.6);
+}

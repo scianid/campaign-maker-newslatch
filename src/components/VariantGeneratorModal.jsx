@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Wand2, Loader2 } from 'lucide-react';
+import { X, Wand2, Loader2, Briefcase, Smile, Zap, Heart, Crown, Info } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../lib/supabase';
 
@@ -27,38 +27,33 @@ export function VariantGeneratorModal({
         throw new Error('Not authenticated');
       }
 
-      const response = await fetch(
-        'https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/generate-ad-variants',
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            ai_item_id: aiItem.id,
-            count: options.count,
-            options: {
-              vary_headline: options.vary_headline,
-              vary_body: options.vary_body,
-              vary_cta: options.vary_cta,
-              tones: options.tones
-            }
-          })
+      console.log('🔑 Using access token for Edge Function call');
+
+      const { data, error } = await supabase.functions.invoke('generate-ad-variants', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+        body: {
+          ai_item_id: aiItem.id,
+          count: options.count,
+          options: {
+            vary_headline: options.vary_headline,
+            vary_body: options.vary_body,
+            vary_cta: options.vary_cta,
+            tones: options.tones
+          }
         }
-      );
+      });
 
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || 'Failed to generate variants');
+      if (error) {
+        throw error;
       }
 
-      console.log('✅ Variants generated:', result);
+      console.log('✅ Variants generated:', data);
       
       // Call the callback to refresh the parent component
       if (onVariantsGenerated) {
-        onVariantsGenerated(result.variants);
+        onVariantsGenerated(data.variants);
       }
 
       onClose();
@@ -115,30 +110,76 @@ export function VariantGeneratorModal({
           </div>
 
           {/* Number of Variants */}
-          <div className="space-y-2">
-            <label className="block text-sm font-medium text-white">
-              Number of variants
-            </label>
-            <div className="flex gap-2">
-              {[2, 3, 4, 5].map((count) => (
-                <Button
-                  key={count}
-                  variant={options.count === count ? 'primary' : 'outline'}
-                  size="sm"
-                  onClick={() => setOptions(prev => ({ ...prev, count }))}
-                  className="flex-1"
-                >
-                  {count}
-                </Button>
-              ))}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <label className="block text-sm font-medium text-white">
+                  Number of variants
+                </label>
+                <div className="group relative">
+                  <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 border border-gray-600 rounded-lg text-xs text-gray-300 shadow-lg z-10">
+                    Choose how many alternative versions to generate. Each variant will test different angles of your message.
+                  </div>
+                </div>
+              </div>
+              <span className="text-2xl font-bold text-purple-400">
+                {options.count}
+              </span>
+            </div>
+            
+            {/* Slider */}
+            <div className="relative px-2">
+              <input
+                type="range"
+                min="2"
+                max="5"
+                step="1"
+                value={options.count}
+                onChange={(e) => setOptions(prev => ({ ...prev, count: parseInt(e.target.value) }))}
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-with-notches"
+                style={{
+                  background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${((options.count - 2) / 3) * 100}%, #374151 ${((options.count - 2) / 3) * 100}%, #374151 100%)`
+                }}
+              />
+              
+              {/* Notches */}
+              <div className="flex justify-between mt-2 px-1">
+                {[2, 3, 4, 5].map((count) => (
+                  <button
+                    key={count}
+                    onClick={() => setOptions(prev => ({ ...prev, count }))}
+                    className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${
+                      options.count === count 
+                        ? 'text-purple-400' 
+                        : 'text-gray-500 hover:text-gray-300'
+                    }`}
+                  >
+                    <div className={`w-1 h-3 rounded-full ${
+                      options.count === count 
+                        ? 'bg-purple-400' 
+                        : 'bg-gray-600'
+                    }`}></div>
+                    <span className="text-xs font-medium">{count}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Focus Areas */}
+          {/* What to Regenerate */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-white">
-              Focus areas
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="block text-sm font-medium text-white">
+                What to regenerate
+              </label>
+              <div className="group relative">
+                <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 border border-gray-600 rounded-lg text-xs text-gray-300 shadow-lg z-10">
+                  Select which parts of the ad to vary. Uncheck elements you want to keep consistent across all variants.
+                </div>
+              </div>
+            </div>
             <div className="space-y-2">
               {[
                 { key: 'vary_headline', label: 'Different headlines' },
@@ -162,45 +203,67 @@ export function VariantGeneratorModal({
 
           {/* Tones */}
           <div className="space-y-2">
-            <label className="block text-sm font-medium text-white">
-              Tones to explore
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="block text-sm font-medium text-white">
+                Tones to explore
+              </label>
+              <div className="group relative">
+                <Info className="w-4 h-4 text-gray-400 cursor-help" />
+                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 border border-gray-600 rounded-lg text-xs text-gray-300 shadow-lg z-10">
+                  Select one or more tones to test. Each variant will use a different tone to appeal to different audience segments.
+                </div>
+              </div>
+            </div>
             <div className="flex flex-wrap gap-2">
-              {['professional', 'casual', 'urgent', 'friendly', 'authoritative'].map((tone) => (
-                <Button
-                  key={tone}
-                  variant={options.tones.includes(tone) ? 'primary' : 'outline'}
-                  size="sm"
-                  onClick={() => handleToneToggle(tone)}
-                  className="text-xs"
-                >
-                  {tone}
-                </Button>
-              ))}
+              {[
+                { value: 'professional', label: 'Professional', icon: Briefcase },
+                { value: 'casual', label: 'Casual', icon: Smile },
+                { value: 'urgent', label: 'Urgent', icon: Zap },
+                { value: 'friendly', label: 'Friendly', icon: Heart },
+                { value: 'authoritative', label: 'Authoritative', icon: Crown }
+              ].map((tone) => {
+                const Icon = tone.icon;
+                return (
+                  <Button
+                    key={tone.value}
+                    variant={options.tones.includes(tone.value) ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => handleToneToggle(tone.value)}
+                    className="text-xs flex items-center gap-1.5"
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    {tone.label}
+                  </Button>
+                );
+              })}
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between p-4 border-t border-gray-600">
-          <Button variant="outline" onClick={onClose} disabled={generating}>
+        <div className="flex items-center justify-between gap-3 p-4 border-t border-gray-600 bg-gray-800/30">
+          <Button 
+            variant="outline" 
+            onClick={onClose} 
+            disabled={generating}
+            className="flex-shrink-0"
+          >
             Cancel
           </Button>
           <Button 
-            variant="primary" 
             onClick={handleGenerate}
             disabled={generating || options.tones.length === 0}
-            className="flex items-center gap-2"
+            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {generating ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Generating...
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Generating...</span>
               </>
             ) : (
               <>
-                <Wand2 className="w-4 h-4" />
-                Generate {options.count} Variants
+                <Wand2 className="w-5 h-5" />
+                <span>Generate {options.count} Variant{options.count > 1 ? 's' : ''}</span>
               </>
             )}
           </Button>

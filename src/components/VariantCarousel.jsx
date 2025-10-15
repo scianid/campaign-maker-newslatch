@@ -26,9 +26,11 @@ export function VariantCarousel({
       setLoading(true);
       const { data: { session } } = await supabase.auth.getSession();
       
+      // Use hardcoded functions URL
       const response = await fetch(
         `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/ad-variants?ai_item_id=${aiItem.id}`,
         {
+          method: 'GET',
           headers: {
             'Authorization': `Bearer ${session?.access_token}`,
             'Content-Type': 'application/json'
@@ -39,6 +41,9 @@ export function VariantCarousel({
       if (response.ok) {
         const result = await response.json();
         setVariants(result.variants || []);
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to fetch variants:', response.status, errorText);
       }
     } catch (error) {
       console.error('Failed to fetch variants:', error);
@@ -84,7 +89,6 @@ export function VariantCarousel({
       );
 
       if (response.ok) {
-        const result = await response.json();
         setVariants(prev => prev.map(v => 
           v.id === currentVariant.id 
             ? { ...v, is_favorite: !v.is_favorite }
@@ -94,6 +98,9 @@ export function VariantCarousel({
         if (onVariantUpdate) {
           onVariantUpdate();
         }
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to toggle favorite:', response.status, errorText);
       }
     } catch (error) {
       console.error('Failed to toggle favorite:', error);
@@ -133,6 +140,10 @@ export function VariantCarousel({
         if (onVariantDelete) {
           onVariantDelete();
         }
+      } else {
+        const errorText = await response.text();
+        console.error('Failed to delete variant:', response.status, errorText);
+        alert('Failed to delete variant. Please try again.');
       }
     } catch (error) {
       console.error('Failed to delete variant:', error);
