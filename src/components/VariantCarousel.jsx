@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Star, Trash2, ImageIcon, Wand2, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { Toast } from '../ui/Toast';
 import { supabase } from '../lib/supabase';
 
 export function VariantCarousel({ 
@@ -14,6 +16,8 @@ export function VariantCarousel({
   const [loading, setLoading] = useState(true);
   const [updatingFavorite, setUpdatingFavorite] = useState(false);
   const [generatingImage, setGeneratingImage] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [toast, setToast] = useState({ isOpen: false, message: '', type: 'info' });
 
   useEffect(() => {
     if (aiItem?.id) {
@@ -110,9 +114,9 @@ export function VariantCarousel({
   };
 
   const handleDelete = async () => {
-    if (!currentVariant || totalVariants <= 1) return;
+    if (!currentVariant) return;
 
-    if (!confirm(`Delete variant "${currentVariant.variant_label}"?`)) return;
+    setShowDeleteConfirm(false);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -140,14 +144,28 @@ export function VariantCarousel({
         if (onVariantDelete) {
           onVariantDelete();
         }
+
+        setToast({ 
+          isOpen: true, 
+          message: 'Variant deleted successfully', 
+          type: 'success' 
+        });
       } else {
         const errorText = await response.text();
         console.error('Failed to delete variant:', response.status, errorText);
-        alert('Failed to delete variant. Please try again.');
+        setToast({ 
+          isOpen: true, 
+          message: 'Failed to delete variant. Please try again.', 
+          type: 'error' 
+        });
       }
     } catch (error) {
       console.error('Failed to delete variant:', error);
-      alert('Failed to delete variant. Please try again.');
+      setToast({ 
+        isOpen: true, 
+        message: 'Failed to delete variant. Please try again.', 
+        type: 'error' 
+      });
     }
   };
 
@@ -205,7 +223,11 @@ export function VariantCarousel({
 
     } catch (error) {
       console.error('Failed to generate image:', error);
-      alert(`Failed to generate image: ${error.message}`);
+      setToast({ 
+        isOpen: true, 
+        message: `Failed to generate image: ${error.message}`, 
+        type: 'error' 
+      });
     } finally {
       setGeneratingImage(false);
     }
@@ -360,11 +382,11 @@ export function VariantCarousel({
               </Button>
             </div>
 
-            {totalVariants > 1 && (
+            {totalVariants > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleDelete}
+                onClick={() => setShowDeleteConfirm(true)}
                 className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300"
               >
                 <Trash2 className="w-3 h-3" />
@@ -391,6 +413,26 @@ export function VariantCarousel({
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Variant"
+        message={`Are you sure you want to delete "${currentVariant?.variant_label}"?${totalVariants === 1 ? ' This will remove all variants for this content.' : ''}`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
+
+      {/* Toast Notifications */}
+      <Toast
+        isOpen={toast.isOpen}
+        onClose={() => setToast({ ...toast, isOpen: false })}
+        message={toast.message}
+        type={toast.type}
+      />
     </div>
   );
 }

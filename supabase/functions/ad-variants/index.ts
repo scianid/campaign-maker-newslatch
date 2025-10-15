@@ -4,6 +4,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
 };
 
 serve(async (req) => {
@@ -177,29 +178,32 @@ serve(async (req) => {
 
       case 'DELETE': {
         // Delete variant
-        if (!variantId) {
+        if (!variantId || variantId === 'ad-variants') {
           return new Response(
             JSON.stringify({ error: 'Variant ID is required' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        // Verify user owns this variant and it's not the last one
+        console.log('🗑️ Attempting to delete variant:', variantId);
+
+        // Verify user owns this variant
         const { data: variant, error: variantError } = await supabaseClient
           .from('ad_variants')
           .select(`
             *,
             ai_generated_items!inner(
-              campaigns!inner(user_id),
-              variant_count
+              id,
+              campaigns!inner(user_id)
             )
           `)
           .eq('id', variantId)
           .single();
 
         if (variantError || !variant) {
+          console.error('Variant not found:', variantError);
           return new Response(
-            JSON.stringify({ error: 'Variant not found' }),
+            JSON.stringify({ error: 'Variant not found', details: variantError?.message }),
             { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -211,13 +215,21 @@ serve(async (req) => {
           );
         }
 
-        // Don't allow deletion if it's the last variant
-        if (variant.ai_generated_items.variant_count <= 1) {
+        // Count how many variants exist for this AI item
+        const { count, error: countError } = await supabaseClient
+          .from('ad_variants')
+          .select('*', { count: 'exact', head: true })
+          .eq('ai_generated_item_id', variant.ai_generated_item_id);
+
+        if (countError) {
+          console.error('Failed to count variants:', countError);
           return new Response(
-            JSON.stringify({ error: 'Cannot delete the last variant' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            JSON.stringify({ error: 'Failed to count variants', details: countError.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
+
+        console.log(`✅ Deleting variant (${count} total variants exist)`);
 
         // Delete the variant
         const { error: deleteError } = await supabaseClient
@@ -226,8 +238,11 @@ serve(async (req) => {
           .eq('id', variantId);
 
         if (deleteError) {
-          throw new Error('Failed to delete variant');
+          console.error('Failed to delete variant:', deleteError);
+          throw new Error('Failed to delete variant: ' + deleteError.message);
         }
+
+        console.log('✅ Variant deleted successfully');
 
         return new Response(
           JSON.stringify({
