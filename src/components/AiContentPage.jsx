@@ -835,20 +835,6 @@ export function AiContentPage({ user }) {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => showImagePromptModal(item)}
-                            disabled={generatingImage[item.id] || !item.image_prompt}
-                            className="h-10 w-10 p-0 text-purple-400 hover:text-purple-300 hover:bg-purple-900/20 transition-all duration-200 disabled:opacity-50"
-                            title={item.image_prompt ? "Generate Image with AI" : "No image prompt available - regenerate content"}
-                          >
-                            {generatingImage[item.id] ? (
-                              <RefreshCw className="w-4 h-4 lg:w-5 lg:h-5 animate-spin" />
-                            ) : (
-                              <ImagePlus className="w-4 h-4 lg:w-5 lg:h-5" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
                             onClick={() => handleGenerateVariants(item)}
                             className="h-10 w-10 p-0 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-900/20 transition-all duration-200"
                             title="Generate Ad Variants"

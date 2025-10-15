@@ -29,6 +29,7 @@ interface VariantGenerationRequest {
     vary_cta?: boolean;
     tones?: string[];
   };
+  current_image_url?: string;
 }
 
 interface GeneratedVariant {
@@ -88,43 +89,55 @@ function buildVariantPrompt(aiItem: any, campaign: any, options: any): string {
   
   return `Create ${options.count || 3} different ad variations for A/B testing based on this content:
 
-ORIGINAL CONTENT:
-- Headline: "${aiItem.headline}"
-- Description: "${aiItem.description}"
-- Link: ${aiItem.link}
+ORIGINAL NEWS ARTICLE:
+- News Headline: "${aiItem.headline}"
+- News Description: "${aiItem.description}"
+- News Source: ${aiItem.link}
+
+CURRENT AD PLACEMENT:
+- Ad Headline: "${aiItem.ad_placement?.headline || aiItem.headline}"
+- Ad Body: "${aiItem.ad_placement?.body || aiItem.description}"
+- Ad CTA: "${aiItem.ad_placement?.cta || 'Learn More'}"
+
+CAMPAIGN CONTEXT:
 - Campaign: ${campaign.name}
 - Campaign Description: ${campaign.description}
 - Target Audience: ${campaign.target_audience}
-
-CAMPAIGN CONTEXT:
 - Product/Service: ${campaign.product_description}
 - Tags: ${aiItem.tags?.join(', ') || 'None'}
 - Keywords: ${aiItem.keywords?.join(', ') || 'None'}
 - Target Country: ${targetLanguageInfo.name}
 - Target Language: ${targetLanguage}
 
-⚠️ CRITICAL LANGUAGE REQUIREMENT:
-ALL ad variants (headline, body, CTA) MUST be written in ${targetLanguage} for the ${targetLanguageInfo.name} market.
-${!isEnglish ? 'You MUST also provide English translations for headline and body in separate fields (headline_en, body_en).' : 'Since the target language is English, translation fields should be left empty.'}
+⚠️ CRITICAL REQUIREMENTS:
 
-VARIATION REQUIREMENTS:
-- Generate ${options.count || 3} distinct variations in ${targetLanguage}
-- Each variation should test a different approach:
-  * Benefit-focused (what they gain)
-  * Pain-point/urgency focused (what they lose)
-  * Social proof/authority focused
-  * Feature-focused
-  * Emotional focused
-- Use these tones appropriately: ${tones}
-${options.vary_headline ? `- Vary headlines significantly (in ${targetLanguage})` : ''}
-${options.vary_body ? `- Vary body copy approach (in ${targetLanguage})` : ''}
-${options.vary_cta ? `- Vary call-to-action wording (in ${targetLanguage})` : ''}
+1. LANGUAGE: ALL ad variants (headline, body, CTA) MUST be written in ${targetLanguage} for the ${targetLanguageInfo.name} market.
+${!isEnglish ? '   You MUST also provide English translations for headline and body in separate fields (headline_en, body_en).' : '   Since the target language is English, translation fields should be left empty.'}
+
+2. NEWS REFERENCE: Each variant should subtly reference the original news article ("${aiItem.headline}") to maintain relevance and context. 
+   - Connect the news event to the campaign's value proposition
+   - Use the news as a hook or conversation starter
+   - Make the connection feel natural, not forced
+   - Keep the news reference brief (don't dominate the ad)
+
+3. VARIATION STRATEGY:
+   - Generate ${options.count || 3} distinct variations in ${targetLanguage}
+   - Each variation should test a different approach:
+     * Benefit-focused (what they gain from acting on this news)
+     * Pain-point/urgency focused (what they lose by ignoring this trend)
+     * Social proof/authority focused (experts/others are responding)
+     * Feature-focused (specific solutions for this situation)
+     * Emotional focused (tap into feelings about the news)
+   - Use these tones appropriately: ${tones}
+${options.vary_headline ? `   - Vary headlines significantly (in ${targetLanguage})` : ''}
+${options.vary_body ? `   - Vary body copy approach (in ${targetLanguage})` : ''}
+${options.vary_cta ? `   - Vary call-to-action wording (in ${targetLanguage})` : ''}
 
 For each variation, create:
-1. A descriptive label in English (e.g., "Benefit Focus", "Urgency Appeal")
-2. Headline in ${targetLanguage} (attention-grabbing, relevant)
-3. Body text in ${targetLanguage} (2-3 sentences, compelling)
-4. Call-to-action in ${targetLanguage} (action-oriented)
+1. A descriptive label in English (e.g., "Benefit Focus + News Hook", "Urgency + Trend Reference")
+2. Headline in ${targetLanguage} (attention-grabbing, references news subtly)
+3. Body text in ${targetLanguage} (2-3 sentences, compelling, connects news to offer)
+4. Call-to-action in ${targetLanguage} (action-oriented, relevant to news context)
 5. Image prompt in English (detailed description for AI image generation)
 6. Tone classification (professional/casual/urgent/friendly/authoritative)
 7. Focus classification (benefit/urgency/social-proof/feature/emotional)
@@ -134,11 +147,11 @@ RESPONSE FORMAT (JSON only):
 {
   "variants": [
     {
-      "variant_label": "Benefit Focus",
-      "headline": ${!isEnglish ? `"[Headline in ${targetLanguage}]"` : `"Transform Your Business with New Opportunities"`},
-      "body": ${!isEnglish ? `"[Body text in ${targetLanguage}]"` : `"Discover how these changes can boost your profits and streamline operations. Don't miss out on competitive advantages."`},
-      "cta": ${!isEnglish ? `"[CTA in ${targetLanguage}]"` : `"Get Started Today"`},
-      ${!isEnglish ? `"headline_en": "Transform Your Business with New Opportunities",\n      "body_en": "Discover how these changes can boost your profits and streamline operations. Don't miss out on competitive advantages.",` : ''}
+      "variant_label": "Benefit Focus + News Hook",
+      "headline": ${!isEnglish ? `"[Headline in ${targetLanguage} that references the news]"` : `"Capitalize on [News Topic]: Transform Your Business Today"`},
+      "body": ${!isEnglish ? `"[Body in ${targetLanguage} that connects news to offer]"` : `"With [brief news reference], now's the perfect time to [benefit]. Our solution helps you [specific advantage]. Don't miss this opportunity."`},
+      "cta": ${!isEnglish ? `"[CTA in ${targetLanguage}]"` : `"Get Started Now"`},
+      ${!isEnglish ? `"headline_en": "Capitalize on [News Topic]: Transform Your Business Today",\n      "body_en": "With [brief news reference], now's the perfect time to [benefit]. Our solution helps you [specific advantage]. Don't miss this opportunity.",` : ''}
       "image_prompt": "Professional business team celebrating success in modern office, diverse group looking at positive charts and graphs, bright lighting, corporate success imagery",
       "tone": "professional",
       "focus": "benefit"
@@ -192,7 +205,7 @@ serve(async (req) => {
 
     // Parse request body
     const requestData: VariantGenerationRequest = await req.json();
-    const { ai_item_id, count = 3, options = {} } = requestData;
+    const { ai_item_id, count = 3, options = {}, current_image_url } = requestData;
 
     if (!ai_item_id) {
       return new Response(
@@ -202,6 +215,7 @@ serve(async (req) => {
     }
 
     console.log('🎯 Starting variant generation for AI item:', ai_item_id);
+    console.log('📸 Current image URL:', current_image_url);
 
     // Fetch AI item with campaign data
     const { data: aiItem, error: aiItemError } = await supabaseClient
@@ -262,7 +276,7 @@ serve(async (req) => {
       cta: variant.cta,
       headline_en: variant.headline_en || null,
       body_en: variant.body_en || null,
-      image_url: null, // Initially no image selected
+      image_url: current_image_url || null, // Use the current image from the AI item
       image_prompt: variant.image_prompt,
       tone: variant.tone || 'professional',
       focus: variant.focus || 'general',

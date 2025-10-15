@@ -31,7 +31,7 @@ export function VariantGeneratorModal({
 
       const { data, error } = await supabase.functions.invoke('generate-ad-variants', {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${session?.access_token}`,
         },
         body: {
           ai_item_id: aiItem.id,
@@ -41,7 +41,8 @@ export function VariantGeneratorModal({
             vary_body: options.vary_body,
             vary_cta: options.vary_cta,
             tones: options.tones
-          }
+          },
+          current_image_url: aiItem.image_url // Pass the current image
         }
       });
 
