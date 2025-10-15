@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X, FileText, Clipboard, ImagePlus, Images } from 'lucide-react';
+import { Calendar, ExternalLink, TrendingUp, Zap, Eye, EyeOff, Copy, Check, ArrowLeft, ChevronLeft, ChevronRight, Filter, SortDesc, Star, Clock, RefreshCw, Monitor, Smartphone, ChevronDown, ChevronUp, Trash2, X, FileText, Clipboard, ImagePlus, Images, Wand2 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
 import { Label } from '../ui/Label';
 import { Layout } from './Layout';
 import { supabase } from '../lib/supabase';
+import { VariantGeneratorModal } from './VariantGeneratorModal';
+import { VariantCarousel } from './VariantCarousel';
+import { VariantImageSelector } from './VariantImageSelector';
 
 export function AiContentPage({ user }) {
   const { campaignId } = useParams();
@@ -37,6 +40,10 @@ export function AiContentPage({ user }) {
     sortBy: 'created_at', // 'created_at', 'relevance_score', 'trend'
     sortOrder: 'desc' // 'desc', 'asc'
   });
+  
+  // Variant-related state
+  const [variantGeneratorModal, setVariantGeneratorModal] = useState({ show: false, item: null });
+  const [variantImageModal, setVariantImageModal] = useState({ show: false, item: null, variant: null });
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -433,6 +440,35 @@ export function AiContentPage({ user }) {
     });
   };
 
+  // Variant-related functions
+  const handleGenerateVariants = (aiItem) => {
+    setVariantGeneratorModal({ show: true, item: aiItem });
+  };
+
+  const handleVariantsGenerated = (newVariants) => {
+    // Refresh the AI items to get updated variant counts
+    fetchAiItems();
+  };
+
+  const handleVariantUpdate = () => {
+    // Refresh the AI items to get updated variant counts
+    fetchAiItems();
+  };
+
+  const handleVariantDelete = () => {
+    // Refresh the AI items to get updated variant counts
+    fetchAiItems();
+  };
+
+  const handleVariantImageGallery = (aiItem, variant) => {
+    setVariantImageModal({ show: true, item: aiItem, variant });
+  };
+
+  const handleVariantImageSelected = (imageUrl) => {
+    // The variant carousel will handle the update
+    fetchAiItems();
+  };
+
   const totalPages = Math.ceil(totalItems / itemsPerPage);
 
   if (loading && currentPage === 1) {
@@ -809,6 +845,15 @@ export function AiContentPage({ user }) {
                             ) : (
                               <ImagePlus className="w-4 h-4 lg:w-5 lg:h-5" />
                             )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleGenerateVariants(item)}
+                            className="h-10 w-10 p-0 text-yellow-400 hover:text-yellow-300 hover:bg-yellow-900/20 transition-all duration-200"
+                            title="Generate Ad Variants"
+                          >
+                            <Wand2 className="w-4 h-4 lg:w-5 lg:h-5" />
                           </Button>
                           <Button
                             variant="ghost"
@@ -1873,6 +1918,14 @@ export function AiContentPage({ user }) {
                         </div>
                       </div>
                     </div>
+
+                    {/* Variant Carousel - Add this for ad variations */}
+                    <VariantCarousel
+                      aiItem={item}
+                      onImageGalleryOpen={handleVariantImageGallery}
+                      onVariantUpdate={handleVariantUpdate}
+                      onVariantDelete={handleVariantDelete}
+                    />
                 </div>
                 );
               })}
@@ -2262,6 +2315,23 @@ export function AiContentPage({ user }) {
             </div>
           </div>
         )}
+
+        {/* Variant Generator Modal */}
+        <VariantGeneratorModal
+          isOpen={variantGeneratorModal.show}
+          onClose={() => setVariantGeneratorModal({ show: false, item: null })}
+          aiItem={variantGeneratorModal.item}
+          onVariantsGenerated={handleVariantsGenerated}
+        />
+
+        {/* Variant Image Selector Modal */}
+        <VariantImageSelector
+          isOpen={variantImageModal.show}
+          onClose={() => setVariantImageModal({ show: false, item: null, variant: null })}
+          aiItem={variantImageModal.item}
+          variant={variantImageModal.variant}
+          onImageSelected={handleVariantImageSelected}
+        />
       </div>
     </Layout>
   );

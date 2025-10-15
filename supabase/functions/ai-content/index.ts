@@ -64,10 +64,10 @@ Deno.serve(async (req: Request) => {
       offset
     });
     
-    // Build base query
+    // Build base query - include variant counts
     let query = supabaseClient
       .from('ai_generated_items')
-      .select('*', { count: 'exact' })
+      .select('*, variant_count, favorite_variant_count', { count: 'exact' })
       .eq('campaign_id', campaignId);
     
     // Apply status filtering

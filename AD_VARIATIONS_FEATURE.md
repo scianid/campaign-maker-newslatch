@@ -27,7 +27,7 @@ Enable users to generate multiple variations of ad copy (headline, body, CTA) fo
    - Review all generated variants
    - Star favorites (⭐)
    - Delete unwanted variants (🗑️)
-   - Generate images for selected variants later
+   - Generate images and select what image is displayed on that varient for selected variants - later after generation of varients.
 6. Click "Save Selected" to keep the variants
 
 ---
