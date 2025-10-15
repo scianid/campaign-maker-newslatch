@@ -771,6 +771,29 @@ export function AiContentPage({ user }) {
                             </>
                           )}
                           
+                          {item.keywords && item.keywords.length > 0 && (
+                            <>
+                              {item.keywords.slice(0, 3).map((keyword, index) => (
+                                <Badge 
+                                  key={index}
+                                  variant="outline" 
+                                  className="text-xs bg-emerald-900/20 text-emerald-400 border-emerald-600/30"
+                                >
+                                  🔑 {keyword}
+                                </Badge>
+                              ))}
+                              {item.keywords.length > 3 && (
+                                <Badge 
+                                  variant="outline" 
+                                  className="text-xs bg-emerald-900/20 text-emerald-400 border-emerald-600/30"
+                                  title={`Additional keywords: ${item.keywords.slice(3).join(', ')}`}
+                                >
+                                  +{item.keywords.length - 3} more
+                                </Badge>
+                              )}
+                            </>
+                          )}
+                          
                           <a
                             href={item.link}
                             target="_blank"

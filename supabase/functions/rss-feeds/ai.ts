@@ -106,6 +106,7 @@ OUTPUT FORMAT (JSON only):
             "relevance_score": [0-100],
             "trend": "[Short trend label]",
             "tags": ["[tag1]", "tag2"], // up to 5 tags including names in the title, fields of interest, locations, people, companies
+            "keywords": ["keyword1", "keyword2", "keyword3"], // 5-10 specific keywords from this NEWS ARTICLE for ad targeting: actual names, places, events, specific topics, trending terms, niche phrases from the article. Focus on what makes THIS article unique and targetable at lower cost, not only generic business terms
             "description": "[Why this creates urgency for ${companyName}'s services]",
             "tooltip": "[Conversion-focused explanation connecting news to ${companyName}'s value - drive action toward ${companyUrl}]",
             "ad_placement": {
@@ -133,6 +134,7 @@ CRITICAL INSTRUCTIONS:
 7. ${!isEnglish ? '⚠️ MANDATORY: Provide English translations in headline_en and body_en fields' : 'Translation fields (headline_en, body_en) are not needed for English campaigns'}
 8. CTA must be SHORT button text only (2-4 words) - NO URLs or links
 9. If the content is too far away and the creative will not be approved by a marketing analyst expert, return less results in the array
+10. ⚠️ KEYWORDS STRATEGY: Extract specific, unique keywords FROM THE NEWS ARTICLE itself - names, places, events, trending terms, niche topics. These should be low-competition, article-specific terms that will cost less for ad targeting, NOT broad generic business terms
 
 CTA EXAMPLES for ${targetLanguage} (use similar format):
 ${getCTAExamples(targetLanguage)}

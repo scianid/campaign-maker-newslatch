@@ -139,6 +139,7 @@ Deno.serve(async (req: Request) => {
           link: item.link,
           relevance_score: item.relevance_score,
           tags: item.tags ? item.tags : [],
+          keywords: item.keywords ? item.keywords : [],
           trend: item.trend,
           description: item.description,
           tooltip: item.tooltip,

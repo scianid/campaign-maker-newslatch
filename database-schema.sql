@@ -18,6 +18,7 @@ CREATE TABLE public.ai_generated_items (
   updated_at timestamp with time zone DEFAULT now(),
   image_url text,
   tags ARRAY,
+  keywords ARRAY,
   image_prompt text,
   original_image_url text,
   CONSTRAINT ai_generated_items_pkey PRIMARY KEY (id),
