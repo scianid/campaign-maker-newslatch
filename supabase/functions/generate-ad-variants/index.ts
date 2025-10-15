@@ -1,13 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+import { runGpt } from '../rss-feeds/ai.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-// OpenAI API configuration
-const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
 // Country to language mapping
 const COUNTRY_LANGUAGES: Record<string, { language: string; name: string }> = {
@@ -42,39 +40,6 @@ interface GeneratedVariant {
   image_prompt: string;
   tone: string;
   focus: string;
-}
-
-async function callOpenAI(prompt: string): Promise<string> {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are an expert copywriter specializing in creating multiple ad variations for A/B testing. Always respond with valid JSON only.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 0.8,
-      max_tokens: 2000,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`OpenAI API error: ${error}`);
-  }
-
-  const data = await response.json();
-  return data.choices[0]?.message?.content || '';
 }
 
 function buildVariantPrompt(aiItem: any, campaign: any, options: any): string {
@@ -249,8 +214,8 @@ serve(async (req) => {
 
     console.log('🤖 Calling OpenAI for variant generation...');
 
-    // Generate variants using OpenAI
-    const openaiResponse = await callOpenAI(prompt);
+    // Generate variants using OpenAI via runGpt helper
+    const openaiResponse = await runGpt(prompt);
     
     let variantsData;
     try {
