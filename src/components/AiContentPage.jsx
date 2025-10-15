@@ -23,6 +23,7 @@ export function AiContentPage({ user }) {
   const [expandedDetails, setExpandedDetails] = useState({}); // Track which cards have details expanded
   const [expandedReasons, setExpandedReasons] = useState({}); // Track which cards have AI reasoning expanded
   const [copiedFields, setCopiedFields] = useState({}); // Track which fields have been copied
+  const [showEnglishTranslation, setShowEnglishTranslation] = useState({}); // Track translation toggle for each item
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
   const [generatingLandingPage, setGeneratingLandingPage] = useState({}); // Track which items are generating landing pages
   const [generatingImage, setGeneratingImage] = useState({}); // Track which items are generating AI images
@@ -842,7 +843,24 @@ export function AiContentPage({ user }) {
                       {item.ad_placement && typeof item.ad_placement === 'object' && (
                         <div>
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                            <h4 className="text-sm font-medium text-blue-400">Ad Preview</h4>
+                            <div className="flex items-center gap-3">
+                              <h4 className="text-sm font-medium text-blue-400">Ad Preview</h4>
+                              {/* Translation toggle - only show if translations exist */}
+                              {(item.ad_placement.headline_en || item.ad_placement.body_en) && (
+                                <button
+                                  onClick={() => setShowEnglishTranslation(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${
+                                    showEnglishTranslation[item.id]
+                                      ? 'bg-blue-600 text-white shadow-sm'
+                                      : 'bg-gray-700/50 text-gray-400 hover:text-gray-300 hover:bg-gray-700'
+                                  }`}
+                                  title="Toggle English translation"
+                                >
+                                  <span className="text-[10px] font-bold">EN</span>
+                                  <span className="hidden sm:inline">Translate</span>
+                                </button>
+                              )}
+                            </div>
                             
                             {/* Preview Style Toggle */}
                             <div className="flex items-center gap-1 bg-card-bg border border-gray-600 rounded-md p-1 w-fit">
@@ -1009,7 +1027,9 @@ export function AiContentPage({ user }) {
                                     WebkitLineClamp: 2,
                                     WebkitBoxOrient: 'vertical'
                                   }}>
-                                    {item.ad_placement.headline || 'Your Catchy Placeholder Headline Fits Here'}
+                                    {showEnglishTranslation[item.id] && item.ad_placement.headline_en 
+                                      ? item.ad_placement.headline_en 
+                                      : (item.ad_placement.headline || 'Your Catchy Placeholder Headline Fits Here')}
                                   </div>
 
                                   {/* Description */}
@@ -1024,7 +1044,9 @@ export function AiContentPage({ user }) {
                                     WebkitBoxOrient: 'vertical',
                                     opacity: 0.9
                                   }}>
-                                    {item.ad_placement.body || 'A short, engaging description that automatically truncates if too long.'}
+                                    {showEnglishTranslation[item.id] && item.ad_placement.body_en 
+                                      ? item.ad_placement.body_en 
+                                      : (item.ad_placement.body || 'A short, engaging description that automatically truncates if too long.')}
                                   </div>
 
                                   {/* CTA Button */}
@@ -1099,10 +1121,14 @@ export function AiContentPage({ user }) {
                                   
                                   <div className="flex-1 min-w-0">
                                     <h5 className="font-semibold text-gray-900 text-base mb-2 leading-tight">
-                                      {item.ad_placement.headline}
+                                      {showEnglishTranslation[item.id] && item.ad_placement.headline_en 
+                                        ? item.ad_placement.headline_en 
+                                        : item.ad_placement.headline}
                                     </h5>
                                     <p className="text-gray-700 text-sm mb-3 leading-relaxed">
-                                      {item.ad_placement.body}
+                                      {showEnglishTranslation[item.id] && item.ad_placement.body_en 
+                                        ? item.ad_placement.body_en 
+                                        : item.ad_placement.body}
                                     </p>
                                     
                                     {/* Article Image */}
@@ -1213,10 +1239,14 @@ export function AiContentPage({ user }) {
                                   {/* Content */}
                                   <div className="p-3">
                                     <h6 className="font-semibold text-gray-900 text-sm mb-2 leading-tight">
-                                      {item.ad_placement.headline}
+                                      {showEnglishTranslation[item.id] && item.ad_placement.headline_en 
+                                        ? item.ad_placement.headline_en 
+                                        : item.ad_placement.headline}
                                     </h6>
                                     <p className="text-gray-700 text-xs mb-3 leading-relaxed">
-                                      {item.ad_placement.body}
+                                      {showEnglishTranslation[item.id] && item.ad_placement.body_en 
+                                        ? item.ad_placement.body_en 
+                                        : item.ad_placement.body}
                                     </p>
                                     
                                     {/* Article Image */}
@@ -1283,12 +1313,16 @@ export function AiContentPage({ user }) {
                                 
                                 {/* Headline - Clickable Blue Link */}
                                 <h5 className="text-[#1a0dab] hover:underline cursor-pointer text-xl font-normal mb-2 leading-tight">
-                                  {item.ad_placement.headline}
+                                  {showEnglishTranslation[item.id] && item.ad_placement.headline_en 
+                                    ? item.ad_placement.headline_en 
+                                    : item.ad_placement.headline}
                                 </h5>
                                 
                                 {/* Body Text/Description */}
                                 <p className="text-[#4d5156] text-sm leading-relaxed">
-                                  {item.ad_placement.body}
+                                  {showEnglishTranslation[item.id] && item.ad_placement.body_en 
+                                    ? item.ad_placement.body_en 
+                                    : item.ad_placement.body}
                                 </p>
                               </div>
                             </div>
@@ -1380,6 +1414,76 @@ export function AiContentPage({ user }) {
                                   {item.ad_placement.cta}
                                 </div>
                               </div>
+
+                              {/* English Translations (if available for non-English ads) */}
+                              {(item.ad_placement.headline_en || item.ad_placement.body_en) && (
+                                <div className="pt-4 border-t border-gray-600/50">
+                                  <div className="flex items-center gap-2 mb-3">
+                                    <div className="w-6 h-6 bg-blue-900/30 border border-blue-600/50 rounded flex items-center justify-center">
+                                      <span className="text-blue-400 text-xs font-bold">EN</span>
+                                    </div>
+                                    <Label className="text-blue-400 text-sm font-medium">English Translations</Label>
+                                  </div>
+                                  
+                                  {item.ad_placement.headline_en && (
+                                    <div className="mb-3">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <Label className="text-gray-400 text-xs font-medium">Headline (English)</Label>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(item.ad_placement.headline_en);
+                                            setCopiedFields(prev => ({ ...prev, [`${item.id}-headline-en`]: true }));
+                                            setTimeout(() => {
+                                              setCopiedFields(prev => ({ ...prev, [`${item.id}-headline-en`]: false }));
+                                            }, 2000);
+                                          }}
+                                          className="h-7 px-2 text-xs text-gray-400 hover:text-white"
+                                        >
+                                          {copiedFields[`${item.id}-headline-en`] ? (
+                                            <><Check className="w-3 h-3 mr-1" /> Copied</>
+                                          ) : (
+                                            <><Copy className="w-3 h-3 mr-1" /> Copy</>
+                                          )}
+                                        </Button>
+                                      </div>
+                                      <div className="bg-blue-900/10 border border-blue-600/30 rounded p-3 text-blue-300 text-sm italic">
+                                        {item.ad_placement.headline_en}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {item.ad_placement.body_en && (
+                                    <div>
+                                      <div className="flex items-center justify-between mb-2">
+                                        <Label className="text-gray-400 text-xs font-medium">Body (English)</Label>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(item.ad_placement.body_en);
+                                            setCopiedFields(prev => ({ ...prev, [`${item.id}-body-en`]: true }));
+                                            setTimeout(() => {
+                                              setCopiedFields(prev => ({ ...prev, [`${item.id}-body-en`]: false }));
+                                            }, 2000);
+                                          }}
+                                          className="h-7 px-2 text-xs text-gray-400 hover:text-white"
+                                        >
+                                          {copiedFields[`${item.id}-body-en`] ? (
+                                            <><Check className="w-3 h-3 mr-1" /> Copied</>
+                                          ) : (
+                                            <><Copy className="w-3 h-3 mr-1" /> Copy</>
+                                          )}
+                                        </Button>
+                                      </div>
+                                      <div className="bg-blue-900/10 border border-blue-600/30 rounded p-3 text-blue-300 text-sm leading-relaxed italic">
+                                        {item.ad_placement.body_en}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
 
                               {/* Campaign URL */}
                               <div>

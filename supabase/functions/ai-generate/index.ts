@@ -72,7 +72,7 @@ Deno.serve(async (req: Request) => {
     // Get campaign details for better AI context
     const { data: campaignDetails } = await supabaseClient
       .from('campaigns')
-      .select('name, description, url, tags, product_description, target_audience')
+      .select('name, description, url, tags, product_description, target_audience, rss_countries')
       .eq('id', campaignId)
       .single();
     
@@ -82,7 +82,8 @@ Deno.serve(async (req: Request) => {
       url: '',
       tags: [],
       product_description: '',
-      target_audience: ''
+      target_audience: '',
+      rss_countries: ['US']
     };
     
     console.log('🎯 AI Analysis Input:', {
