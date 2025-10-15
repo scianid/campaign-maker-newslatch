@@ -28,6 +28,7 @@ export function AiContentPage({ user }) {
   const [copiedFields, setCopiedFields] = useState({}); // Track which fields have been copied
   const [showEnglishTranslation, setShowEnglishTranslation] = useState({}); // Track translation toggle for each item
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
+  const [activeTab, setActiveTab] = useState({}); // Track active tab (preview/variants) for each item
   const [generatingLandingPage, setGeneratingLandingPage] = useState({}); // Track which items are generating landing pages
   const [generatingImage, setGeneratingImage] = useState({}); // Track which items are generating AI images
   const [imagePromptModal, setImagePromptModal] = useState({ show: false, item: null, prompt: '' });
@@ -870,12 +871,47 @@ export function AiContentPage({ user }) {
 
                     {/* Main Content - Always Visible */}
                     <div className="mb-6">
-                      {/* Ad Preview Demo */}
+                      {/* Tabs for Ad Preview and Variants */}
                       {item.ad_placement && typeof item.ad_placement === 'object' && (
                         <div>
+                          {/* Tab Header */}
+                          <div className="flex items-center gap-4 border-b border-gray-600 mb-4">
+                            <button
+                              onClick={() => setActiveTab(prev => ({ ...prev, [item.id]: 'preview' }))}
+                              className={`pb-3 px-2 text-sm font-medium transition-all relative ${
+                                (activeTab[item.id] || 'preview') === 'preview'
+                                  ? 'text-blue-400'
+                                  : 'text-gray-400 hover:text-gray-300'
+                              }`}
+                            >
+                              <Monitor className="w-4 h-4 inline mr-1.5" />
+                              Ad Preview
+                              {(activeTab[item.id] || 'preview') === 'preview' && (
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-400"></div>
+                              )}
+                            </button>
+                            <button
+                              onClick={() => setActiveTab(prev => ({ ...prev, [item.id]: 'variants' }))}
+                              className={`pb-3 px-2 text-sm font-medium transition-all relative ${
+                                activeTab[item.id] === 'variants'
+                                  ? 'text-purple-400'
+                                  : 'text-gray-400 hover:text-gray-300'
+                              }`}
+                            >
+                              <Wand2 className="w-4 h-4 inline mr-1.5" />
+                              Ad Variants
+                              {activeTab[item.id] === 'variants' && (
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-400"></div>
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Tab Content */}
+                          {(activeTab[item.id] || 'preview') === 'preview' ? (
+                            /* Ad Preview Content */
+                            <div>
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                             <div className="flex items-center gap-3">
-                              <h4 className="text-sm font-medium text-blue-400">Ad Preview</h4>
                               {/* Translation toggle - only show if translations exist */}
                               {(item.ad_placement.headline_en || item.ad_placement.body_en) && (
                                 <button
@@ -1623,8 +1659,17 @@ export function AiContentPage({ user }) {
                               </div>
                             </div>
                           )}
-
-
+                        </div>
+                            ) : (
+                            /* Ad Variants Content */
+                            <VariantCarousel
+                              aiItem={item}
+                              onImageGalleryOpen={handleVariantImageGallery}
+                              onVariantUpdate={handleVariantUpdate}
+                              onVariantDelete={handleVariantDelete}
+                              onGenerateClick={() => setVariantGeneratorModal({ show: true, item })}
+                            />
+                          )}
                         </div>
                       )}
                     </div>
@@ -1904,14 +1949,6 @@ export function AiContentPage({ user }) {
                         </div>
                       </div>
                     </div>
-
-                    {/* Variant Carousel - Add this for ad variations */}
-                    <VariantCarousel
-                      aiItem={item}
-                      onImageGalleryOpen={handleVariantImageGallery}
-                      onVariantUpdate={handleVariantUpdate}
-                      onVariantDelete={handleVariantDelete}
-                    />
                 </div>
                 );
               })}
