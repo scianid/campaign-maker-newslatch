@@ -394,7 +394,7 @@ export function VariantCarousel({
                   }}
                 >
                   <img 
-                    src={currentVariant.image_url || aiItem.image_url || 'https://via.placeholder.com/600x500.jpg?text=Your+Product+Image'}
+                    src={currentVariant.image_url || aiItem.image_url || 'https://placehold.co/600x500/1f2937/9ca3af?text=Your+Product+Image'}
                     alt="Ad Background"
                     style={{
                       position: 'absolute',
@@ -406,7 +406,7 @@ export function VariantCarousel({
                       transition: 'transform 0.8s ease'
                     }}
                     onError={(e) => {
-                      e.target.src = 'https://via.placeholder.com/600x500.jpg?text=Your+Product+Image';
+                      e.target.src = 'https://placehold.co/600x500/1f2937/9ca3af?text=Your+Product+Image';
                     }}
                   />
                   <div style={{

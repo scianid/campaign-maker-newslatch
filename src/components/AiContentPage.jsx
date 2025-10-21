@@ -1002,7 +1002,7 @@ export function AiContentPage({ user }) {
                                   size="sm"
                                   onClick={() => {
                                     const bannerHTML = `<div style="margin: 0; padding: 0; position: relative; display: block; width: 300px; height: 250px; overflow: hidden; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-decoration: none; cursor: pointer; font-family: Arial, Helvetica, sans-serif; background-color: #f8f9fa;">
-  <img src="${item.image_url || 'https://via.placeholder.com/600x500.jpg?text=Your+Product+Image'}" alt="Ad Background" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" />
+  <img src="${item.image_url || 'https://placehold.co/600x500/1f2937/9ca3af?text=Your+Product+Image'}" alt="Ad Background" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.8s ease;" />
   <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.8) 35%, rgba(0,0,0,0.4) 65%, rgba(0,0,0,0.1) 100%);"></div>
   <div style="position: absolute; bottom: 16px; left: 16px; right: 16px; display: flex; flex-direction: column; gap: 8px; color: #fff;">
     <div style="font-size: 18px; font-weight: 600; line-height: 1.2em; max-height: 2.4em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${item.ad_placement.headline}</div>
@@ -1045,7 +1045,7 @@ export function AiContentPage({ user }) {
                               >
                                 {/* Background image */}
                                 <img 
-                                  src={item.image_url || 'https://via.placeholder.com/600x500.jpg?text=Your+Product+Image'}
+                                  src={item.image_url || 'https://placehold.co/600x500/1f2937/9ca3af?text=Your+Product+Image'}
                                   alt="Ad Background"
                                   style={{
                                     position: 'absolute',
@@ -1057,7 +1057,7 @@ export function AiContentPage({ user }) {
                                     transition: 'transform 0.8s ease'
                                   }}
                                   onError={(e) => {
-                                    e.target.src = 'https://via.placeholder.com/600x500.jpg?text=Your+Product+Image';
+                                    e.target.src = 'https://placehold.co/600x500/1f2937/9ca3af?text=Your+Product+Image';
                                   }}
                                 />
 
@@ -2235,7 +2235,7 @@ export function AiContentPage({ user }) {
                             alt={image.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              e.target.src = 'https://via.placeholder.com/400x300?text=Image+Not+Found';
+                              e.target.src = 'https://placehold.co/400x300/1f2937/9ca3af?text=Image+Not+Found';
                             }}
                           />
                           

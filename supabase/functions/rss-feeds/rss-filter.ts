@@ -94,11 +94,12 @@ export async function getFilteredRssFeeds(
       };
     }
 
-    // Get RSS feeds that match the filtered categories
+    // Get RSS feeds that match the filtered categories AND countries
     const { data: rssFeeds, error: feedsError } = await supabaseClient
       .from('rss_feeds')
       .select('*')
       .overlaps('categories', filteredCategories)
+      .overlaps('country', campaign.rss_countries)
       .eq('is_active', true)
       .order('name');
 
