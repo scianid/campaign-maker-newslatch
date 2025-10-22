@@ -4,13 +4,14 @@ export const SUPPORTED_COUNTRIES = [
   { code: 'GB', label: 'United Kingdom' },
   { code: 'DE', label: 'Germany' },
   { code: 'FR', label: 'France' },
-  { code: 'ES', label: 'Spain' },
+  { code: 'IL', label: 'Israel' },
   { code: 'IT', label: 'Italy' },
+  { code: 'ES', label: 'Spain' },
   { code: 'CA', label: 'Switzerland' },
 ];
 
 // Default country
-export const DEFAULT_COUNTRY = 'CA';
+export const DEFAULT_COUNTRY = 'US';
 
 // Get country display name by code
 export const getCountryDisplayName = (countryCode) => {
