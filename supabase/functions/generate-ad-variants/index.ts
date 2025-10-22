@@ -13,6 +13,7 @@ const COUNTRY_LANGUAGES: Record<string, { language: string; name: string }> = {
   'GB': { language: 'English', name: 'United Kingdom' },
   'DE': { language: 'German', name: 'Germany' },
   'FR': { language: 'French', name: 'France' },
+  'IL': { language: 'Hebrew', name: 'Israel' },
   'ES': { language: 'Spanish', name: 'Spain' },
   'IT': { language: 'Italian', name: 'Italy' },
   'CA': { language: 'English', name: 'Switzerland' },
