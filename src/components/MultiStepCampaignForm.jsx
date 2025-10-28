@@ -46,6 +46,11 @@ export function MultiStepCampaignForm({ user }) {
     description: '',
     productDescription: '',
     targetAudience: '',
+    jobId: null,
+    jobStatus: null,
+    currentStep: null,
+    progressMessage: null,
+    campaignId: null, // Track campaign ID for new campaigns
     aiSuggestions: {
       tags: [],
       description: '',
@@ -132,7 +137,7 @@ export function MultiStepCampaignForm({ user }) {
     }
   };
 
-  // Generate AI suggestions based on URL
+  // Generate AI suggestions based on URL using async job
   const generateAISuggestions = async () => {
     if (!formData.url) return;
 
@@ -142,53 +147,173 @@ export function MultiStepCampaignForm({ user }) {
     }));
 
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError || !session) {
-        throw new Error('No session found');
-      }
-
-      // TODO: Create ai-campaign-suggestions endpoint
-      const response = await fetch(
-        `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/ai-campaign-suggestions`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ 
-            url: formData.url,
-            name: formData.name 
-          })
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${await response.text()}`);
-      }
-
-      const result = await response.json();
+      // Submit analysis job
+      console.log('Submitting analysis job for URL:', formData.url);
+      const jobData = await campaignService.submitAnalysisJob(formData.url);
       
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
+      console.log('Job submitted:', jobData);
+      
       setFormData(prev => ({
         ...prev,
-        aiSuggestions: {
-          tags: result.suggested_tags || [],
-          description: result.suggested_description || '',
-          productDescription: result.product_description || '',
-          targetAudience: result.target_audience || '',
-          loading: false
-        },
-        description: result.suggested_description || prev.description,
-        productDescription: result.product_description || prev.productDescription,
-        targetAudience: result.target_audience || prev.targetAudience
+        jobId: jobData.jobId,
+        jobStatus: jobData.status
       }));
 
+      // For new campaigns (not edit), create the campaign record immediately with job_id
+      // so we can update it when the job completes
+      if (!isEdit) {
+        try {
+          console.log('Creating campaign record with job_id...');
+          const newCampaign = await campaignService.createCampaign({
+            name: formData.name,
+            url: formData.url,
+            impression_pixel: formData.impressionPixel,
+            click_pixel: formData.clickPixel,
+            description: '',
+            product_description: '',
+            target_audience: '',
+            tags: [],
+            rssCategories: [],
+            rssCountries: [DEFAULT_COUNTRY],
+            job_id: jobData.jobId,
+            job_status: jobData.status,
+            job_submitted_at: new Date().toISOString()
+          });
+          
+          console.log('✅ Campaign created with job_id:', newCampaign.id);
+          
+          setFormData(prev => ({
+            ...prev,
+            campaignId: newCampaign.id
+          }));
+        } catch (error) {
+          console.error('Failed to create campaign record:', error);
+          throw error;
+        }
+      }
+
+      // Poll for job completion
+      const pollInterval = 3000; // 3 seconds
+      const maxAttempts = 60; // 3 minutes max
+      let attempts = 0;
+
+      const pollJobStatus = async () => {
+        try {
+          attempts++;
+          console.log(`Polling job status (attempt ${attempts}/${maxAttempts})`);
+          
+          const statusData = await campaignService.checkJobStatus(jobData.jobId);
+          console.log('Job status:', statusData);
+
+          setFormData(prev => ({
+            ...prev,
+            jobStatus: statusData.status,
+            currentStep: statusData.currentStep,
+            progressMessage: statusData.progressMessage
+          }));
+
+          if (statusData.status === 'COMPLETED') {
+            // Job completed successfully, extract the data
+            console.log('Job completed, processing results:', statusData.result);
+            
+            const result = statusData.result || {};
+            
+            setFormData(prev => ({
+              ...prev,
+              aiSuggestions: {
+                tags: result.suggestedTags || [],
+                description: result.suggestedDescription || '',
+                productDescription: result.productDescription || '',
+                targetAudience: result.targetAudience || '',
+                loading: false
+              },
+              description: result.suggestedDescription || prev.description,
+              productDescription: result.productDescription || prev.productDescription,
+              targetAudience: result.targetAudience || prev.targetAudience,
+              jobStatus: 'COMPLETED'
+            }));
+            
+            // Update database with completed job results and clear job_id
+            const campaignIdToUpdate = isEdit ? id : formData.campaignId;
+            
+            if (campaignIdToUpdate) {
+              try {
+                await campaignService.updateCampaign(campaignIdToUpdate, {
+                  job_status: 'COMPLETED',
+                  job_completed_at: statusData.completedAt || new Date().toISOString(),
+                  job_id: null, // Clear job_id after completion
+                  product_description: result.productDescription || formData.productDescription,
+                  target_audience: result.targetAudience || formData.targetAudience,
+                  description: result.suggestedDescription || formData.description
+                });
+                console.log('✅ Campaign updated with AI results and job_id cleared');
+              } catch (error) {
+                console.error('Failed to update campaign with AI results:', error);
+              }
+            }
+            
+            return; // Stop polling
+          } else if (statusData.status === 'FAILED') {
+            // Job failed, clear job_id and update status in database
+            const campaignIdToUpdate = isEdit ? id : formData.campaignId;
+            
+            if (campaignIdToUpdate) {
+              try {
+                await campaignService.updateCampaign(campaignIdToUpdate, {
+                  job_status: 'FAILED',
+                  job_completed_at: new Date().toISOString(),
+                  job_id: null // Clear job_id after failure
+                });
+                console.log('⚠️ Campaign updated with FAILED status and job_id cleared');
+              } catch (error) {
+                console.error('Failed to update campaign after job failure:', error);
+              }
+            }
+            
+            throw new Error('Analysis job failed');
+          } else if (attempts >= maxAttempts) {
+            // Job timed out, clear job_id and update status
+            const campaignIdToUpdate = isEdit ? id : formData.campaignId;
+            
+            if (campaignIdToUpdate) {
+              try {
+                await campaignService.updateCampaign(campaignIdToUpdate, {
+                  job_status: 'FAILED',
+                  job_completed_at: new Date().toISOString(),
+                  job_id: null // Clear job_id after timeout
+                });
+                console.log('⚠️ Campaign updated with FAILED status (timeout) and job_id cleared');
+              } catch (error) {
+                console.error('Failed to update campaign after timeout:', error);
+              }
+            }
+            
+            throw new Error('Analysis job timed out');
+          } else {
+            // Continue polling
+            setTimeout(pollJobStatus, pollInterval);
+          }
+        } catch (error) {
+          console.error('Error polling job status:', error);
+          setFormData(prev => ({
+            ...prev,
+            aiSuggestions: {
+              tags: [],
+              description: '',
+              productDescription: '',
+              targetAudience: '',
+              loading: false
+            }
+          }));
+          alert('Failed to get analysis results. You can continue manually or try again.');
+        }
+      };
+
+      // Start polling
+      setTimeout(pollJobStatus, pollInterval);
+
     } catch (error) {
-      console.error('Failed to generate AI suggestions:', error);
+      console.error('Failed to submit analysis job:', error);
       setFormData(prev => ({
         ...prev,
         aiSuggestions: {
@@ -199,6 +324,7 @@ export function MultiStepCampaignForm({ user }) {
           loading: false
         }
       }));
+      alert('Failed to start analysis. You can continue manually or try again.');
     }
   };
 
@@ -237,9 +363,19 @@ export function MultiStepCampaignForm({ user }) {
       };
 
       if (isEdit) {
+        // Update existing campaign
         await campaignService.updateCampaign(id, campaignData);
+      } else if (formData.campaignId) {
+        // Campaign was already created during job submission, just update it
+        await campaignService.updateCampaign(formData.campaignId, campaignData);
       } else {
-        await campaignService.createCampaign(campaignData);
+        // No job was run (or it failed), create new campaign
+        await campaignService.createCampaign({
+          ...campaignData,
+          job_id: null,
+          job_status: null,
+          job_submitted_at: null
+        });
       }
 
       navigate('/campaigns');
@@ -412,7 +548,27 @@ export function MultiStepCampaignForm({ user }) {
       {formData.aiSuggestions.loading ? (
         <div className="text-center py-12">
           <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-400" />
-          <p className="text-text-paragraph">Analyzing your company and generating suggestions...</p>
+          <p className="text-text-paragraph mb-2">Analyzing your company and generating suggestions...</p>
+          {formData.jobStatus && (
+            <div className="mt-4 bg-gray-800/30 border border-gray-700 rounded-lg p-4 max-w-md mx-auto">
+              <p className="text-sm text-text-paragraph mb-2">
+                Status: <span className="font-semibold text-purple-400">{formData.jobStatus}</span>
+              </p>
+              {formData.progressMessage && (
+                <p className="text-sm text-gray-400 mb-2">
+                  {formData.progressMessage}
+                </p>
+              )}
+              {formData.currentStep && (
+                <p className="text-xs text-gray-500">
+                  Current Step: {formData.currentStep}
+                </p>
+              )}
+              {formData.jobId && (
+                <p className="text-xs text-gray-600 mt-2 font-mono">Job ID: {formData.jobId}</p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="space-y-6">

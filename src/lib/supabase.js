@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Your Supabase project configuration
-const supabaseUrl = 'https://emvwmwdsaakdnweyhmki.supabase.co'
+export const supabaseUrl = 'https://emvwmwdsaakdnweyhmki.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key-here'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
@@ -99,7 +99,10 @@ export const campaignService = {
         product_description: campaign.product_description,
         target_audience: campaign.target_audience,
         rss_categories: campaign.rssCategories,
-        rss_countries: campaign.rssCountries
+        rss_countries: campaign.rssCountries,
+        job_id: campaign.job_id,
+        job_status: campaign.job_status,
+        job_submitted_at: campaign.job_submitted_at
       }])
       .select()
       .single()
@@ -141,5 +144,75 @@ export const campaignService = {
       .eq('id', id)
     
     if (error) throw error
+  },
+
+  // Submit URL for analysis and get job ID
+  async submitAnalysisJob(url) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('User must be authenticated')
+
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/analyze-url`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ url })
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to submit analysis job')
+    }
+
+    return await response.json()
+  },
+
+  // Check job status
+  async checkJobStatus(jobId) {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) throw new Error('User must be authenticated')
+
+    const response = await fetch(
+      `${supabaseUrl}/functions/v1/check-job-status/${jobId}`,
+      {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      }
+    )
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(error.error || 'Failed to check job status')
+    }
+
+    return await response.json()
+  },
+
+  // Update campaign job status
+  async updateCampaignJobStatus(id, status, completedAt = null) {
+    const updateData = {
+      job_status: status,
+      updated_at: new Date().toISOString()
+    }
+    
+    if (completedAt) {
+      updateData.job_completed_at = completedAt
+    }
+
+    const { data, error } = await supabase
+      .from(CAMPAIGNS_TABLE)
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data
   }
 }
