@@ -33,6 +33,8 @@ export function EditCampaignForm({ user }) {
     clickPixel: '',
     tags: [],
     description: '',
+    productDescription: '',
+    targetAudience: '',
     rssCategories: [],
     rssCountries: [DEFAULT_COUNTRY]
   });
@@ -52,6 +54,8 @@ export function EditCampaignForm({ user }) {
         clickPixel: campaign.click_pixel || '',
         tags: campaign.tags || [],
         description: campaign.description || '',
+        productDescription: campaign.product_description || '',
+        targetAudience: campaign.target_audience || '',
         rssCategories: (campaign.rss_categories || []),
         rssCountries: campaign.rss_countries || [DEFAULT_COUNTRY]
       });
@@ -110,6 +114,8 @@ export function EditCampaignForm({ user }) {
         impression_pixel: formData.impressionPixel,
         click_pixel: formData.clickPixel,
         description: formData.description,
+        product_description: formData.productDescription,
+        target_audience: formData.targetAudience,
         tags: formData.tags,
         rssCategories: formData.rssCategories,
         rssCountries: formData.rssCountries
@@ -294,6 +300,38 @@ export function EditCampaignForm({ user }) {
                 className={`mt-1 ${errors.description ? 'border-red-500' : ''}`}
               />
               {errors.description && <p className="text-red-400 text-sm mt-1">{errors.description}</p>}
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <Label htmlFor="productDescription" className="text-white">Product Description</Label>
+                <Textarea
+                  id="productDescription"
+                  value={formData.productDescription}
+                  onChange={(e) => updateFormData('productDescription', e.target.value)}
+                  placeholder="Describe your product or service..."
+                  rows={4}
+                  className="mt-1"
+                />
+                <p className="text-text-paragraph text-xs mt-1">
+                  Detailed description of what you're promoting
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="targetAudience" className="text-white">Target Audience</Label>
+                <Textarea
+                  id="targetAudience"
+                  value={formData.targetAudience}
+                  onChange={(e) => updateFormData('targetAudience', e.target.value)}
+                  placeholder="Describe your target audience..."
+                  rows={4}
+                  className="mt-1"
+                />
+                <p className="text-text-paragraph text-xs mt-1">
+                  Who is this campaign targeting?
+                </p>
+              </div>
             </div>
           </div>
 
