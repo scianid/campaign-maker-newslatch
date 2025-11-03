@@ -1,4 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// Import shared utilities
+import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
+import { checkUserCredits, deductUserCredit } from '../rss-feeds/credits.ts';
 
 const ANALYZE_API_BASE_URL = "http://109.199.126.145";
 
@@ -16,6 +21,48 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Create authenticated Supabase client
+    const supabaseClient = createAuthenticatedClient(req, createClient);
+
+    // Verify user authentication
+    const authResult = await authenticateUser(supabaseClient);
+    if (!authResult.success) {
+      return new Response(
+        JSON.stringify({ error: authResult.error || 'Authentication failed' }),
+        { 
+          status: 401,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+          }
+        }
+      );
+    }
+
+    const userId = authResult.user!.id;
+
+    // Check if user has credits before processing
+    console.log('💳 Checking user credits...');
+    const creditCheck = await checkUserCredits(supabaseClient, userId);
+    
+    if (!creditCheck.hasCredits) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Insufficient credits',
+          message: `You need credits to analyze URLs. Current credits: ${creditCheck.currentCredits}`
+        }),
+        { 
+          status: 402,
+          headers: { 
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
+          }
+        }
+      );
+    }
+
+    console.log(`✅ User has ${creditCheck.currentCredits} credits available`);
+
     const apiKey = Deno.env.get("ANALYZE_API_KEY");
     if (!apiKey) {
       console.error("ANALYZE_API_KEY is not configured");
@@ -85,9 +132,23 @@ Deno.serve(async (req: Request) => {
 
     console.log(`Analysis job created:`, data);
 
+    // Deduct credit after successful API call
+    console.log('💳 Deducting credit for URL analysis...');
+    const deductResult = await deductUserCredit(supabaseClient, userId);
+    
+    if (!deductResult.success) {
+      console.error('⚠️ Failed to deduct credit, but analysis was successful');
+      // Continue anyway since analysis was already performed
+    } else {
+      console.log(`✅ Credit deducted. Remaining credits: ${deductResult.remainingCredits}`);
+    }
+
     // Return the job details
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({
+        ...data,
+        credits_remaining: deductResult.remainingCredits
+      }),
       {
         status: 200,
         headers: {
