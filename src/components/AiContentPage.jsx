@@ -45,6 +45,7 @@ export function AiContentPage({ user }) {
   // Variant-related state
   const [variantGeneratorModal, setVariantGeneratorModal] = useState({ show: false, item: null });
   const [variantImageModal, setVariantImageModal] = useState({ show: false, item: null, variant: null });
+  const [variantCounts, setVariantCounts] = useState({}); // Track variant counts for each item
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -67,6 +68,45 @@ export function AiContentPage({ user }) {
     } catch (err) {
       console.error('Failed to fetch campaign:', err);
       setError('Campaign not found');
+    }
+  };
+
+  const fetchVariantCounts = async (items) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const counts = {};
+      
+      // Fetch variant counts for each item in parallel
+      await Promise.all(
+        items.map(async (item) => {
+          try {
+            const response = await fetch(
+              `https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/ad-variants?ai_item_id=${item.id}`,
+              {
+                method: 'GET',
+                headers: {
+                  'Authorization': `Bearer ${session?.access_token}`,
+                  'Content-Type': 'application/json'
+                }
+              }
+            );
+
+            if (response.ok) {
+              const result = await response.json();
+              counts[item.id] = result.count || 0;
+            }
+          } catch (error) {
+            console.error(`Failed to fetch variant count for item ${item.id}:`, error);
+            counts[item.id] = 0;
+          }
+        })
+      );
+
+      setVariantCounts(counts);
+    } catch (error) {
+      console.error('Failed to fetch variant counts:', error);
     }
   };
 
@@ -115,6 +155,12 @@ export function AiContentPage({ user }) {
 
       setAiItems(result.ai_items || []);
       setTotalItems(result.total || 0);
+      
+      // Fetch variant counts for the loaded items
+      const items = result.ai_items || [];
+      if (items.length > 0) {
+        fetchVariantCounts(items);
+      }
     } catch (err) {
       console.error('Failed to fetch AI items:', err);
       setError(err.message);
@@ -451,6 +497,13 @@ export function AiContentPage({ user }) {
   const handleVariantsGenerated = (newVariants) => {
     // Refresh the AI items to get updated variant counts
     fetchAiItems();
+    // Also update the count immediately for the current item
+    if (variantGeneratorModal.item?.id && newVariants) {
+      setVariantCounts(prev => ({
+        ...prev,
+        [variantGeneratorModal.item.id]: (prev[variantGeneratorModal.item.id] || 0) + newVariants.length
+      }));
+    }
   };
 
   const handleVariantUpdate = () => {
@@ -902,6 +955,15 @@ export function AiContentPage({ user }) {
                             >
                               <Wand2 className="w-4 h-4 inline mr-1.5" />
                               Ad Variants
+                              <span className={`ml-1.5 px-1.5 py-0.5 text-xs rounded-full ${
+                                variantCounts[item.id] > 0
+                                  ? 'bg-green-500/20 text-green-300'
+                                  : activeTab[item.id] === 'variants'
+                                    ? 'bg-purple-500/20 text-purple-300'
+                                    : 'bg-gray-700 text-gray-400'
+                              }`}>
+                                {variantCounts[item.id] || 0}
+                              </span>
                               {activeTab[item.id] === 'variants' && (
                                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-400"></div>
                               )}
