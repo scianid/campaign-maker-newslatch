@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Wand2, Loader2, Briefcase, Smile, Zap, Heart, Crown, Info } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { supabase } from '../lib/supabase';
+import { handleEdgeFunctionError } from '../utils/creditUtils';
 
 export function VariantGeneratorModal({ 
   isOpen, 
@@ -61,7 +62,8 @@ export function VariantGeneratorModal({
 
     } catch (error) {
       console.error('❌ Failed to generate variants:', error);
-      alert(`Failed to generate variants: ${error.message}`);
+      const errorMessage = handleEdgeFunctionError(error, 'Failed to generate variants');
+      alert(errorMessage);
     } finally {
       setGenerating(false);
     }

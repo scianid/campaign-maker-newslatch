@@ -201,12 +201,8 @@ export function AiContentPage({ user }) {
     } catch (err) {
       console.error('❌ Failed to generate landing page:', err);
       
-      let errorMessage = 'Unknown error occurred';
-      if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      alert(`Failed to generate landing page: ${errorMessage}`);
+      const errorMessage = handleEdgeFunctionError(err, 'Failed to generate landing page');
+      alert(errorMessage);
     } finally {
       setGeneratingLandingPage(prev => ({ ...prev, [aiItem.id]: false }));
     }
@@ -397,12 +393,8 @@ export function AiContentPage({ user }) {
     } catch (err) {
       console.error('❌ Failed to generate AI image:', err);
       
-      let errorMessage = 'Unknown error occurred';
-      if (err.message) {
-        errorMessage = err.message;
-      }
-      
-      alert(`Failed to generate AI image: ${errorMessage}`);
+      const errorMessage = handleEdgeFunctionError(err, 'Failed to generate AI image');
+      alert(errorMessage);
     } finally {
       setGeneratingImage(prev => ({ ...prev, [item.id]: false }));
     }

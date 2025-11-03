@@ -218,6 +218,8 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(authResult.error!, '', 401);
     }
 
+    const userId = authResult.user!.id;
+
     // Get AI generated item ID from request body or URL params
     let aiItemId: string;
     
@@ -300,7 +302,7 @@ Deno.serve(async (req: Request) => {
     console.log('🤖 Calling OpenAI to generate landing page...');
 
     // Use shared runGpt function
-    const openaiResponse = await runGpt(prompt);
+    const openaiResponse = await runGpt(prompt, supabaseClient, userId);
     
     console.log('✅ OpenAI response received');
 

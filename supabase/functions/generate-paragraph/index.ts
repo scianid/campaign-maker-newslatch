@@ -47,6 +47,8 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(authResult.error!, '', 401);
     }
 
+    const userId = authResult.user!.id;
+
     const { landingPageId, prompt, contentType, context }: GenerateSectionRequest = await req.json();
 
     if (!landingPageId || !prompt || !contentType) {
@@ -138,7 +140,7 @@ Return ONLY valid JSON, no additional text or explanation.`;
     console.log('🤖 Calling AI with prompt length:', aiPrompt.length);
 
     // Use shared runGpt function (returns JSON)
-    const gptResponse = await runGpt(aiPrompt);
+    const gptResponse = await runGpt(aiPrompt, supabaseClient, userId);
     
     console.log('📦 Raw GPT response:', gptResponse.substring(0, 200));
     

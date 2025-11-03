@@ -29,6 +29,8 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(authResult.error!, '', 401);
     }
 
+    const userId = authResult.user!.id;
+
     // Get campaign ID from request body or URL params
     let campaignId: string;
     
@@ -118,7 +120,7 @@ Deno.serve(async (req: Request) => {
     try {
       console.log('🤖 Running AI analysis...');
       const prompt = buildPrompt(news, tags, campaignInfo);
-      const gptResponse = await runGpt(prompt);
+      const gptResponse = await runGpt(prompt, supabaseClient, userId);
       
       const aiResults = JSON.parse(gptResponse);
       console.log('✅ AI Analysis completed successfully');

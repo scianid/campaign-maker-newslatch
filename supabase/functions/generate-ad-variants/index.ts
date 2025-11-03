@@ -169,6 +169,8 @@ serve(async (req) => {
 
     console.log('✅ Authenticated user:', user.id);
 
+    const userId = user.id;
+
     // Parse request body
     const requestData: VariantGenerationRequest = await req.json();
     const { ai_item_id, count = 3, options = {}, current_image_url } = requestData;
@@ -216,7 +218,7 @@ serve(async (req) => {
     console.log('🤖 Calling OpenAI for variant generation...');
 
     // Generate variants using OpenAI via runGpt helper
-    const openaiResponse = await runGpt(prompt);
+    const openaiResponse = await runGpt(prompt, supabaseClient, userId);
     
     let variantsData;
     try {

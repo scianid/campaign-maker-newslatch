@@ -107,7 +107,7 @@ serve(async (req) => {
 async function handleGetCurrentUserProfile(supabaseClient: any, user: any) {
   const { data, error } = await supabaseClient
     .from('profiles')
-    .select('id, email, full_name, is_admin, created_at, updated_at')
+    .select('id, email, full_name, is_admin, credits, created_at, updated_at')
     .eq('id', user.id)
     .single()
 

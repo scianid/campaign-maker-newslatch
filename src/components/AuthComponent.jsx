@@ -4,7 +4,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { authService, supabase } from '../lib/supabase';
-import { LogIn, LogOut, User, Mail, Eye, EyeOff, Loader2, Settings, Home, ChevronDown } from 'lucide-react';
+import { LogIn, LogOut, User, Mail, Eye, EyeOff, Loader2, Settings, Home, ChevronDown, Coins } from 'lucide-react';
 
 export function AuthComponent({ user, onAuthChange }) {
   const [loading, setLoading] = useState(false);
@@ -14,6 +14,7 @@ export function AuthComponent({ user, onAuthChange }) {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(false);
+  const [userCredits, setUserCredits] = useState(null);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -26,8 +27,10 @@ export function AuthComponent({ user, onAuthChange }) {
   useEffect(() => {
     if (user) {
       checkAdminStatus();
+      fetchUserCredits();
     } else {
       setIsAdmin(false);
+      setUserCredits(null);
     }
   }, [user]);
 
@@ -70,6 +73,27 @@ export function AuthComponent({ user, onAuthChange }) {
       setIsAdmin(user.id === '81facc72-4b4d-4dfc-86ca-23572e7c0e4c');
     } finally {
       setCheckingAdmin(false);
+    }
+  };
+
+  const fetchUserCredits = async () => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch(`${supabase.supabaseUrl}/functions/v1/admin-users/profile`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setUserCredits(result?.data?.credits ?? null);
+      }
+    } catch (error) {
+      console.error('Error fetching credits:', error);
     }
   };
 
@@ -145,15 +169,35 @@ export function AuthComponent({ user, onAuthChange }) {
               <p className="text-sm font-medium text-white">
                 {user.user_metadata?.full_name || user.email}
               </p>
-              <p className="text-xs text-text-paragraph">{user.email}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs text-text-paragraph">{user.email}</p>
+                {userCredits !== null && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-highlight/20 text-highlight text-xs rounded-full font-semibold">
+                    <Coins className="w-3 h-3" />
+                    {userCredits} credits
+                  </span>
+                )}
+              </div>
             </div>
             <ChevronDown className="w-4 h-4 text-gray-400" />
           </button>
 
           {/* Dropdown Menu */}
           {showUserMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-card-bg rounded-lg shadow-lg border border-gray-700 z-50">
+            <div className="absolute right-0 mt-2 w-56 bg-card-bg rounded-lg shadow-lg border border-gray-700 z-50">
               <div className="py-2">
+                {userCredits !== null && (
+                  <div className="px-4 py-3 border-b border-gray-700">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-gray-300">
+                        <Coins className="w-4 h-4" />
+                        <span className="text-sm">AI Credits</span>
+                      </div>
+                      <span className="text-lg font-bold text-highlight">{userCredits}</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Used for AI operations</p>
+                  </div>
+                )}
                 <button
                   onClick={() => {
                     setShowUserMenu(false);

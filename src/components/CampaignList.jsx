@@ -123,8 +123,8 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
       navigate(`/content/${campaign.id}`);
       
       } catch (error) {      // Show user-friendly error message
-      const errorMessage = error.message || 'Unknown error occurred';
-      alert(`Failed to generate AI content: ${errorMessage}\n\nPlease check:\n- RSS feeds are configured\n- RSS categories are set\n- Recent RSS content is available`);
+      const errorMessage = handleEdgeFunctionError(error, 'Failed to generate AI content');
+      alert(`${errorMessage}\n\nPlease check:\n- RSS feeds are configured\n- RSS categories are set\n- Recent RSS content is available`);
     } finally {
       // Hide loading state
       setLoadingRss(false);

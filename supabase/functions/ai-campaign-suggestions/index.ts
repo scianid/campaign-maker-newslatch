@@ -27,6 +27,8 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse(authResult.error!, '', 401);
     }
 
+    const userId = authResult.user!.id;
+
     // Get request data
     const { url, name } = await req.json();
     
@@ -90,7 +92,7 @@ If you cannot access the website, provide general business-appropriate suggestio
 
     try {
       // Call OpenAI API using shared utility
-      const aiContent = await runGpt(prompt);
+      const aiContent = await runGpt(prompt, supabaseClient, userId);
 
       // Parse AI response
       const suggestions = JSON.parse(aiContent.trim());

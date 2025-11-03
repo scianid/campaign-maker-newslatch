@@ -76,7 +76,6 @@ You are an expert AI marketing analyst creating targeted ad placements for lead 
 
 CAMPAIGN CONTEXT:
 Company/Campaign: ${companyName}
-Website: ${companyUrl}
 Business Description: ${companyDesc}
 Product/Service Description: ${productDesc}
 Target Audience: ${targetAudience}
@@ -95,7 +94,7 @@ ${!isEnglish ? 'You MUST also provide English translations for title and body in
 NEWS ANALYSIS OBJECTIVES:
 1. Identify 3-5 headlines most relevant for lead generation related to ${tags.join(", ")}
 2. Connect news events to ${companyName}'s business value proposition
-3. Create compelling ad copy in ${targetLanguage} that drives conversions for ${companyUrl}
+3. Create compelling ad copy in ${targetLanguage} that drives conversions
 4. Focus on urgency, relevance, and clear calls-to-action appropriate for ${targetLanguageInfo.name}
 
 For each selected headline, create:
@@ -151,7 +150,21 @@ Generate JSON now:
     `;
 }
 
-export async function runGpt(prompt: string): Promise<string> {
+export async function runGpt(prompt: string, supabaseClient: any, userId: string): Promise<string> {
+    // Import credit utilities (lazy import to avoid circular dependencies)
+    const { checkUserCredits, deductUserCredit, InsufficientCreditsError } = await import('./credits.ts');
+    
+    // Check if user has credits before making API call
+    console.log('💳 Checking user credits before AI operation...');
+    const creditCheck = await checkUserCredits(supabaseClient, userId);
+    
+    if (!creditCheck.hasCredits) {
+        console.error(`❌ User ${userId} has insufficient credits (${creditCheck.currentCredits})`);
+        throw new InsufficientCreditsError(creditCheck.currentCredits);
+    }
+    
+    console.log(`✅ User has ${creditCheck.currentCredits} credits available`);
+    
     let GPT_API_URL = "https://api.openai.com/v1/chat/completions";
     // @ts-ignore
     let OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
@@ -202,6 +215,17 @@ export async function runGpt(prompt: string): Promise<string> {
 
     if (!text.trim()) {
         throw new Error('OpenAI returned empty response');
+    }
+
+    // Deduct credit after successful AI operation
+    console.log('💰 Deducting credit after successful AI operation...');
+    const deductResult = await deductUserCredit(supabaseClient, userId);
+    
+    if (!deductResult.success) {
+        console.warn('⚠️ Failed to deduct credit, but AI operation was successful:', deductResult.error);
+        // We still return the result but log the credit deduction failure
+    } else {
+        console.log(`✅ Credit deducted. User has ${deductResult.remainingCredits} credits remaining`);
     }
 
     return text;

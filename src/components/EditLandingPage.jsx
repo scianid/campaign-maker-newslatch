@@ -20,6 +20,7 @@ import { Button } from '../ui/Button';
 import { Input } from '../ui/Input';
 import { Textarea } from '../ui/Textarea';
 import { supabase } from '../lib/supabase';
+import { handleEdgeFunctionError } from '../utils/creditUtils';
 
 export function EditLandingPage({ user }) {
   const { pageId } = useParams();
@@ -266,7 +267,8 @@ export function EditLandingPage({ user }) {
       setTimeout(() => setShowSaved(false), 2000);
     } catch (error) {
       console.error('Error generating section:', error);
-      alert('Failed to generate section. Please try again.');
+      const errorMessage = handleEdgeFunctionError(error, 'Failed to generate section');
+      alert(errorMessage);
     } finally {
       setGeneratingParagraph(false);
     }
