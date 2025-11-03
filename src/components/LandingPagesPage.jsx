@@ -14,6 +14,7 @@ export function LandingPagesPage({ user }) {
   const [error, setError] = useState(null);
   const [expandedDetails, setExpandedDetails] = useState({});
   const [deleteConfirm, setDeleteConfirm] = useState({ show: false, item: null });
+  const [isDeleting, setIsDeleting] = useState(false);
   const [generatingImage, setGeneratingImage] = useState({ pageId: null, sectionIndex: null });
   const [filters, setFilters] = useState({
     status: 'all', // 'all', 'active', 'inactive'

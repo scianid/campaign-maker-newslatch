@@ -153,6 +153,11 @@ export function MultiStepCampaignForm({ user }) {
       
       console.log('Job submitted:', jobData);
       
+      // Refresh credits display after analyze-url call
+      if (typeof window.refreshUserCredits === 'function') {
+        window.refreshUserCredits();
+      }
+      
       setFormData(prev => ({
         ...prev,
         jobId: jobData.jobId,
