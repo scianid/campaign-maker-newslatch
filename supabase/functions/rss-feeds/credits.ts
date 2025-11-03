@@ -25,14 +25,7 @@ export async function checkUserCredits(
   try {
     console.log('💳 Checking credits for user:', userId);
 
-    // Create a service role client to bypass RLS
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
-
-    const { data: profile, error } = await serviceClient
+    const { data: profile, error } = await supabaseClient
       .from('profiles')
       .select('credits')
       .eq('id', userId)
@@ -47,16 +40,7 @@ export async function checkUserCredits(
       };
     }
 
-    if (!profile) {
-      console.error('❌ Profile not found for user:', userId);
-      return {
-        hasCredits: false,
-        currentCredits: 0,
-        error: 'User profile not found'
-      };
-    }
-
-    const credits = profile.credits || 0;
+    const credits = profile?.credits || 0;
     console.log(`💰 User has ${credits} credits`);
 
     return {
@@ -87,78 +71,45 @@ export async function deductUserCredit(
   try {
     console.log('💳 Deducting 1 credit from user:', userId);
 
-    // First check if user has credits
-    const creditCheck = await checkUserCredits(supabaseClient, userId);
-    
-    if (!creditCheck.hasCredits) {
-      console.warn('⚠️ User has no credits available');
-      return {
-        success: false,
-        remainingCredits: creditCheck.currentCredits,
-        error: 'Insufficient credits'
-      };
-    }
-
-    // Create a service role client to bypass RLS
-    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    
-    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
-
-    // Get current credits
-    const { data: currentProfile, error: fetchError } = await serviceClient
+    // First get current credits
+    const { data: profile, error: fetchError } = await supabaseClient
       .from('profiles')
       .select('credits')
       .eq('id', userId)
       .single();
 
-    if (fetchError || !currentProfile) {
-      console.error('❌ Error fetching profile for credit deduction:', fetchError);
+    if (fetchError) {
+      console.error('❌ Error fetching credits:', fetchError);
       return {
         success: false,
-        remainingCredits: creditCheck.currentCredits,
-        error: 'Failed to fetch profile'
+        remainingCredits: 0,
+        error: 'Failed to fetch credits'
       };
     }
 
-    const newCredits = Math.max((currentProfile.credits || 0) - 1, 0);
+    const currentCredits = profile?.credits || 0;
+    const newCredits = Math.max(currentCredits - 1, 0);
 
-    // Update with the new credit value using service role
-    const { data, error } = await serviceClient
+    // Direct update without any SELECT in the same query
+    const { error: updateError } = await supabaseClient
       .from('profiles')
-      .update({ 
-        credits: newCredits,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', userId)
-      .select('credits')
-      .single();
+      .update({ credits: newCredits })
+      .eq('id', userId);
 
-    if (error) {
-      console.error('❌ Error deducting credit:', error);
+    if (updateError) {
+      console.error('❌ Error deducting credit:', updateError);
       return {
         success: false,
-        remainingCredits: creditCheck.currentCredits,
+        remainingCredits: currentCredits,
         error: 'Failed to deduct credit'
       };
     }
 
-    if (!data) {
-      console.warn('⚠️ No data returned after credit deduction');
-      return {
-        success: false,
-        remainingCredits: 0,
-        error: 'Credit deduction failed'
-      };
-    }
-
-    const remainingCredits = data.credits || 0;
-    console.log(`✅ Credit deducted. Remaining credits: ${remainingCredits}`);
+    console.log(`✅ Credit deducted. Remaining credits: ${newCredits}`);
 
     return {
       success: true,
-      remainingCredits
+      remainingCredits: newCredits
     };
 
   } catch (error) {
