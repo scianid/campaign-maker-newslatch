@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { runGpt } from '../rss-feeds/ai.ts';
+import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -280,6 +281,21 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('❌ Edge function error:', error);
+    
+    // Handle insufficient credits error specifically
+    if (error instanceof InsufficientCreditsError) {
+      return new Response(
+        JSON.stringify({
+          error: 'Insufficient credits',
+          message: error.message,
+          currentCredits: error.currentCredits
+        }),
+        {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
     
     return new Response(
       JSON.stringify({

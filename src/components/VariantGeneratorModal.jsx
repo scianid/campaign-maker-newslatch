@@ -11,6 +11,7 @@ export function VariantGeneratorModal({
   onVariantsGenerated 
 }) {
   const [generating, setGenerating] = useState(false);
+  const [error, setError] = useState(null);
   const [options, setOptions] = useState({
     count: 3,
     vary_headline: true,
@@ -22,6 +23,7 @@ export function VariantGeneratorModal({
   const handleGenerate = async () => {
     try {
       setGenerating(true);
+      setError(null);
 
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -30,28 +32,38 @@ export function VariantGeneratorModal({
 
       console.log('🔑 Using access token for Edge Function call');
 
-      const { data, error } = await supabase.functions.invoke('generate-ad-variants', {
-        headers: {
-          Authorization: `Bearer ${session?.access_token}`,
-        },
-        body: {
-          ai_item_id: aiItem.id,
-          count: options.count,
-          options: {
-            vary_headline: options.vary_headline,
-            vary_body: options.vary_body,
-            vary_cta: options.vary_cta,
-            tones: options.tones
+      // Use fetch directly to get proper error responses
+      const response = await fetch(
+        'https://emvwmwdsaakdnweyhmki.supabase.co/functions/v1/generate-ad-variants',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json'
           },
-          current_image_url: aiItem.image_url // Pass the current image
+          body: JSON.stringify({
+            ai_item_id: aiItem.id,
+            count: options.count,
+            options: {
+              vary_headline: options.vary_headline,
+              vary_body: options.vary_body,
+              vary_cta: options.vary_cta,
+              tones: options.tones
+            },
+            current_image_url: aiItem.image_url
+          })
         }
-      });
+      );
 
-      if (error) {
-        throw error;
+      const result = await response.json();
+
+      if (!response.ok) {
+        // Extract error message from response
+        const errorMsg = result.message || result.error || 'Failed to generate variants';
+        throw new Error(errorMsg);
       }
 
-      console.log('✅ Variants generated:', data);
+      console.log('✅ Variants generated:', result);
       
       // Refresh credits display
       if (typeof window.refreshUserCredits === 'function') {
@@ -60,7 +72,7 @@ export function VariantGeneratorModal({
       
       // Call the callback to refresh the parent component
       if (onVariantsGenerated) {
-        onVariantsGenerated(data.variants);
+        onVariantsGenerated(result.variants);
       }
 
       onClose();
@@ -68,7 +80,7 @@ export function VariantGeneratorModal({
     } catch (error) {
       console.error('❌ Failed to generate variants:', error);
       const errorMessage = handleEdgeFunctionError(error, 'Failed to generate variants');
-      alert(errorMessage);
+      setError(errorMessage);
     } finally {
       setGenerating(false);
     }
@@ -106,6 +118,31 @@ export function VariantGeneratorModal({
 
         {/* Content */}
         <div className="p-4 space-y-4">
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-red-900/50 border border-red-500/50 rounded-full flex items-center justify-center flex-shrink-0">
+                  <X className="w-4 h-4 text-red-400" />
+                </div>
+                <div className="flex-1">
+                  <h5 className="text-sm font-medium text-red-400 mb-1">
+                    {error.toLowerCase().includes('credit') ? 'Insufficient Credits' : 'Error'}
+                  </h5>
+                  <p className="text-sm text-red-200">{error}</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setError(null)}
+                  className="text-red-400 hover:text-red-300 -mt-1"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Original Content Preview */}
           <div className="bg-gray-800/30 border border-gray-600/50 rounded-lg p-3">
             <h4 className="text-sm font-medium text-gray-300 mb-2">Original Content</h4>

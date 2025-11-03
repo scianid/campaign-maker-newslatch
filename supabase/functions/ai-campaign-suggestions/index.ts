@@ -5,6 +5,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
 import { runGpt } from '../rss-feeds/ai.ts';
+import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
+import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -149,6 +151,16 @@ If you cannot access the website, provide general business-appropriate suggestio
 
   } catch (error) {
     console.error('Edge function error:', error);
+    
+    // Handle insufficient credits error specifically
+    if (error instanceof InsufficientCreditsError) {
+      return createErrorResponse(
+        'Insufficient credits',
+        error.message,
+        402
+      );
+    }
+    
     return createErrorResponse(
       'Internal server error',
       error instanceof Error ? error.message : 'Unknown error'

@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Import shared utilities from rss-feeds function
 import { runGpt } from '../rss-feeds/ai.ts';
+import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
 import { handleCors, createErrorResponse, createSuccessResponse, getUrlParams, validateRequiredParams } from '../rss-feeds/http-utils.ts';
 
@@ -363,6 +364,16 @@ Deno.serve(async (req: Request) => {
 
   } catch (error) {
     console.error('❌ Edge function error:', error);
+    
+    // Handle insufficient credits error specifically
+    if (error instanceof InsufficientCreditsError) {
+      return createErrorResponse(
+        'Insufficient credits',
+        error.message,
+        402
+      );
+    }
+    
     return createErrorResponse(
       'Internal server error',
       error instanceof Error ? error.message : 'Unknown error',

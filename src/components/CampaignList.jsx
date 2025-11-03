@@ -91,12 +91,15 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
         }
       );
 
+      const result = await response.json();
+
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
+        // Extract error message from response
+        const errorMsg = result.message || result.error || 'Failed to generate AI content';
+        throw new Error(errorMsg);
       }
       
-      const result = await response.json();      if (result.error) {
+      if (result.error) {
         throw new Error(result.error || 'Failed to generate AI content');
       }
 

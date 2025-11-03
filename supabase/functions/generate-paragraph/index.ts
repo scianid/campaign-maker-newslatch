@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Import shared utilities from rss-feeds function
 import { runGpt } from '../rss-feeds/ai.ts';
+import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
 
@@ -183,6 +184,16 @@ Return ONLY valid JSON, no additional text or explanation.`;
 
   } catch (error) {
     console.error('Error generating section:', error);
+    
+    // Handle insufficient credits error specifically
+    if (error instanceof InsufficientCreditsError) {
+      return createErrorResponse(
+        'Insufficient credits',
+        error.message,
+        402
+      );
+    }
+    
     return createErrorResponse(
       'Section generation failed',
       error instanceof Error ? error.message : 'Unknown error'

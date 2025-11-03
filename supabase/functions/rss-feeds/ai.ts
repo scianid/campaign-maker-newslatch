@@ -150,10 +150,10 @@ Generate JSON now:
     `;
 }
 
+// Import credit utilities at module level
+import { checkUserCredits, deductUserCredit, InsufficientCreditsError } from './credits.ts';
+
 export async function runGpt(prompt: string, supabaseClient: any, userId: string): Promise<string> {
-    // Import credit utilities (lazy import to avoid circular dependencies)
-    const { checkUserCredits, deductUserCredit, InsufficientCreditsError } = await import('./credits.ts');
-    
     // Check if user has credits before making API call
     console.log('💳 Checking user credits before AI operation...');
     const creditCheck = await checkUserCredits(supabaseClient, userId);
