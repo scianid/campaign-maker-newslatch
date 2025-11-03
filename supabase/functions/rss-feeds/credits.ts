@@ -69,17 +69,36 @@ export async function deductUserCredit(
   userId: string
 ): Promise<CreditDeductResult> {
   try {
-    console.log('💳 Deducting 1 credit from user:', userId);
+    console.log('💳 [STEP 1] Starting credit deduction for user:', userId);
+
+    // Create service role client to bypass RLS
+    console.log('💳 [STEP 2] Creating service role client...');
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    
+    console.log('💳 [STEP 2.1] Service role key available:', !!supabaseServiceKey, 'length:', supabaseServiceKey.length);
+    console.log('💳 [STEP 2.2] Supabase URL:', supabaseUrl);
+    
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+    console.log('💳 [STEP 2.3] Service client created successfully');
 
     // First get current credits
-    const { data: profile, error: fetchError } = await supabaseClient
+    console.log('💳 [STEP 3] Fetching current credits from profiles table...');
+    const { data: profile, error: fetchError } = await serviceClient
       .from('profiles')
       .select('credits')
       .eq('id', userId)
       .single();
 
+    console.log('💳 [STEP 4] Fetch result:', { 
+      hasData: !!profile, 
+      hasError: !!fetchError,
+      credits: profile?.credits 
+    });
+
     if (fetchError) {
-      console.error('❌ Error fetching credits:', fetchError);
+      console.error('❌ [STEP 4 ERROR] Error fetching credits:', JSON.stringify(fetchError));
       return {
         success: false,
         remainingCredits: 0,
@@ -89,15 +108,27 @@ export async function deductUserCredit(
 
     const currentCredits = profile?.credits || 0;
     const newCredits = Math.max(currentCredits - 1, 0);
+    
+    console.log('💳 [STEP 5] Calculated new credits:', { 
+      currentCredits, 
+      newCredits,
+      userId 
+    });
 
-    // Direct update without any SELECT in the same query
-    const { error: updateError } = await supabaseClient
+    // Direct update using service role to bypass RLS
+    console.log('💳 [STEP 6] Executing UPDATE query with service role...');
+    const { error: updateError } = await serviceClient
       .from('profiles')
       .update({ credits: newCredits })
       .eq('id', userId);
 
+    console.log('💳 [STEP 7] Update result:', { 
+      hasError: !!updateError,
+      errorDetails: updateError ? JSON.stringify(updateError) : 'none'
+    });
+
     if (updateError) {
-      console.error('❌ Error deducting credit:', updateError);
+      console.error('❌ [STEP 7 ERROR] Error deducting credit:', JSON.stringify(updateError));
       return {
         success: false,
         remainingCredits: currentCredits,
@@ -105,7 +136,7 @@ export async function deductUserCredit(
       };
     }
 
-    console.log(`✅ Credit deducted. Remaining credits: ${newCredits}`);
+    console.log(`✅ [STEP 8 SUCCESS] Credit deducted. Remaining credits: ${newCredits}`);
 
     return {
       success: true,
@@ -113,7 +144,8 @@ export async function deductUserCredit(
     };
 
   } catch (error) {
-    console.error('❌ Exception deducting credit:', error);
+    console.error('❌ [EXCEPTION] Exception deducting credit:', error);
+    console.error('❌ [EXCEPTION] Stack trace:', error instanceof Error ? error.stack : 'N/A');
     return {
       success: false,
       remainingCredits: 0,
