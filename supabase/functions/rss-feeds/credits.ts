@@ -25,7 +25,14 @@ export async function checkUserCredits(
   try {
     console.log('💳 Checking credits for user:', userId);
 
-    const { data: profile, error } = await supabaseClient
+    // Create a service role client to bypass RLS
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    const { data: profile, error } = await serviceClient
       .from('profiles')
       .select('credits')
       .eq('id', userId)
@@ -92,15 +99,39 @@ export async function deductUserCredit(
       };
     }
 
-    // Deduct one credit using PostgreSQL to ensure atomicity
-    const { data, error } = await supabaseClient
+    // Create a service role client to bypass RLS
+    const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    
+    const serviceClient = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Get current credits
+    const { data: currentProfile, error: fetchError } = await serviceClient
+      .from('profiles')
+      .select('credits')
+      .eq('id', userId)
+      .single();
+
+    if (fetchError || !currentProfile) {
+      console.error('❌ Error fetching profile for credit deduction:', fetchError);
+      return {
+        success: false,
+        remainingCredits: creditCheck.currentCredits,
+        error: 'Failed to fetch profile'
+      };
+    }
+
+    const newCredits = Math.max((currentProfile.credits || 0) - 1, 0);
+
+    // Update with the new credit value using service role
+    const { data, error } = await serviceClient
       .from('profiles')
       .update({ 
-        credits: supabaseClient.raw('credits - 1'),
+        credits: newCredits,
         updated_at: new Date().toISOString()
       })
       .eq('id', userId)
-      .gt('credits', 0) // Only update if credits > 0
       .select('credits')
       .single();
 
@@ -114,12 +145,11 @@ export async function deductUserCredit(
     }
 
     if (!data) {
-      // This can happen if the credit was consumed between check and deduct
-      console.warn('⚠️ Race condition: credit was consumed before deduction');
+      console.warn('⚠️ No data returned after credit deduction');
       return {
         success: false,
         remainingCredits: 0,
-        error: 'Credit already consumed'
+        error: 'Credit deduction failed'
       };
     }
 

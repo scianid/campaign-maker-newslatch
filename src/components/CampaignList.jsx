@@ -116,6 +116,11 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
       
       const result = await generateAiContent(campaign.id);
       
+      // Refresh credits display
+      if (typeof window.refreshUserCredits === 'function') {
+        window.refreshUserCredits();
+      }
+      
       // Show success message
       const itemsGenerated = result.items_generated || 0;
       

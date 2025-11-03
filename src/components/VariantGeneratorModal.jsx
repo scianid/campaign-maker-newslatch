@@ -53,6 +53,11 @@ export function VariantGeneratorModal({
 
       console.log('✅ Variants generated:', data);
       
+      // Refresh credits display
+      if (typeof window.refreshUserCredits === 'function') {
+        window.refreshUserCredits();
+      }
+      
       // Call the callback to refresh the parent component
       if (onVariantsGenerated) {
         onVariantsGenerated(data.variants);

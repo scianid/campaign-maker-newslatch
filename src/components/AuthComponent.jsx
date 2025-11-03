@@ -97,6 +97,18 @@ export function AuthComponent({ user, onAuthChange }) {
     }
   };
 
+  // Expose fetchUserCredits globally for refreshing after AI operations
+  useEffect(() => {
+    if (user && typeof window !== 'undefined') {
+      window.refreshUserCredits = fetchUserCredits;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete window.refreshUserCredits;
+      }
+    };
+  }, [user]);
+
   const handleEmailAuth = async (e) => {
     e.preventDefault();
     

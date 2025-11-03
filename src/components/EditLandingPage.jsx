@@ -257,6 +257,11 @@ export function EditLandingPage({ user }) {
 
       if (error) throw error;
 
+      // Refresh credits display
+      if (typeof window.refreshUserCredits === 'function') {
+        window.refreshUserCredits();
+      }
+
       setLandingPage(prev => ({
         ...prev,
         sections: updatedSections

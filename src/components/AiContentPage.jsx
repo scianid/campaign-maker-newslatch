@@ -195,6 +195,11 @@ export function AiContentPage({ user }) {
         throw new Error(result.error || 'Failed to generate landing page');
       }
       
+      // Refresh credits display
+      if (typeof window.refreshUserCredits === 'function') {
+        window.refreshUserCredits();
+      }
+      
       // Navigate to edit page
       navigate(`/pages/edit/${result.landing_page.id}`);
 
@@ -381,6 +386,11 @@ export function AiContentPage({ user }) {
 
       if (!response.ok) {
         throw new Error(result.error || 'Failed to generate image');
+      }
+      
+      // Refresh credits display
+      if (typeof window.refreshUserCredits === 'function') {
+        window.refreshUserCredits();
       }
       
       // Update the local state with the new image URL
