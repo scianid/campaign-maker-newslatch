@@ -5,7 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
 import { handleCors, createErrorResponse, createSuccessResponse, getUrlParams, validateRequiredParams } from '../rss-feeds/http-utils.ts';
 import { getLatestRssContent } from '../rss-feeds/rss-filter.ts';
-import { buildPrompt, runGpt } from '../rss-feeds/ai.ts';
+import { buildPrompt2, runGpt } from '../rss-feeds/ai.ts';
 import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
 import { extractImagesForNewsItems } from '../rss-feeds/image-extractor.ts';
 
@@ -120,7 +120,7 @@ Deno.serve(async (req: Request) => {
     // Run AI analysis
     try {
       console.log('🤖 Running AI analysis...');
-      const prompt = buildPrompt(news, tags, campaignInfo);
+      const prompt = buildPrompt2(news, tags, campaignInfo);
       const gptResponse = await runGpt(prompt, supabaseClient, userId);
       
       const aiResults = JSON.parse(gptResponse);

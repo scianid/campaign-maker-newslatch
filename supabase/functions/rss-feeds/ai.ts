@@ -150,6 +150,142 @@ Generate JSON now:
     `;
 }
 
+
+export function buildPrompt2(
+    newsArray: Array<{ headline: string; link: string }>,
+    tags: string[],
+    campaignInfo?: { name: string; description: string; url: string; tags: string[]; product_description?: string; target_audience?: string; rss_countries?: string[] }
+): string {
+    // Use campaign info if provided, otherwise fallback to generic approach
+    const companyName = campaignInfo?.name || "the business";
+    const companyUrl = campaignInfo?.url || "their website";
+    const companyDesc = campaignInfo?.description || "their services";
+    const companyTags = campaignInfo?.tags || [];
+    const productDesc = campaignInfo?.product_description || "";
+    const targetAudience = campaignInfo?.target_audience || "";
+    
+    // Determine target language based on campaign countries
+    const countries = campaignInfo?.rss_countries || ['US'];
+    const primaryCountry = countries[0] || 'US';
+    const targetLanguageInfo = COUNTRY_LANGUAGES[primaryCountry] || COUNTRY_LANGUAGES['US'];
+    const targetLanguage = targetLanguageInfo.language;
+    const maxPlacements = 3;
+    const controversyPercentage = 33;
+    const professionalPercentage = 100 - controversyPercentage;
+    const isEnglish = targetLanguage === 'English';
+
+    return `
+        # BUSINESS CONTEXT
+
+        Company: ${companyName}
+        Description: ${companyDesc}
+        Product/Service: ${productDesc}
+        Target Audience: ${targetAudience}
+        ${companyTags.length > 0 ? `Campaign Tags: ${companyTags.join(", ")}\n        ` : ''}
+        Target Language: ${targetLanguage}
+        Max Placements: ${maxPlacements}
+
+        # NEWS TITLES
+
+        You have ${newsArray.length} news titles:
+
+        ${JSON.stringify({ newsArray })}
+
+        ## Opportunity Evaluation
+
+        For ANY trend, evaluate:
+        1. Audience Overlap - Reaches target demographic?
+        2. Emotional Trigger - What emotion? (anxiety, FOMO, humor, pride, anger)
+        3. Connection Logic - Why relates? (scientific, cultural, practical, emotional)
+        4. Timing Urgency - Why NOW? What changed?
+
+        If all 4 strong → valid opportunity.
+
+        # TASK: GENERATE AD PLACEMENTS
+
+        Generate up to ${maxPlacements} ad placements.
+
+        ## CONTROVERSY REQUIREMENT
+
+        EXACTLY ${controversyPercentage}% of all ads MUST be CONTROVERSIAL (genuinely funny).
+        The remaining ${professionalPercentage}% must be PROFESSIONAL.
+
+        For controversial ads: Be casually audacious, not politely clever. Choose the boldest angle, not the smartest wordplay. Never explain the joke.
+
+        Before submitting, validate that you've met this exact ratio. If not, adjust your selection.
+
+        ## QUALITY & DIVERSITY
+
+        Quality First:
+        - Select strongest opportunities across all titles
+        - Reject weak opportunities regardless of titles
+
+        Diversity:
+        - Mix tones: educational, aspirational, humorous, contrarian, empathetic
+        - Mix emotions: fear, ambition, FOMO, humor, pride, anger
+        - Maintain exact controversy percentage as specified
+
+        Bridge Foundation:
+        For creative bridges (Tier 2/3), provide:
+        - Emotional trigger
+        - Connection basis (why credible)
+        - Timing urgency (why NOW)
+
+        ## OUTPUT
+
+        Return JSON with status, trend_summary, campaign_strategy, and results array.
+
+        Each result must include:
+        - All news metadata (headline, clickbait, link, trend, tags, keywords) in English
+        - description and tooltip in TARGET LANGUAGE (apply NATIVE LANGUAGE GENERATION principles)
+        - Bridge details (type, foundation) in English
+        - ad_placement with headline, body, cta in TARGET LANGUAGE
+        - English translations only if target language is not English
+
+        Remember: The ad_placement.headline is your PRIMARY CREATIVE FIELD. Professional or controversial tone lives THERE.
+
+        Only return "[]" (an empty array) if you genuinely cannot generate credible ads.
+
+        # RESPONSE FORMAT (JSON only):
+        
+        {
+            "results": [
+                {
+                    "headline": "[Original headline]",
+                    "clickbait": "[Viral clickbait hook for ${companyName}]",
+                    "link": "[Link from newsArray]",
+                    "relevance_score": [0-100],
+                    "trend": "[Short trend label]",
+                    "tags": ["[tag1]", "tag2"], // up to 5 tags including names in the title, fields of interest, locations, people, companies
+                    "keywords": ["keyword1", "keyword2", "keyword3"], // 5-10 specific keywords from this NEWS ARTICLE for ad targeting: actual names, places, events, specific topics, trending terms, niche phrases from the article. Focus on what makes THIS article unique and targetable at lower cost, not only generic business terms
+                    "description": "[Why this creates urgency for ${companyName}'s services]",
+                    "tooltip": "[Conversion-focused explanation connecting news to ${companyName}'s value - drive action toward ${companyUrl}]",
+                    "ad_placement": {
+                        "headline": "[Compelling ad headline in ${targetLanguage} that connects news to ${companyName}]",
+                        "body": "[Persuasive ad body text in ${targetLanguage} explaining the connection and value proposition]",
+                        "cta": "[Short action text in ${targetLanguage} ONLY - no URLs, no links, just 2-4 words]"${!isEnglish ? ',\n                "headline_en": "[English translation of headline]",\n                "body_en": "[English translation of body]"' : ''}
+                    },
+                    "image_prompt": "[Detailed Stable Diffusion prompt in English for generating a professional marketing image that combines the news topic with ${companyName}'s services. Make it visually compelling, professional, and relevant to the ad. Include style, composition, and key visual elements.]"
+                }
+            ],
+            "trend_summary": "[Marketing strategy overview for ${companyName} based on identified trends]",
+            "campaign_strategy": "[Specific recommendations for ${companyName} to capitalize on these news trends]"
+        }
+
+        # AD CREATIOVE ADDITIONAL NOTES
+        
+        Make sure the ad is clear what its selling! 
+
+        # VERIFY RESULTS
+        
+        REMEMBER: You are an expert in maketing and ad copywriting!
+        You generate only great ads that a top marketing analyst would approve!
+        if the ad copy is not good enough for a marketing expert, do not include it in the results.
+        
+    `;
+}
+
+
 // Import credit utilities at module level
 import { checkUserCredits, deductUserCredit, InsufficientCreditsError } from './credits.ts';
 
