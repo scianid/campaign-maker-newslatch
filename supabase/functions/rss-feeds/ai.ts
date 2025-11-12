@@ -70,6 +70,38 @@ export function buildPrompt(
     const targetLanguageInfo = COUNTRY_LANGUAGES[primaryCountry] || COUNTRY_LANGUAGES['US'];
     const targetLanguage = targetLanguageInfo.language;
     const isEnglish = targetLanguage === 'English';
+    
+    // Determine industry context for appropriate messaging
+    const allTags = [...companyTags, ...tags].map(t => t.toLowerCase());
+    const isGambling = allTags.some(tag => 
+      ['gambling', 'casino', 'betting', 'poker', 'slots', 'sports betting', 'gaming'].includes(tag)
+    );
+    const isFinance = allTags.some(tag => 
+      ['finance', 'banking', 'investment', 'trading', 'loans', 'credit', 'financial'].includes(tag)
+    );
+    const isHealthcare = allTags.some(tag => 
+      ['health', 'medical', 'healthcare', 'wellness', 'fitness', 'therapy'].includes(tag)
+    );
+    const isEcommerce = allTags.some(tag => 
+      ['ecommerce', 'retail', 'shopping', 'store', 'marketplace'].includes(tag)
+    );
+    const isTechnology = allTags.some(tag => 
+      ['technology', 'software', 'saas', 'app', 'platform', 'tech', 'digital'].includes(tag)
+    );
+
+    // Build industry-specific CTA guidance
+    let ctaGuidance = '';
+    if (isGambling) {
+      ctaGuidance = `\n⚠️ GAMBLING/CASINO INDUSTRY: CTAs should focus on entertainment and excitement. Use action-oriented language like "Play Now", "Join the Action", "Start Playing", "Claim Bonus", "Spin Now", "Bet Now". Avoid financial recovery language like "Recover Funds" or "Get Balance".`;
+    } else if (isFinance) {
+      ctaGuidance = `\n⚠️ FINANCE INDUSTRY: CTAs should focus on financial goals and security. Use language like "Get Started", "Apply Now", "Check Rates", "Learn More", "Invest Now", "Free Consultation". Keep professional and trustworthy.`;
+    } else if (isHealthcare) {
+      ctaGuidance = `\n⚠️ HEALTHCARE INDUSTRY: CTAs should focus on care and improvement. Use language like "Book Appointment", "Learn More", "Get Help", "Start Treatment", "Consult Now", "Schedule Visit". Keep caring and professional.`;
+    } else if (isEcommerce) {
+      ctaGuidance = `\n⚠️ E-COMMERCE INDUSTRY: CTAs should focus on shopping and discovery. Use language like "Shop Now", "View Deals", "Browse Collection", "Add to Cart", "Buy Now", "Explore Products". Create urgency and excitement.`;
+    } else if (isTechnology) {
+      ctaGuidance = `\n⚠️ TECHNOLOGY/SaaS INDUSTRY: CTAs should focus on trials and demos. Use language like "Try Free", "Start Free Trial", "Get Demo", "Sign Up", "Learn More", "See How It Works". Emphasize ease and value.`;
+    }
 
     return `
 You are an expert AI marketing analyst creating targeted ad placements for lead generation campaigns.
@@ -82,7 +114,7 @@ Target Audience: ${targetAudience}
 Campaign Tags: ${companyTags.join(", ")}
 Target Categories: ${tags.join(", ")}
 Target Country: ${targetLanguageInfo.name}
-Target Language: ${targetLanguage}
+Target Language: ${targetLanguage}${ctaGuidance}
 
 YOUR MISSION:
 Analyze the provided news articles and create compelling ad placements that connect current events to ${companyName}'s services. Each selected headline should create urgency and drive potential customers to take action.
@@ -94,8 +126,8 @@ ${!isEnglish ? 'You MUST also provide English translations for title and body in
 NEWS ANALYSIS OBJECTIVES:
 1. Identify 3-5 headlines most relevant for lead generation related to ${tags.join(", ")}
 2. Connect news events to ${companyName}'s business value proposition
-3. Create compelling ad copy in ${targetLanguage} that drives conversions
-4. Focus on urgency, relevance, and clear calls-to-action appropriate for ${targetLanguageInfo.name}
+3. Create compelling ad copy in ${targetLanguage} that drives conversions appropriate for the industry
+4. Focus on urgency, relevance, and clear calls-to-action that match the business context
 
 For each selected headline, create:
 - Viral clickbait optimized for ${companyName}'s target audience in ${targetLanguage}
@@ -139,7 +171,7 @@ CRITICAL INSTRUCTIONS:
 5. Return 1-3 highly relevant results maximum
 6. ⚠️ MANDATORY: All ad_placement content (headline, body, cta) MUST be in ${targetLanguage}
 7. ${!isEnglish ? '⚠️ MANDATORY: Provide English translations in headline_en and body_en fields' : 'Translation fields (headline_en, body_en) are not needed for English campaigns'}
-8. CTA must be SHORT button text only (2-4 words) - NO URLs or links
+8. ⚠️ CTA REQUIREMENTS: CTA must be SHORT button text only (2-4 words) - NO URLs or links. The CTA MUST match the industry and business context - consider the product/service being offered and create action language that makes sense for that specific business type.
 9. If the content is too far away and the creative will not be approved by a marketing analyst expert, return less results in the array
 10. ⚠️ KEYWORDS STRATEGY: Extract specific, unique keywords FROM THE NEWS ARTICLE itself - names, places, events, trending terms, niche topics. These should be low-competition, article-specific terms that will cost less for ad targeting, NOT broad generic business terms
 
@@ -174,6 +206,38 @@ export function buildPrompt2(
     const professionalPercentage = 100 - controversyPercentage;
     const isEnglish = targetLanguage === 'English';
 
+    // Determine industry context for appropriate messaging
+    const allTags = [...companyTags, ...tags].map(t => t.toLowerCase());
+    const isGambling = allTags.some(tag => 
+      ['gambling', 'casino', 'betting', 'poker', 'slots', 'sports betting', 'gaming', 'online-betting'].includes(tag)
+    );
+    const isFinance = allTags.some(tag => 
+      ['finance', 'banking', 'investment', 'trading', 'loans', 'credit', 'financial'].includes(tag)
+    );
+    const isHealthcare = allTags.some(tag => 
+      ['health', 'medical', 'healthcare', 'wellness', 'fitness', 'therapy'].includes(tag)
+    );
+    const isEcommerce = allTags.some(tag => 
+      ['ecommerce', 'retail', 'shopping', 'store', 'marketplace'].includes(tag)
+    );
+    const isTechnology = allTags.some(tag => 
+      ['technology', 'software', 'saas', 'app', 'platform', 'tech', 'digital'].includes(tag)
+    );
+
+    // Build industry-specific CTA guidance
+    let ctaGuidance = '';
+    if (isGambling) {
+      ctaGuidance = `\n\n⚠️ GAMBLING/CASINO INDUSTRY CONTEXT:\n- CTAs should focus on entertainment and excitement\n- Use action-oriented language like "Play Now", "Join the Action", "Start Playing", "Claim Bonus", "Spin Now", "Bet Now"\n- Avoid financial recovery language like "Recover Funds" or "Get Balance"\n- Keep tone fun, exciting, and entertainment-focused`;
+    } else if (isFinance) {
+      ctaGuidance = `\n\n⚠️ FINANCE INDUSTRY CONTEXT:\n- CTAs should focus on financial goals and security\n- Use language like "Get Started", "Apply Now", "Check Rates", "Learn More", "Invest Now", "Free Consultation"\n- Keep professional and trustworthy\n- Emphasize security and expert guidance`;
+    } else if (isHealthcare) {
+      ctaGuidance = `\n\n⚠️ HEALTHCARE INDUSTRY CONTEXT:\n- CTAs should focus on care and improvement\n- Use language like "Book Appointment", "Learn More", "Get Help", "Start Treatment", "Consult Now", "Schedule Visit"\n- Keep caring and professional\n- Build trust and compassion`;
+    } else if (isEcommerce) {
+      ctaGuidance = `\n\n⚠️ E-COMMERCE INDUSTRY CONTEXT:\n- CTAs should focus on shopping and discovery\n- Use language like "Shop Now", "View Deals", "Browse Collection", "Add to Cart", "Buy Now", "Explore Products"\n- Create urgency and excitement\n- Focus on value and selection`;
+    } else if (isTechnology) {
+      ctaGuidance = `\n\n⚠️ TECHNOLOGY/SaaS INDUSTRY CONTEXT:\n- CTAs should focus on trials and demos\n- Use language like "Try Free", "Start Free Trial", "Get Demo", "Sign Up", "Learn More", "See How It Works"\n- Emphasize ease and value\n- Highlight innovation and efficiency`;
+    }
+
     return `
         # BUSINESS CONTEXT
 
@@ -183,7 +247,7 @@ export function buildPrompt2(
         Target Audience: ${targetAudience}
         ${companyTags.length > 0 ? `Campaign Tags: ${companyTags.join(", ")}\n        ` : ''}
         Target Language: ${targetLanguage}
-        Max Placements: ${maxPlacements}
+        Max Placements: ${maxPlacements}${ctaGuidance}
 
         # NEWS TITLES
 
