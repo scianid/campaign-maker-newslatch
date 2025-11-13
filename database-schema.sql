@@ -1,6 +1,48 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+CREATE TABLE public.ad_variant_views (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  ad_variant_id uuid NOT NULL,
+  event_type character varying NOT NULL CHECK (event_type::text = ANY (ARRAY['impression'::character varying, 'click'::character varying]::text[])),
+  session_id text,
+  user_agent text,
+  ip_address inet,
+  country character varying,
+  region character varying,
+  city character varying,
+  referrer text,
+  device_type character varying,
+  browser character varying,
+  os character varying,
+  created_at timestamp with time zone DEFAULT now(),
+  CONSTRAINT ad_variant_views_pkey PRIMARY KEY (id),
+  CONSTRAINT ad_variant_views_variant_fkey FOREIGN KEY (ad_variant_id) REFERENCES public.ad_variants(id)
+);
+CREATE TABLE public.ad_variants (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  ai_generated_item_id uuid NOT NULL,
+  variant_label character varying,
+  display_order integer DEFAULT 0,
+  headline text NOT NULL,
+  body text NOT NULL,
+  cta text NOT NULL,
+  headline_en text,
+  body_en text,
+  image_url text,
+  image_prompt text NOT NULL,
+  tone character varying,
+  focus character varying,
+  is_favorite boolean DEFAULT false,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  impression_count integer DEFAULT 0,
+  click_count integer DEFAULT 0,
+  last_impression_at timestamp with time zone,
+  last_click_at timestamp with time zone,
+  CONSTRAINT ad_variants_pkey PRIMARY KEY (id),
+  CONSTRAINT ad_variants_ai_item_fkey FOREIGN KEY (ai_generated_item_id) REFERENCES public.ai_generated_items(id)
+);
 CREATE TABLE public.ai_generated_items (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   campaign_id uuid NOT NULL,
@@ -18,9 +60,11 @@ CREATE TABLE public.ai_generated_items (
   updated_at timestamp with time zone DEFAULT now(),
   image_url text,
   tags ARRAY,
-  keywords ARRAY,
   image_prompt text,
   original_image_url text,
+  keywords ARRAY DEFAULT '{}'::text[],
+  variant_count integer DEFAULT 0,
+  favorite_variant_count integer DEFAULT 0,
   CONSTRAINT ai_generated_items_pkey PRIMARY KEY (id),
   CONSTRAINT ai_generated_items_campaign_id_fkey FOREIGN KEY (campaign_id) REFERENCES public.campaigns(id)
 );
@@ -39,6 +83,13 @@ CREATE TABLE public.campaigns (
   target_audience text,
   impression_pixel text,
   click_pixel text,
+  external_id text,
+  job_id text,
+  job_status text CHECK (job_status = ANY (ARRAY['QUEUED'::text, 'PROCESSING'::text, 'COMPLETED'::text, 'FAILED'::text])),
+  job_submitted_at timestamp with time zone,
+  job_completed_at timestamp with time zone,
+  get_updates boolean NOT NULL DEFAULT false,
+  updates_hour integer NOT NULL DEFAULT 8 CHECK (updates_hour >= 0 AND updates_hour <= 23),
   CONSTRAINT campaigns_pkey PRIMARY KEY (id),
   CONSTRAINT campaigns_user_id_fkey FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
@@ -66,6 +117,7 @@ CREATE TABLE public.profiles (
   is_admin boolean DEFAULT false,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
+  credits integer NOT NULL DEFAULT 10 CHECK (credits >= 0),
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );

@@ -75,7 +75,7 @@ export const campaignService = {
     const { data, error } = await supabase
       .from(CAMPAIGNS_TABLE)
       .select('*')
-      .order('updated_at', { ascending: false })
+      .order('created_at', { ascending: false })
     
     if (error) throw error
     return data || []
@@ -126,6 +126,8 @@ export const campaignService = {
         target_audience: campaign.target_audience,
         rss_categories: campaign.rssCategories,
         rss_countries: campaign.rssCountries,
+        get_updates: campaign.get_updates,
+        updates_hour: campaign.updates_hour,
         updated_at: new Date().toISOString()
       })
       .eq('id', id)

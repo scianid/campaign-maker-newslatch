@@ -5,6 +5,7 @@ import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Textarea } from '../ui/Textarea';
 import { MultiSelect } from '../ui/MultiSelect';
+import { Toggle } from '../ui/Toggle';
 import { Plus, X, Save, ArrowLeft, Loader2, ChevronRight } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY } from '../constants/locales';
@@ -36,7 +37,9 @@ export function EditCampaignForm({ user }) {
     productDescription: '',
     targetAudience: '',
     rssCategories: [],
-    rssCountries: [DEFAULT_COUNTRY]
+    rssCountries: [DEFAULT_COUNTRY],
+    getUpdates: false,
+    updatesHour: 8
   });
 
   const [newTag, setNewTag] = useState('');
@@ -57,7 +60,9 @@ export function EditCampaignForm({ user }) {
         productDescription: campaign.product_description || '',
         targetAudience: campaign.target_audience || '',
         rssCategories: (campaign.rss_categories || []),
-        rssCountries: campaign.rss_countries || [DEFAULT_COUNTRY]
+        rssCountries: campaign.rss_countries || [DEFAULT_COUNTRY],
+        getUpdates: campaign.get_updates || false,
+        updatesHour: campaign.updates_hour ?? 8
       });
     }
   }, [campaign]);
@@ -118,7 +123,9 @@ export function EditCampaignForm({ user }) {
         target_audience: formData.targetAudience,
         tags: formData.tags,
         rssCategories: formData.rssCategories,
-        rssCountries: formData.rssCountries
+        rssCountries: formData.rssCountries,
+        get_updates: formData.getUpdates,
+        updates_hour: formData.updatesHour
       };
 
       await campaignService.updateCampaign(id, campaignData);
@@ -384,6 +391,50 @@ export function EditCampaignForm({ user }) {
               </div>
               
               {errors.tags && <p className="text-red-400 text-sm mt-2">{errors.tags}</p>}
+            </div>
+          </div>
+
+          {/* Updates Settings */}
+          <div className="space-y-6">
+            <h2 className="text-xl font-semibold text-white border-b border-gray-600/50 pb-3">
+              Updates Settings
+            </h2>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-gray-800/30 border border-gray-700 rounded-lg">
+                <div className="flex-1">
+                  <Label className="text-white font-medium mb-1">Receive Content Updates</Label>
+                  <p className="text-text-paragraph text-sm">
+                    Get notified when new trending content is available for your campaign
+                  </p>
+                </div>
+                <Toggle
+                  checked={formData.getUpdates}
+                  onChange={(value) => updateFormData('getUpdates', value)}
+                  size="lg"
+                />
+              </div>
+
+              {formData.getUpdates && (
+                <div className="p-4 bg-gray-800/30 border border-gray-700 rounded-lg">
+                  <Label htmlFor="updatesHour" className="text-white mb-2">Preferred Update Time (UTC)</Label>
+                  <select
+                    id="updatesHour"
+                    value={formData.updatesHour}
+                    onChange={(e) => updateFormData('updatesHour', parseInt(e.target.value))}
+                    className="w-full bg-gray-900 border border-gray-600 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  >
+                    {Array.from({ length: 24 }, (_, i) => (
+                      <option key={i} value={i}>
+                        {i.toString().padStart(2, '0')}:00 UTC
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-text-paragraph text-xs mt-2">
+                    Select the hour of the day when you want to receive updates
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

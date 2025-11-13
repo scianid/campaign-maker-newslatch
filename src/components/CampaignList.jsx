@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
-import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, Rss, Search, Zap } from 'lucide-react';
+import { Toggle } from '../ui/Toggle';
+import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, Rss, Search, Zap, Bell } from 'lucide-react';
 import { campaignService, supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
 import { getCountryDisplayName } from '../constants/locales';
@@ -168,6 +169,23 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
         </mark>
       ) : part
     );
+  };
+
+  // Handle updates toggle
+  const handleUpdateToggle = async (campaign, newValue) => {
+    try {
+      await campaignService.updateCampaign(campaign.id, {
+        ...campaign,
+        get_updates: newValue,
+        rssCategories: campaign.rss_categories,
+        rssCountries: campaign.rss_countries
+      });
+      // Update the local state if needed - parent component should handle refresh
+      window.location.reload();
+    } catch (error) {
+      console.error('Error updating campaign:', error);
+      alert('Failed to update notification settings. Please try again.');
+    }
   };
 
   // Loading state
@@ -522,6 +540,24 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Updates Notification Toggle */}
+              <div className="flex items-center justify-between p-3 bg-gray-800/30 border border-gray-700 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-4 h-4 text-text-paragraph flex-shrink-0" />
+                  <div>
+                    <span className="text-sm text-white font-medium">Content Updates</span>
+                    {campaign.get_updates && campaign.updates_hour !== undefined && (
+                      <span className="text-xs text-text-paragraph ml-2">@ {campaign.updates_hour.toString().padStart(2, '0')}:00 UTC</span>
+                    )}
+                  </div>
+                </div>
+                <Toggle
+                  checked={campaign.get_updates || false}
+                  onChange={(value) => handleUpdateToggle(campaign, value)}
+                  size="md"
+                />
               </div>
 
               {/* Last Updated */}
