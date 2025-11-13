@@ -3,6 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Import shared utilities
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
+import { generateAIContent } from '../rss-feeds/ai-generate-logic.ts';
+import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -111,33 +113,17 @@ Deno.serve(async (req: Request) => {
       console.log('⚡ Bypassing schedule check due to force_update');
     }
 
-    console.log('🤖 Calling ai-generate function for campaign:', campaign.id);
+    console.log('🤖 Calling AI generation logic for campaign:', campaign.id);
 
-    // Call the ai-generate function for this campaign using service role
-    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    if (!serviceRoleKey) {
-      return createErrorResponse('Server configuration error', 'Service role key not configured', 500);
-    }
+    // Call shared AI generation logic directly (no HTTP overhead)
+    const result = await generateAIContent(supabaseClient, campaign.id, userId);
 
-    const aiGenerateUrl = `${Deno.env.get('SUPABASE_URL')}/functions/v1/ai-generate`;
-    
-    const aiResponse = await fetch(aiGenerateUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${serviceRoleKey}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ campaignId: campaign.id })
-    });
-
-    const aiResult = await aiResponse.json();
-
-    if (!aiResponse.ok) {
-      console.error('❌ AI generation failed:', aiResult);
+    if (!result.success) {
+      console.error('❌ AI generation failed:', result);
       return createErrorResponse(
         'AI generation failed',
-        aiResult.error || aiResult.message || 'Unknown error from ai-generate',
-        aiResponse.status
+        result.error || result.details || 'Unknown error from AI generation',
+        500
       );
     }
 
@@ -148,11 +134,21 @@ Deno.serve(async (req: Request) => {
       campaign_id: campaign.id,
       campaign_name: campaign.name,
       processed: true,
-      ai_result: aiResult
+      ai_result: result
     });
 
   } catch (error) {
     console.error('❌ Edge function error:', error);
+    
+    // Handle insufficient credits error specifically
+    if (error instanceof InsufficientCreditsError) {
+      return createErrorResponse(
+        'Insufficient credits',
+        error.message,
+        402
+      );
+    }
+    
     return createErrorResponse(
       'Internal server error',
       error instanceof Error ? error.message : 'Unknown error'

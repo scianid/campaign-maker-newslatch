@@ -4,10 +4,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 // Import shared utilities from rss-feeds function
 import { authenticateUser, createAuthenticatedClient } from '../rss-feeds/auth.ts';
 import { handleCors, createErrorResponse, createSuccessResponse, getUrlParams, validateRequiredParams } from '../rss-feeds/http-utils.ts';
-import { getLatestRssContent } from '../rss-feeds/rss-filter.ts';
-import { buildPrompt2, runGpt } from '../rss-feeds/ai.ts';
 import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
-import { extractImagesForNewsItems } from '../rss-feeds/image-extractor.ts';
+import { generateAIContent } from '../rss-feeds/ai-generate-logic.ts';
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -21,181 +19,99 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse('Method not allowed', 'This endpoint only accepts POST requests', 405);
     }
 
-    // Create authenticated Supabase client
-    const supabaseClient = createAuthenticatedClient(req, createClient);
+    // Check if request is from service role (e.g., from scheduled function)
+    const authHeader = req.headers.get('Authorization') || '';
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const isServiceRole = authHeader.includes(serviceRoleKey) && serviceRoleKey.length > 0;
 
-    // Verify user authentication
-    const authResult = await authenticateUser(supabaseClient);
-    if (!authResult.success) {
-      return createErrorResponse(authResult.error!, '', 401);
-    }
+    // Create Supabase client - use service role if authenticated as service
+    const supabaseClient = isServiceRole
+      ? createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          serviceRoleKey
+        )
+      : createAuthenticatedClient(req, createClient);
 
-    const userId = authResult.user!.id;
-
-    // Get campaign ID from request body or URL params
+    let userId: string;
     let campaignId: string;
-    
-    try {
-      const body = await req.json();
-      campaignId = body.campaignId;
-    } catch {
-      // Fallback to URL params if body parsing fails
-      const params = getUrlParams(req);
-      const validation = validateRequiredParams(params, ['campaignId']);
-      
-      if (!validation.valid) {
-        return createErrorResponse(
-          'Missing required parameters',
-          'campaignId is required either in request body or as URL parameter',
-          400
-        );
-      }
-      
-      campaignId = params.get('campaignId')!;
-    }
 
-    console.log('🤖 Starting AI content generation for campaign:', campaignId);
-
-    // Fetch RSS content for the campaign
-    const rssResult = await getLatestRssContent(supabaseClient, campaignId);
-    
-    if (!rssResult.success) {
-      const status = rssResult.error === 'Campaign not found' ? 404 : 500;
-      return createErrorResponse(rssResult.error!, rssResult.details, status);
-    }
-
-    // Prepare data for AI analysis
-    const news = (rssResult.items || []).map(item => ({ 
-      headline: item.title, 
-      link: item.link,
-      imageUrl: item.imageUrl
-    }));
-    const tags = rssResult.campaign?.rss_categories || [];
-    
-    // Get campaign details for better AI context
-    const { data: campaignDetails } = await supabaseClient
-      .from('campaigns')
-      .select('name, description, url, tags, product_description, target_audience, rss_countries')
-      .eq('id', campaignId)
-      .single();
-    
-    const campaignInfo = campaignDetails || {
-      name: 'Unknown Campaign',
-      description: '',
-      url: '',
-      tags: [],
-      product_description: '',
-      target_audience: '',
-      rss_countries: ['US']
-    };
-    
-    console.log('🎯 AI Analysis Input:', {
-      newsCount: news.length,
-      rssCategories: tags.length,
-      campaignName: campaignInfo.name
-    });
-    
-    // Validate we have enough data for AI analysis
-    if (news.length === 0) {
-      return createErrorResponse(
-        'No RSS content found', 
-        'No RSS items found for this campaign. Please ensure RSS feeds are configured and contain recent content.',
-        400
-      );
-    }
-    
-    if (tags.length === 0) {
-      return createErrorResponse(
-        'No RSS categories configured', 
-        'Please configure RSS categories for this campaign before generating AI content.',
-        400
-      );
-    }
-
-    // Extract images from news articles
-    console.log('🖼️ Extracting images from news articles...');
-    const newsWithImages = await extractImagesForNewsItems(news);
-    console.log('✅ Image extraction completed');
-
-    // Run AI analysis
-    try {
-      console.log('🤖 Running AI analysis...');
-      const prompt = buildPrompt2(news, tags, campaignInfo);
-      const gptResponse = await runGpt(prompt, supabaseClient, userId);
-      
-      const aiResults = JSON.parse(gptResponse);
-      console.log('✅ AI Analysis completed successfully');
-      
-      // Save AI-generated items to database
-      if (aiResults.results && aiResults.results.length > 0) {
-        console.log('💾 Saving AI items to database...');
+    // Skip user authentication if service role
+    if (isServiceRole) {
+      console.log('🔐 Service role authentication detected, skipping user authentication');
+      // For service role requests, we'll need to get userId and campaignId from request body
+      try {
+        const body = await req.json();
+        userId = body.userId || body.user_id;
+        campaignId = body.campaignId;
         
-        // Create a map of link to extracted image URL for quick lookup
-        const imageMap = new Map(
-          newsWithImages.map(item => [item.link, item.extractedImageUrl])
-        );
-        
-        const aiItemsToSave = aiResults.results.map((item: any) => ({
-          campaign_id: campaignId,
-          headline: item.headline,
-          clickbait: item.clickbait,
-          link: item.link,
-          relevance_score: item.relevance_score,
-          tags: item.tags ? item.tags : [],
-          keywords: item.keywords ? item.keywords : [],
-          trend: item.trend,
-          description: item.description,
-          tooltip: item.tooltip,
-          ad_placement: item.ad_placement || null,
-          image_url: imageMap.get(item.link) || null,
-          original_image_url: imageMap.get(item.link) || null,
-          image_prompt: item.image_prompt || null,
-          is_published: false // Default to unpublished
-        }));
-        
-        const { data: savedItems, error: saveError } = await supabaseClient
-          .from('ai_generated_items')
-          .insert(aiItemsToSave)
-          .select();
-        
-        if (saveError) {
-          console.error('❌ Failed to save AI items:', saveError);
+        if (!userId) {
           return createErrorResponse(
-            'Failed to save AI content',
-            saveError.message,
-            500
+            'Missing userId',
+            'Service role requests must include userId in the request body',
+            400
           );
         }
         
-        console.log('✅ Saved AI items to database:', savedItems?.length || 0);
-        
-        // Count items with images
-        const itemsWithImages = savedItems?.filter((item: any) => item.image_url).length || 0;
-        
-        return createSuccessResponse({
-          message: 'AI content generated successfully',
-          items_generated: savedItems?.length || 0,
-          items_with_images: itemsWithImages,
-          campaign_id: campaignId,
-          ai_analysis: aiResults,
-          saved_items: savedItems || []
-        });
-      } else {
+        if (!campaignId) {
+          return createErrorResponse(
+            'Missing campaignId',
+            'Service role requests must include campaignId in the request body',
+            400
+          );
+        }
+      } catch (parseError) {
         return createErrorResponse(
-          'No AI content generated',
-          'AI analysis completed but no relevant content was generated. Try adjusting your RSS categories or feeds.',
+          'Invalid request body',
+          'Failed to parse request body JSON',
           400
         );
       }
+    } else {
+      // Verify user authentication for regular requests
+      const authResult = await authenticateUser(supabaseClient);
+      if (!authResult.success) {
+        return createErrorResponse(authResult.error!, '', 401);
+      }
+      userId = authResult.user!.id;
       
-    } catch (aiError) {
-      console.error('❌ AI Analysis failed:', aiError);
-      return createErrorResponse(
-        'AI generation failed',
-        aiError instanceof Error ? aiError.message : 'Unknown AI error',
-        500
-      );
+      // Get campaign ID from request body or URL params
+      try {
+        const body = await req.json();
+        campaignId = body.campaignId;
+      } catch {
+        // Fallback to URL params if body parsing fails
+        const params = getUrlParams(req);
+        const validation = validateRequiredParams(params, ['campaignId']);
+        
+        if (!validation.valid) {
+          return createErrorResponse(
+            'Missing required parameters',
+            'campaignId is required either in request body or as URL parameter',
+            400
+          );
+        }
+        
+        campaignId = params.get('campaignId')!;
+      }
     }
+
+    // Use shared AI generation logic
+    const result = await generateAIContent(supabaseClient, campaignId, userId);
+    
+    if (!result.success) {
+      const statusCode = result.error === 'Campaign not found' ? 404 : 
+                        result.error === 'No RSS content found' || result.error === 'No RSS categories configured' ? 400 : 500;
+      return createErrorResponse(result.error!, result.details, statusCode);
+    }
+    
+    return createSuccessResponse({
+      message: result.message,
+      items_generated: result.items_generated,
+      items_with_images: result.items_with_images,
+      campaign_id: result.campaign_id,
+      ai_analysis: result.ai_analysis,
+      saved_items: result.saved_items
+    });
 
   } catch (error) {
     console.error('Edge function error:', error);
