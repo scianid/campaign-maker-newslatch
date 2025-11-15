@@ -18,6 +18,7 @@ const COUNTRY_LANGUAGES: Record<string, { language: string; name: string }> = {
   'ES': { language: 'Spanish', name: 'Spain' },
   'IT': { language: 'Italian', name: 'Italy' },
   'CA': { language: 'English', name: 'Switzerland' },
+  'MX': { language: 'Mexican', name: 'Mexico' },
 };
 
 interface VariantGenerationRequest {
