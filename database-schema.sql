@@ -118,6 +118,7 @@ CREATE TABLE public.profiles (
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   credits integer NOT NULL DEFAULT 10 CHECK (credits >= 0),
+  telegram_id text,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id)
 );
