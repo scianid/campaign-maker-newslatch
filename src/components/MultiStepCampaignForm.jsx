@@ -19,7 +19,8 @@ const RSS_CATEGORIES = [
   'sport',
   'politics',
   'technology',
-  'health'
+  'health',
+  'retail'
 ];
 
 export function MultiStepCampaignForm({ user }) {

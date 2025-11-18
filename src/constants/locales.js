@@ -12,7 +12,7 @@ export const SUPPORTED_COUNTRIES = [
 ];
 
 // Default country
-export const DEFAULT_COUNTRY = 'MX';
+export const DEFAULT_COUNTRY = 'US';
 
 // Get country display name by code
 export const getCountryDisplayName = (countryCode) => {

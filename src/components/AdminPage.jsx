@@ -56,7 +56,8 @@ export function AdminPage() {
     { value: 'education', label: 'Education' },
     { value: 'science', label: 'Science' },
     { value: 'auto', label: 'Auto' },
-    { value: 'health', label: 'Health' }
+    { value: 'health', label: 'Health' },
+    { value: 'retail', label: 'Retail' }
   ];
 
   // Filter RSS feeds by country
