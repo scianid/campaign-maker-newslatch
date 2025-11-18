@@ -1,9 +1,6 @@
-
-
 const ADMIN_CHATID = "366936057";
 const JOSH = "1771844260";
 const MOSHE_TEST = "8085865677";
-
 
 function reportError(error: Error, context?: string, statusCode?: number) { 
     console.error("Error reported:", { error, context, statusCode });
@@ -49,9 +46,9 @@ async function sendToTelegram(chatId: string, message: string): Promise<Telegram
     if (isEmptyMessage(message))
         return;
 
-    const API_KEY = await getSecretWithCache("TELEGRAM_API");
+    const API_KEY = Deno.env.get("TELEGRAM_BOT_TOKEN");
     const url = `https://api.telegram.org/bot${API_KEY}/sendMessage?chat_id=${chatId}&parse_mode=MarkdownV2&text=${message}`;
-    const result = await wixFetch.fetch(url);
+    const result = await fetch(url);
     const resp = await result.json() as TelegramResponse;
 
     if (result.status !== 200) {
@@ -67,15 +64,15 @@ export async function answerCallbackQueryToTelegram(callback_query_id: string, m
         return;
     const escapedMessage = escapeTelegramText(message);
     
-    const API_KEY = await getSecretWithCache("TELEGRAM_BOT_TOKEN");
+    const API_KEY = Deno.env.get("TELEGRAM_BOT_TOKEN");
     const url = `https://api.telegram.org/bot${API_KEY}/answerCallbackQuery?callback_query_id=${callback_query_id}&text=${escapedMessage}`;
-    const result = await wixFetch.fetch(url);
+    const result = await fetch(url);
     const resp = await result.json() as TelegramResponse;
 
     if (result.status !== 200) {
         reportError(new Error(JSON.stringify(resp)), "sendToTelegram", result.status);
         console.error(JSON.stringify(resp), JSON.stringify({ message }));
-    }cc
+    }
 
     return resp;
 }
@@ -85,20 +82,18 @@ export async function sendWidgetsToTelegram(chatId: string, widgets: Widget[], s
     const widgetButton = (title: string, id: string): string => {
         return `{
                     "text": "${title}",
-                    "callback_data": "{\\"actn\\":\\"${selectWidget}\\",\\"id\\":\\"${id}\\"}"                 
+                    "callback_data": "{\\"actn\\":\\"selectWidget\\",\\"id\\":\\"${id}\\"}"
                 }`;
     };
-
     const keyboard = `{"inline_keyboard": [[
                 ${widgets.map(w => widgetButton(w.title, w._id)).join(",")}
                 ]
             ]}`;
 
     const escapedMessage = escapeTelegramText("Currently selected: " + selectedTitle);
-
-    const API_KEY = await getSecretWithCache("TELEGRAM_API");
+    const API_KEY = Deno.env.get("TELEGRAM_BOT_TOKEN");
     const url = `https://api.telegram.org/bot${API_KEY}/sendMessage?chat_id=${chatId}&parse_mode=MarkdownV2&text=${escapedMessage}&reply_markup=${keyboard}`;
-    const result = await wixFetch.fetch(url);
+    const result = await fetch(url);
     const resp = await result.json() as TelegramResponse;
 
     if (result.status !== 200)
@@ -111,27 +106,27 @@ export async function sendHeadlineToTelegram(chatId: string, message: string, he
     const keyboard = `{"inline_keyboard": [[
                 {
                     "text": "Set as 1",
-                    "callback_data": "{\\"actn\\":\\"${setHeadlineAsFirstWidget}\\",\\"id\\":\\"${headlineId}\\"}"                 
+                    "callback_data": "{\\"actn\\":\\"setHeadlineAsFirstWidget\\",\\"id\\":\\"${headlineId}\\"}"
                 }, 
                 {
                     "text": "Set as 2",
-                    "callback_data": "{\\"actn\\":\\"${setHeadlineAsSecondWidget}\\",\\"id\\":\\"${headlineId}\\"}"                
+                    "callback_data": "{\\"actn\\":\\"setHeadlineAsSecondWidget\\",\\"id\\":\\"${headlineId}\\"}"
                 }, 
                 {
                     "text": "Set as 3",
-                    "callback_data": "{\\"actn\\":\\"${setHeadlineAsThirdWidget}\\",\\"id\\":\\"${headlineId}\\"}"                  
+                    "callback_data": "{\\"actn\\":\\"setHeadlineAsThirdWidget\\",\\"id\\":\\"${headlineId}\\"}"
                 }, 
                 {
                     "text": "Delete",
-                    "callback_data": "{\\"actn\\":\\"${deleteHeadline}\\",\\"id\\":\\"${headlineId}\\"}"                   
+                    "callback_data": "{\\"actn\\":\\"deleteHeadline\\",\\"id\\":\\"${headlineId}\\"}"
                 }]
             ]}`;
 
     const escapedMessage = escapeTelegramText(message);
 
-    const API_KEY = await getSecretWithCache("TELEGRAM_API");
+    const API_KEY = Deno.env.get("TELEGRAM_BOT_TOKEN");
     const url = `https://api.telegram.org/bot${API_KEY}/sendMessage?chat_id=${chatId}&parse_mode=MarkdownV2&text=${escapedMessage}&reply_markup=${keyboard}`;
-    const result = await wixFetch.fetch(url);
+    const result = await fetch(url);
     const resp = await result.json() as TelegramResponse;
 
     if (result.status !== 200)
@@ -140,19 +135,32 @@ export async function sendHeadlineToTelegram(chatId: string, message: string, he
     return resp;
 }
 
-export async function sendKeyboard(chatid: string, texts: string[]): Promise<void> {
-    /*
-    const API_KEY = await getSecretWithCache("TELEGRAM_API");
-    const url = `https://api.telegram.org/bot${API_KEY}/sendMessage?chat_id=${chatid}&parse_mode=MarkdownV2&reply_markup=${keyboard}`
-    const result = await wixFetch.fetch(url);
-    const resp = await result.json();
+export async function sendPhotoWithCaption(
+    chatId: string,
+    imageUrl: string,
+    caption: string
+): Promise<TelegramResponse | undefined> {
+    if (!imageUrl || isEmptyMessage(caption))
+        return;
 
-    if (result.status !== 200)
-        reportError(new Error(JSON.stringify(resp)), "sendToTelegram");
+    const API_KEY = Deno.env.get("TELEGRAM_BOT_TOKEN");
+    
+    // For sendPhoto, we use HTML parse mode as it's more reliable with captions
+    const escapedCaption = encodeURIComponent(caption);
+    
+    const url = `https://api.telegram.org/bot${API_KEY}/sendPhoto?chat_id=${chatId}&photo=${encodeURIComponent(imageUrl)}&caption=${escapedCaption}&parse_mode=HTML`;
+    
+    const result = await fetch(url);
+    const resp = await result.json() as TelegramResponse;
+
+    if (result.status !== 200) {
+        reportError(new Error(JSON.stringify(resp)), "sendPhotoWithCaption");
+        console.error(JSON.stringify(resp), JSON.stringify({ imageUrl, caption }));
+    }
 
     return resp;
-    */
 }
+
 
 function splitMessage(text: string, maxLength: number = 3900): string[] {
     const pages: string[] = [];
@@ -217,5 +225,5 @@ function escapeTelegramText(text: string, mode: EscapeMode = 'Markdown'): string
 }
 
 function isEmptyMessage(text: string): boolean {
-    return text.replace(/\s+/g, '').length == 0;
+    return text.replace(/\s+/g, '').length === 0;
 }

@@ -5,6 +5,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
 import { generateAIContent } from '../rss-feeds/ai-generate-logic.ts';
 import { InsufficientCreditsError } from '../rss-feeds/credits.ts';
+import { messageTo, sendPhotoWithCaption } from './telegram.ts';
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
@@ -128,6 +129,64 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log('✅ AI content generated successfully');
+
+    // Send notification to user via Telegram if they have telegram_id configured
+    try {
+      const { data: profile, error: profileError } = await supabaseClient
+        .from('profiles')
+        .select('telegram_id')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) {
+        console.warn('⚠️ Could not fetch profile for Telegram notification:', profileError);
+      } else if (profile?.telegram_id) {
+        console.log('📱 Sending Telegram notification to user');
+        
+        // Use the saved_items from the result
+        const aiItems = result.saved_items || [];
+
+        if (aiItems.length > 0) {
+          console.log(`📤 Sending ${aiItems.length} AI items to Telegram`);
+          
+          // Send each AI item as a photo with caption (limit to 5 to avoid spam)
+          const itemsToSend = aiItems.slice(0, 5);
+          
+          for (const item of itemsToSend) {
+            // Use ad_placement data if available
+            if (item.ad_placement && item.image_url) {
+              const headline = item.ad_placement.headline || item.headline;
+              const body = item.ad_placement.body || item.description;
+              const cta = item.ad_placement.cta || '';
+              
+              const caption = `<b>${headline}</b>\n\n${body}${cta ? '\n\n' + cta : ''}`;
+              await sendPhotoWithCaption(profile.telegram_id, item.image_url, caption);
+            } else if (item.image_url) {
+              // Fallback to headline and description if no ad_placement
+              const caption = `<b>${item.headline}</b>\n\n${item.description}`;
+              await sendPhotoWithCaption(profile.telegram_id, item.image_url, caption);
+            } else {
+              // If no image, send as text message
+              const message = `📰 ${item.headline}\n\n${item.description}`;
+              await messageTo(profile.telegram_id, message);
+            }
+          }
+          
+          console.log('✅ AI items sent to Telegram successfully');
+        } else {
+          // Fallback to simple notification if no items found
+          const notificationMessage = `🎉 New AI content generated for campaign: ${campaign.name}\n\nCheck your dashboard to review the latest suggestions!`;
+          await messageTo(profile.telegram_id, notificationMessage);
+        }
+        
+        console.log('✅ Telegram notification sent successfully');
+      } else {
+        console.log('ℹ️ User has no telegram_id configured, skipping notification');
+      }
+    } catch (telegramError) {
+      console.error('❌ Error sending Telegram notification:', telegramError);
+      // Don't fail the whole request if Telegram notification fails
+    }
 
     return createSuccessResponse({
       message: 'Scheduled update completed successfully',
