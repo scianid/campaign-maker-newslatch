@@ -23,12 +23,13 @@ Body:
   "includeSources": true,
   "pollIntervalMs": 2000,
   "timeoutMs": 120000,
-  "channelId": "-1003280682258"
+  "telegram_channel_id": "-1003280682258"
 }
 ```
 
 ## Behavior
 
 - Sends only `response.result.answer` to Telegram.
+- Channel id resolution order: request body `telegram_channel_id` → request body `channelId` → `TELEGRAM_CHANNEL_ID` env → default `-1003280682258`.
 - Adds two inline buttons: `publish` and `make variants`.
 - Button callback payloads are compact: `publish:<queryId>` and `variants:<queryId>`.

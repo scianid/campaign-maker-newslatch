@@ -11,6 +11,14 @@ import { sendTelegramMessage } from './telegram.ts';
 
 const DEFAULT_CHANNEL_ID = '-1003280682258';
 
+function normalizeTelegramChatId(value: unknown): string | null {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed.length ? trimmed : null;
+  }
+  return null;
+}
+
 function requireApiKey(req: Request): Response | null {
   const apiKey = req.headers.get('x-api-key');
   const expected = Deno.env.get('ASK_TO_TELEGRAM_API_KEY');
@@ -52,6 +60,7 @@ Deno.serve(async (req: Request) => {
       pollIntervalMs?: number;
       timeoutMs?: number;
       channelId?: string;
+      telegram_channel_id?: string;
     };
 
     if (!body || typeof body.question !== 'string') {
@@ -67,13 +76,17 @@ Deno.serve(async (req: Request) => {
     const pollIntervalMs = Math.max(500, Math.min(body.pollIntervalMs ?? 2000, 10000));
     const timeoutMs = Math.max(5_000, Math.min(body.timeoutMs ?? 120_000, 600_000));
 
-    const channelId = body.channelId ?? Deno.env.get('TELEGRAM_CHANNEL_ID') ?? DEFAULT_CHANNEL_ID;
+    const requestedTelegramChannelId = normalizeTelegramChatId(body.telegram_channel_id);
 
     console.log('📨 Submitting ASK question');
     const submit = await submitQuestion(question, includeSources, inboundApiKey);
 
     console.log('⏳ Polling ASK status', { queryId: submit.queryId, pollIntervalMs, timeoutMs });
     const completed = await pollUntilCompleted(submit.queryId, { pollIntervalMs, timeoutMs }, inboundApiKey);
+
+    const channelId =
+      requestedTelegramChannelId ??
+      DEFAULT_CHANNEL_ID;
 
     const answer = completed?.result?.answer;
     if (!answer || answer.trim().length === 0) {
