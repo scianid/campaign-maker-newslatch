@@ -6,7 +6,7 @@ declare const Deno: {
 };
 
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
-import { pollUntilCompleted, submitQuestion } from './ask-api.ts';
+import { AskApiError, pollUntilCompleted, submitQuestion } from './ask-api.ts';
 import { sendTelegramMessage } from './telegram.ts';
 
 const DEFAULT_CHANNEL_ID = '-1003280682258';
@@ -16,26 +16,6 @@ function normalizeTelegramChatId(value: unknown): string | null {
     const trimmed = value.trim();
     return trimmed.length ? trimmed : null;
   }
-  return null;
-}
-
-function requireApiKey(req: Request): Response | null {
-  const apiKey = req.headers.get('x-api-key');
-  const expected = Deno.env.get('ASK_TO_TELEGRAM_API_KEY');
-
-  if (!expected) {
-    console.error('❌ ASK_TO_TELEGRAM_API_KEY not configured in environment');
-    return createErrorResponse('Server configuration error', 'API key not configured', 500);
-  }
-
-  if (!apiKey) {
-    return createErrorResponse('Missing API key', 'x-api-key header is required', 401);
-  }
-
-  if (apiKey !== expected) {
-    return createErrorResponse('Invalid API key', 'The provided API key is not valid', 403);
-  }
-
   return null;
 }
 
@@ -49,10 +29,14 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse('Method not allowed', 'This endpoint only accepts POST requests', 405);
     }
 
-    const keyErr = requireApiKey(req);
-    if (keyErr) return keyErr;
-
-    const inboundApiKey = req.headers.get('x-api-key') ?? '';
+    const inboundApiKey = req.headers.get('x-api-key')?.trim();
+    if (!inboundApiKey) {
+      return createErrorResponse(
+        'Missing API key',
+        'x-api-key header is required',
+        400,
+      );
+    }
 
     const body = await req.json().catch(() => null) as null | {
       question?: string;
@@ -126,6 +110,14 @@ Deno.serve(async (req: Request) => {
       },
     });
   } catch (error) {
+    if (error instanceof AskApiError) {
+      return createErrorResponse(
+        'ASK API error',
+        typeof error.body === 'string' ? error.body : JSON.stringify(error.body),
+        error.status,
+      );
+    }
+
     console.error('❌ ask-to-telegram error:', error);
     return createErrorResponse(
       'Internal server error',

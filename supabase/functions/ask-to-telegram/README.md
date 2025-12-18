@@ -4,7 +4,6 @@ Submits a question to the external ASK API, polls until the job is `COMPLETED`, 
 
 ## Secrets / env vars
 
-- `ASK_TO_TELEGRAM_API_KEY` (required): expected value for request header `x-api-key`
 - ASK API URLs are currently hardcoded in the function (no env vars needed for them).
 - `TELEGRAM_BOT_TOKEN` (required)
 - `TELEGRAM_CHANNEL_ID` (optional): defaults to `-1003280682258`
@@ -14,7 +13,7 @@ Submits a question to the external ASK API, polls until the job is `COMPLETED`, 
 `POST /functions/v1/ask-to-telegram`
 
 Headers:
-- `x-api-key: ...`
+- `x-api-key: ...` (required; this function forwards it to the ASK API)
 
 Body:
 ```json

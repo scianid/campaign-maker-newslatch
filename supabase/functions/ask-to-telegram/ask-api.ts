@@ -24,6 +24,34 @@ export interface AskCompletedResponse {
   [key: string]: unknown;
 }
 
+export class AskApiError extends Error {
+  status: number;
+  body: unknown;
+
+  constructor(message: string, status: number, body: unknown) {
+    super(message);
+    this.name = 'AskApiError';
+    this.status = status;
+    this.body = body;
+  }
+}
+
+async function readResponseBody(res: Response): Promise<unknown> {
+  const contentType = res.headers.get('content-type') || '';
+  try {
+    if (contentType.includes('application/json')) {
+      return await res.json();
+    }
+    return await res.text();
+  } catch {
+    try {
+      return await res.text();
+    } catch {
+      return null;
+    }
+  }
+}
+
 function buildStatusUrl(queryId: string): string {
   const normalizedBase = ASK_API_STATUS_BASE_URL.endsWith('/')
     ? ASK_API_STATUS_BASE_URL.slice(0, -1)
@@ -45,10 +73,11 @@ export async function submitQuestion(
     body: JSON.stringify({ question, includeSources }),
   });
 
-  const data = (await res.json()) as AskSubmitResponse;
+  const body = await readResponseBody(res);
+  const data = body as AskSubmitResponse;
 
   if (!res.ok) {
-    throw new Error(`ASK submit (POST) failed (${res.status}): ${JSON.stringify(data)}`);
+    throw new AskApiError('ASK submit failed', res.status, body);
   }
 
   if (!data?.queryId) {
@@ -76,10 +105,11 @@ export async function pollUntilCompleted(
       method: 'GET',
       headers: inboundApiKey ? { 'x-api-key': inboundApiKey } : undefined,
     });
-    const data = (await res.json()) as AskCompletedResponse;
+    const body = await readResponseBody(res);
+    const data = body as AskCompletedResponse;
 
     if (!res.ok) {
-      throw new Error(`ASK status failed (${res.status}): ${JSON.stringify(data)}`);
+      throw new AskApiError('ASK status failed', res.status, body);
     }
 
     if (data.status === 'COMPLETED') {
