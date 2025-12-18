@@ -87,6 +87,10 @@ Deno.serve(async (req: Request) => {
           text: 'make variants',
           callback_data: `variants:${submit.queryId}`,
         },
+        {
+          text: 'View in Argus',
+          url: `http://34.165.46.113:8081/ask/${submit.queryId}`,
+        },
       ]],
     };
 
