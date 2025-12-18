@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.scheduled-updates]
 verify_jwt = false
+
+[functions.get-social-images]
+verify_jwt = false
+
+[functions.ask-to-telegram]
+verify_jwt = false
