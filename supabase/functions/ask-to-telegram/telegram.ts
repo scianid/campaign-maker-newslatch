@@ -11,6 +11,7 @@ interface TelegramSendMessageResponse {
     date: number;
     chat: { id: number; type: string; title?: string; username?: string };
     text?: string;
+    caption?: string;
   };
   error_code?: number;
   description?: string;
@@ -61,6 +62,54 @@ export async function sendTelegramMessage(
 
   if (!res.ok || !data.ok) {
     console.error('❌ Telegram sendMessage failed', {
+      status: res.status,
+      data,
+    });
+  }
+
+  return data;
+}
+
+export async function sendTelegramPhoto(
+  chatId: string,
+  photoUrl: string,
+  caption?: string,
+  replyMarkup?: InlineKeyboardMarkup,
+): Promise<TelegramSendMessageResponse> {
+  const token = Deno.env.get('TELEGRAM_BOT_TOKEN');
+  if (!token) {
+    return {
+      ok: false,
+      error_code: 500,
+      description: 'TELEGRAM_BOT_TOKEN is not configured',
+    };
+  }
+
+  const url = `https://api.telegram.org/bot${token}/sendPhoto`;
+
+  const payload: Record<string, unknown> = {
+    chat_id: chatId,
+    photo: photoUrl,
+  };
+
+  if (caption && caption.trim().length > 0) {
+    payload.caption = caption;
+  }
+
+  if (replyMarkup) {
+    payload.reply_markup = replyMarkup;
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const data = (await res.json()) as TelegramSendMessageResponse;
+
+  if (!res.ok || !data.ok) {
+    console.error('❌ Telegram sendPhoto failed', {
       status: res.status,
       data,
     });

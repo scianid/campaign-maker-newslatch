@@ -7,9 +7,21 @@ declare const Deno: {
 
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
 import { AskApiError, pollUntilCompleted, submitQuestion } from './ask-api.ts';
-import { sendTelegramMessage } from './telegram.ts';
+import { sendTelegramMessage, sendTelegramPhoto } from './telegram.ts';
+import { firstSocialImageFromCoreArticles } from './social-image.ts';
 
 const DEFAULT_CHANNEL_ID = '-1003280682258';
+
+function truncateTelegramCaption(text: string): { caption: string; truncated: boolean } {
+  // Telegram caption limit is 1024 characters for photos.
+  const limit = 1024;
+  const normalized = text ?? '';
+  if (normalized.length <= limit) {
+    return { caption: normalized, truncated: false };
+  }
+  // Keep room for an ellipsis.
+  return { caption: `${normalized.slice(0, limit - 1)}…`, truncated: true };
+}
 
 function normalizeTelegramChatId(value: unknown): string | null {
   if (typeof value === 'string') {
@@ -45,6 +57,7 @@ Deno.serve(async (req: Request) => {
       timeoutMs?: number;
       channelId?: string;
       telegram_channel_id?: string;
+      withPhoto?: boolean;
     };
 
     if (!body || typeof body.question !== 'string') {
@@ -59,6 +72,7 @@ Deno.serve(async (req: Request) => {
     const includeSources = body.includeSources ?? true;
     const pollIntervalMs = Math.max(500, Math.min(body.pollIntervalMs ?? 2000, 10000));
     const timeoutMs = Math.max(5_000, Math.min(body.timeoutMs ?? 120_000, 600_000));
+    const withPhoto = typeof body.withPhoto === 'boolean' ? body.withPhoto : false;
 
     const requestedTelegramChannelId = normalizeTelegramChatId(body.telegram_channel_id);
 
@@ -94,6 +108,64 @@ Deno.serve(async (req: Request) => {
       ]],
     };
 
+    let selectedImage: { imageUrl: string; sourceUrl: string } | null = null;
+    let captionTruncated = false;
+
+    // Prefer a single-message Telegram post when withPhoto is enabled and an image is found.
+    if (withPhoto) {
+      const coreArticles = completed?.result?.coreArticles;
+      if (Array.isArray(coreArticles) && coreArticles.length > 0) {
+        console.log('🖼️ withPhoto enabled; racing coreArticles for social image', {
+          candidates: coreArticles.length,
+        });
+        selectedImage = await firstSocialImageFromCoreArticles(coreArticles, {
+          maxCandidates: 10,
+          perRequestTimeoutMs: 7000,
+        });
+
+        if (selectedImage) {
+          const { caption, truncated } = truncateTelegramCaption(answer);
+          captionTruncated = truncated;
+
+          console.log('📸 Sending Telegram photo with caption + buttons', {
+            channelId,
+            sourceUrl: selectedImage.sourceUrl,
+            captionTruncated,
+          });
+
+          const photo = await sendTelegramPhoto(
+            channelId,
+            selectedImage.imageUrl,
+            caption,
+            keyboard,
+          );
+
+          if (!photo.ok) {
+            console.warn('⚠️ Telegram photo send failed; falling back to text message', {
+              description: photo.description,
+            });
+          } else {
+            return createSuccessResponse({
+              queryId: submit.queryId,
+              askStatus: completed.status,
+              withPhoto,
+              captionTruncated,
+              image: selectedImage,
+              telegram: {
+                message_id: photo.result?.message_id,
+                chat_id: photo.result?.chat?.id,
+                sent_as: 'photo',
+              },
+            });
+          }
+        } else {
+          console.log('ℹ️ No social image found in coreArticles; sending text message');
+        }
+      } else {
+        console.log('ℹ️ withPhoto enabled but no coreArticles present; sending text message');
+      }
+    }
+
     console.log('📣 Sending to Telegram channel', { channelId });
     const tg = await sendTelegramMessage(channelId, answer, keyboard);
 
@@ -108,9 +180,13 @@ Deno.serve(async (req: Request) => {
     return createSuccessResponse({
       queryId: submit.queryId,
       askStatus: completed.status,
+      withPhoto,
+      captionTruncated,
+      image: selectedImage,
       telegram: {
         message_id: tg.result?.message_id,
         chat_id: tg.result?.chat?.id,
+        sent_as: 'text',
       },
     });
   } catch (error) {

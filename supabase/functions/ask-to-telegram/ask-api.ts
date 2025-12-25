@@ -19,6 +19,10 @@ export interface AskCompletedResponse {
   progress?: unknown;
   result?: {
     answer?: string;
+    coreArticles?: Array<{
+      url?: string | null;
+      [key: string]: unknown;
+    }>;
     [key: string]: unknown;
   };
   [key: string]: unknown;
