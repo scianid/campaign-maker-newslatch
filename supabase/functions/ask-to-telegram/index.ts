@@ -114,6 +114,8 @@ Deno.serve(async (req: Request) => {
     // Prefer a single-message Telegram post when withPhoto is enabled and an image is found.
     if (withPhoto) {
       const coreArticles = completed?.result?.coreArticles;
+      console.log("result", { "result":completed?.result });
+      console.log("coreArticles", { coreArticles });
       if (Array.isArray(coreArticles) && coreArticles.length > 0) {
         console.log('🖼️ withPhoto enabled; racing coreArticles for social image', {
           candidates: coreArticles.length,

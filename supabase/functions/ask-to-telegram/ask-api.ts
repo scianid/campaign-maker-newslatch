@@ -100,6 +100,17 @@ export async function pollUntilCompleted(
   let lastBody: unknown = null;
   let lastStatus: string | null = null;
 
+  const fetchStatus = async (): Promise<{ res: Response; body: unknown; data: AskCompletedResponse }> => {
+    const statusUrl = buildStatusUrl(queryId);
+    const res = await fetch(statusUrl, {
+      method: 'GET',
+      headers: inboundApiKey ? { 'x-api-key': inboundApiKey } : undefined,
+    });
+    const body = await readResponseBody(res);
+    const data = body as AskCompletedResponse;
+    return { res, body, data };
+  };
+
   while (true) {
     const elapsedMs = Date.now() - startedAt;
     if (elapsedMs > opts.timeoutMs) {
@@ -113,15 +124,8 @@ export async function pollUntilCompleted(
       });
     }
 
-    const statusUrl = buildStatusUrl(queryId);
-
-    const res = await fetch(statusUrl, {
-      method: 'GET',
-      headers: inboundApiKey ? { 'x-api-key': inboundApiKey } : undefined,
-    });
-    const body = await readResponseBody(res);
+    const { res, body, data } = await fetchStatus();
     lastBody = body;
-    const data = body as AskCompletedResponse;
     lastStatus = typeof data?.status === 'string' ? data.status : null;
 
     if (!res.ok) {
@@ -129,6 +133,40 @@ export async function pollUntilCompleted(
     }
 
     if (data.status === 'COMPLETED') {
+      const coreArticles = data?.result?.coreArticles;
+      const hasCoreArticles = Array.isArray(coreArticles) && coreArticles.length > 0;
+
+      // ASK sometimes marks COMPLETED before delayed fields (like coreArticles) are populated.
+      // Wait 5s and re-fetch once to pick up the remaining data.
+      if (!hasCoreArticles) {
+        const remainingMs = opts.timeoutMs - (Date.now() - startedAt);
+        if (remainingMs > 0) {
+          const delayMs = Math.min(5000, remainingMs);
+          await new Promise((r) => setTimeout(r, delayMs));
+        }
+
+        const retryElapsedMs = Date.now() - startedAt;
+        if (retryElapsedMs <= opts.timeoutMs) {
+          const retry = await fetchStatus();
+          lastBody = retry.body;
+          lastStatus = typeof retry.data?.status === 'string' ? retry.data.status : null;
+
+          if (!retry.res.ok) {
+            throw new AskApiError('ASK status failed', retry.res.status, retry.body);
+          }
+
+          if (retry.data?.status === 'COMPLETED') {
+            return retry.data;
+          }
+
+          if (retry.data?.status === 'FAILED') {
+            throw new Error(`ASK query FAILED: ${JSON.stringify(retry.data)}`);
+          }
+
+          // If it regressed to non-terminal status, continue polling normally.
+        }
+      }
+
       return data;
     }
 
