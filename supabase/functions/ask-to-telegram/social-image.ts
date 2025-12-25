@@ -125,7 +125,7 @@ export async function firstSocialImageFromCoreArticles(
   coreArticles: CoreArticle[],
   opts?: { maxCandidates?: number; perRequestTimeoutMs?: number },
 ): Promise<{ imageUrl: string; sourceUrl: string } | null> {
-  const perRequestTimeoutMs = opts?.perRequestTimeoutMs ?? 7000;
+  const perRequestTimeoutMs = opts?.perRequestTimeoutMs ?? 25000;
   const maxCandidates = Math.max(1, Math.min(opts?.maxCandidates ?? 10, 30));
 
   const urls = coreArticles
