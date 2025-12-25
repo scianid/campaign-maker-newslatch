@@ -80,11 +80,11 @@ Deno.serve(async (req: Request) => {
     const keyboard = {
       inline_keyboard: [[
         {
-          text: 'publish',
+          text: 'Publish',
           callback_data: `publish:${submit.queryId}`,
         },
         {
-          text: 'make variants',
+          text: 'Make variants',
           callback_data: `variants:${submit.queryId}`,
         },
         {
