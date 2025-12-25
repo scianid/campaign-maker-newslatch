@@ -97,10 +97,20 @@ export async function pollUntilCompleted(
   inboundApiKey?: string,
 ): Promise<AskCompletedResponse> {
   const startedAt = Date.now();
+  let lastBody: unknown = null;
+  let lastStatus: string | null = null;
 
   while (true) {
-    if (Date.now() - startedAt > opts.timeoutMs) {
-      throw new Error(`Timed out waiting for COMPLETED (queryId=${queryId})`);
+    const elapsedMs = Date.now() - startedAt;
+    if (elapsedMs > opts.timeoutMs) {
+      throw new AskApiError('ASK status timeout', 504, {
+        queryId,
+        elapsedMs,
+        timeoutMs: opts.timeoutMs,
+        pollIntervalMs: opts.pollIntervalMs,
+        lastStatus,
+        lastBody,
+      });
     }
 
     const statusUrl = buildStatusUrl(queryId);
@@ -110,7 +120,9 @@ export async function pollUntilCompleted(
       headers: inboundApiKey ? { 'x-api-key': inboundApiKey } : undefined,
     });
     const body = await readResponseBody(res);
+    lastBody = body;
     const data = body as AskCompletedResponse;
+    lastStatus = typeof data?.status === 'string' ? data.status : null;
 
     if (!res.ok) {
       throw new AskApiError('ASK status failed', res.status, body);
