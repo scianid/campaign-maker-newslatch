@@ -7,8 +7,8 @@ declare const Deno: {
 
 import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-feeds/http-utils.ts';
 import { AskApiError, pollUntilCompleted, submitQuestion } from './ask-api.ts';
-import { sendTelegramMessage, sendTelegramPhoto } from './telegram.ts';
-import { firstSocialImageFromCoreArticles } from './social-image.ts';
+import { sendTelegramMessage, sendTelegramPhotoFile } from './telegram.ts';
+import { firstDownloadedSocialImageFromCoreArticles } from './social-image.ts';
 
 const DEFAULT_CHANNEL_ID = '-1003280682258';
 
@@ -132,30 +132,35 @@ Deno.serve(async (req: Request) => {
 
   // Prefer a single-message Telegram post when withPhoto is enabled and an image is found.
     if (withPhoto) {
-      console.log("result", { "result":completed?.result });
-      console.log("coreArticles", { coreArticles });
       if (Array.isArray(coreArticles) && coreArticles.length > 0) {
         console.log('🖼️ withPhoto enabled; racing coreArticles for social image', {
           candidates: coreArticles.length,
         });
-        selectedImage = await firstSocialImageFromCoreArticles(coreArticles, {
+        const downloaded = await firstDownloadedSocialImageFromCoreArticles(coreArticles, {
           maxCandidates: 10,
-          perRequestTimeoutMs: 7000,
+          perPageTimeoutMs: 7000,
+          perImageTimeoutMs: 12000,
+          maxImageBytes: 8_000_000,
         });
 
-        if (selectedImage) {
+        if (downloaded) {
+          selectedImage = { sourceUrl: downloaded.sourceUrl, imageUrl: downloaded.imageUrl };
           const { caption, truncated } = truncateTelegramCaption(answer);
           captionTruncated = truncated;
 
           console.log('📸 Sending Telegram photo with caption + buttons', {
             channelId,
-            sourceUrl: selectedImage.sourceUrl,
+            sourceUrl: downloaded.sourceUrl,
             captionTruncated,
           });
 
-          const photo = await sendTelegramPhoto(
+          const photo = await sendTelegramPhotoFile(
             channelId,
-            selectedImage.imageUrl,
+            {
+              bytes: downloaded.bytes,
+              contentType: downloaded.contentType,
+              filename: 'social-image',
+            },
             caption,
             keyboard,
           );

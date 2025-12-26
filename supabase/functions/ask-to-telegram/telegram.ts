@@ -117,3 +117,51 @@ export async function sendTelegramPhoto(
 
   return data;
 }
+
+export async function sendTelegramPhotoFile(
+  chatId: string,
+  file: { bytes: Uint8Array; contentType: string; filename?: string },
+  caption?: string,
+  replyMarkup?: InlineKeyboardMarkup,
+): Promise<TelegramSendMessageResponse> {
+  const token = Deno.env.get('TELEGRAM_BOT_TOKEN');
+  if (!token) {
+    return {
+      ok: false,
+      error_code: 500,
+      description: 'TELEGRAM_BOT_TOKEN is not configured',
+    };
+  }
+
+  const url = `https://api.telegram.org/bot${token}/sendPhoto`;
+  const form = new FormData();
+  form.set('chat_id', chatId);
+
+  const filename = file.filename ?? 'image';
+  const blob = new Blob([file.bytes], { type: file.contentType || 'application/octet-stream' });
+  form.set('photo', blob, filename);
+
+  if (caption && caption.trim().length > 0) {
+    form.set('caption', caption);
+  }
+
+  if (replyMarkup) {
+    form.set('reply_markup', JSON.stringify(replyMarkup));
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    body: form,
+  });
+
+  const data = (await res.json()) as TelegramSendMessageResponse;
+
+  if (!res.ok || !data.ok) {
+    console.error('❌ Telegram sendPhoto(file) failed', {
+      status: res.status,
+      data,
+    });
+  }
+
+  return data;
+}
