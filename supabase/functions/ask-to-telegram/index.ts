@@ -91,6 +91,25 @@ Deno.serve(async (req: Request) => {
       return createErrorResponse('No answer in response', 'COMPLETED response had no result.answer', 502);
     }
 
+    const coreArticles = completed?.result?.coreArticles;
+    const hasSources = Array.isArray(coreArticles) && coreArticles.length > 0;
+
+    // If ASK produced an answer but no sources, it likely isn't based on news.
+    // In that case, skip sending to Telegram.
+    if (includeSources && !hasSources) {
+      console.log('ℹ️ℹ️ℹ️ No sources in ASK response; skipping Telegram send', {
+        queryId: submit.queryId,
+      });
+      return createSuccessResponse({
+        queryId: submit.queryId,
+        askStatus: completed.status,
+        includeSources,
+        withPhoto,
+        skipped: true,
+        reason: 'no_sources',
+      });
+    }
+
     const keyboard = {
       inline_keyboard: [[
         {
@@ -111,9 +130,8 @@ Deno.serve(async (req: Request) => {
     let selectedImage: { imageUrl: string; sourceUrl: string } | null = null;
     let captionTruncated = false;
 
-    // Prefer a single-message Telegram post when withPhoto is enabled and an image is found.
+  // Prefer a single-message Telegram post when withPhoto is enabled and an image is found.
     if (withPhoto) {
-      const coreArticles = completed?.result?.coreArticles;
       console.log("result", { "result":completed?.result });
       console.log("coreArticles", { coreArticles });
       if (Array.isArray(coreArticles) && coreArticles.length > 0) {
