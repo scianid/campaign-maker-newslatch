@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.ask-to-telegram]
 verify_jwt = false
+
+[functions.task-service]
+verify_jwt = false
