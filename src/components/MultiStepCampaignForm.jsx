@@ -465,6 +465,22 @@ export function MultiStepCampaignForm({ user }) {
 
       <div className="space-y-4">
         <div>
+          <Label htmlFor="url" className="text-white">Product Website Url</Label>
+          <p className="mt-1 text-sm text-text-paragraph">
+            NewsLatch AI will analyze this page to generate a brief about the company, the product, and the target audience.
+          </p>
+          <Input
+            id="url"
+            type="url"
+            value={formData.url}
+            onChange={(e) => updateFormData('url', e.target.value)}
+            placeholder="https://example.com"
+            className={`mt-1 ${errors.url ? 'border-red-500' : ''}`}
+          />
+          {errors.url && <p className="text-red-400 text-sm mt-1">{errors.url}</p>}
+        </div>
+
+        <div>
           <Label htmlFor="name" className="text-white">Campaign Name</Label>
           <Input
             id="name"
@@ -477,30 +493,14 @@ export function MultiStepCampaignForm({ user }) {
           {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
         </div>
 
-        <div>
-          <Label htmlFor="url" className="text-white">Company URL</Label>
-          <Input
-            id="url"
-            type="url"
-            value={formData.url}
-            onChange={(e) => updateFormData('url', e.target.value)}
-            placeholder="https://example.com"
-            className={`mt-1 ${errors.url ? 'border-red-500' : ''}`}
-          />
-          {errors.url && <p className="text-red-400 text-sm mt-1">{errors.url}</p>}
-          <p className="text-text-paragraph text-sm mt-1">
-            We'll analyze this URL to generate intelligent suggestions for your campaign
-          </p>
-        </div>
-
-        <div className="bg-gray-800/30 border border-gray-700 rounded-lg overflow-hidden">
+        <div className="overflow-hidden rounded-2xl border border-white/10 bg-primary-bg/30">
           <button
             type="button"
             onClick={() => setShowPixelFields(!showPixelFields)}
-            className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-800/50 transition-colors"
+            className="w-full flex items-center justify-between p-4 text-left transition-colors hover:bg-white/5"
           >
             <h3 className="text-white font-medium text-sm">Tracking Pixels (Optional)</h3>
-            <ChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${
+            <ChevronRight className={`w-4 h-4 text-white/50 transition-transform ${
               showPixelFields ? 'rotate-90' : ''
             }`} />
           </button>
@@ -553,25 +553,25 @@ export function MultiStepCampaignForm({ user }) {
 
       {formData.aiSuggestions.loading ? (
         <div className="text-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-purple-400" />
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-highlight" />
           <p className="text-text-paragraph mb-2">Analyzing your company and generating suggestions...</p>
           {formData.jobStatus && (
-            <div className="mt-4 bg-gray-800/30 border border-gray-700 rounded-lg p-4 max-w-md mx-auto">
+            <div className="mt-4 max-w-md mx-auto rounded-2xl border border-white/10 bg-primary-bg/30 p-4">
               <p className="text-sm text-text-paragraph mb-2">
-                Status: <span className="font-semibold text-purple-400">{formData.jobStatus}</span>
+                Status: <span className="font-semibold text-highlight">{formData.jobStatus}</span>
               </p>
               {formData.progressMessage && (
-                <p className="text-sm text-gray-400 mb-2">
+                <p className="text-sm text-white/60 mb-2">
                   {formData.progressMessage}
                 </p>
               )}
               {formData.currentStep && (
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-white/50">
                   Current Step: {formData.currentStep}
                 </p>
               )}
               {formData.jobId && (
-                <p className="text-xs text-gray-600 mt-2 font-mono">Job ID: {formData.jobId}</p>
+                <p className="text-xs text-white/40 mt-2 font-mono">Job ID: {formData.jobId}</p>
               )}
             </div>
           )}
@@ -579,7 +579,7 @@ export function MultiStepCampaignForm({ user }) {
       ) : (
         <div className="space-y-6">
           {/* Selected Tags Summary */}
-          <div className="bg-gray-800/50 rounded-lg p-4">
+          <div className="rounded-2xl border border-white/10 bg-primary-bg/30 p-4">
             <h4 className="text-white font-medium mb-2">Selected Tags</h4>
             <div className="flex flex-wrap gap-2">
               {formData.tags.map((tag) => (
@@ -588,8 +588,8 @@ export function MultiStepCampaignForm({ user }) {
                   variant="outline" 
                   className={`text-xs ${
                     (formData.aiSuggestions.tags || []).includes(tag)
-                      ? 'bg-purple-900/30 text-purple-400 border-purple-600'
-                      : 'bg-green-900/30 text-green-400 border-green-600'
+                      ? 'bg-highlight/10 text-highlight border-highlight/30'
+                      : 'bg-white/5 text-white/80 border-white/15'
                   }`}
                 >
                   {(formData.aiSuggestions.tags || []).includes(tag) ? '🤖' : '✏️'} {tag}
@@ -614,7 +614,7 @@ export function MultiStepCampaignForm({ user }) {
           {/* Custom Tags Input */}
           <div>
             <Label className="text-white mb-3 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-green-400" />
+              <Plus className="w-4 h-4 text-highlight" />
               Add Custom Tags
             </Label>
             <p className="text-text-paragraph text-sm mb-3">
@@ -651,12 +651,12 @@ export function MultiStepCampaignForm({ user }) {
                     .map((tag) => (
                       <div
                         key={tag}
-                        className="inline-flex items-center gap-1 bg-green-600 text-white px-3 py-1 rounded-full text-sm"
+                        className="inline-flex items-center gap-1 rounded-full border border-highlight/30 bg-highlight/10 px-3 py-1 text-sm text-highlight"
                       >
                         {tag}
                         <button
                           onClick={() => removeCustomTag(tag)}
-                          className="ml-1 hover:bg-green-700 rounded-full p-0.5"
+                          className="ml-1 rounded-full p-0.5 transition-colors hover:bg-highlight/15"
                         >
                           <X className="w-3 h-3" />
                         </button>
@@ -670,7 +670,7 @@ export function MultiStepCampaignForm({ user }) {
           {/* AI Suggested Tags */}
           <div>
             <Label className="text-white mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+              <Sparkles className="w-4 h-4 text-highlight" />
               AI Suggested Tags
             </Label>
             <p className="text-text-paragraph text-sm mb-3">
@@ -684,8 +684,8 @@ export function MultiStepCampaignForm({ user }) {
                   onClick={() => toggleTag(tag)}
                   className={`p-3 rounded-lg border text-sm font-medium transition-all ${
                     formData.tags.includes(tag)
-                      ? 'bg-purple-600 border-purple-500 text-white'
-                      : 'bg-card-bg border-gray-600 text-gray-300 hover:border-purple-500'
+                      ? 'bg-highlight border-highlight text-button-text'
+                      : 'bg-card-bg/60 border-white/10 text-white/80 hover:border-highlight/40'
                   }`}
                 >
                   {formData.tags.includes(tag) && <Check className="w-3 h-3 inline mr-1" />}
@@ -698,7 +698,7 @@ export function MultiStepCampaignForm({ user }) {
           {/* AI Suggested Description */}
           <div>
             <Label htmlFor="description" className="text-white mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+              <Sparkles className="w-4 h-4 text-highlight" />
               Suggested Description
             </Label>
             <p className="text-text-paragraph text-sm mb-3">
@@ -719,7 +719,7 @@ export function MultiStepCampaignForm({ user }) {
           {/* AI Suggested Product Description */}
           <div>
             <Label htmlFor="productDescription" className="text-white mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+              <Sparkles className="w-4 h-4 text-highlight" />
               Suggested Product Description
             </Label>
             <p className="text-text-paragraph text-sm mb-3">
@@ -739,7 +739,7 @@ export function MultiStepCampaignForm({ user }) {
           {/* AI Suggested Target Audience */}
           <div>
             <Label htmlFor="targetAudience" className="text-white mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+              <Sparkles className="w-4 h-4 text-highlight" />
               Suggested Target Audience
             </Label>
             <p className="text-text-paragraph text-sm mb-3">
@@ -772,7 +772,7 @@ export function MultiStepCampaignForm({ user }) {
         {/* Target Countries */}
         <div>
           <Label className="text-white mb-3 flex items-center gap-2">
-            <Globe className="w-4 h-4 text-green-400" />
+            <Globe className="w-4 h-4 text-highlight" />
             Target Countries
           </Label>
           <MultiSelect
@@ -788,7 +788,7 @@ export function MultiStepCampaignForm({ user }) {
         {/* RSS Categories */}
         <div>
           <Label className="text-white mb-3 flex items-center gap-2">
-            <Rss className="w-4 h-4 text-orange-400" />
+            <Rss className="w-4 h-4 text-highlight" />
             RSS Feed Categories
           </Label>
           <MultiSelect
@@ -806,19 +806,19 @@ export function MultiStepCampaignForm({ user }) {
 
   return (
     <Layout user={user}>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-white">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
               onClick={() => navigate('/campaigns')}
-              className="text-gray-400 hover:text-white"
+              className="text-white/70 hover:text-white"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Campaigns
             </Button>
-            <div className="h-6 w-px bg-gray-600"></div>
+            <div className="h-6 w-px bg-white/10"></div>
             <h1 className="text-2xl font-bold text-white">
               {isEdit ? 'Edit Campaign' : 'Create New Campaign'}
             </h1>
@@ -830,18 +830,22 @@ export function MultiStepCampaignForm({ user }) {
           <div className="flex items-center justify-center space-x-4">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                  step < currentStep ? 'bg-purple-600 text-white' :
-                  step === currentStep ? 'bg-purple-600 text-white' :
-                  'bg-gray-600 text-gray-300'
-                }`}>
-                  {step < currentStep ? <Check className="w-5 h-5" /> : step}
+                <div
+                  className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed font-semibold transition-colors ${
+                    step <= currentStep
+                      ? 'border-highlight/70 bg-highlight/10 text-highlight'
+                      : 'border-white/10 bg-white/5 text-white/50'
+                  }`}
+                >
+                  {step < currentStep ? <Check className="w-5 h-5 text-highlight" /> : step}
                 </div>
                 
                 {step < 3 && (
-                  <div className={`w-16 h-1 mx-2 ${
-                    step < currentStep ? 'bg-purple-600' : 'bg-gray-600'
-                  }`} />
+                  <div
+                    className={`mx-2 h-[2px] w-16 rounded-full ${
+                      step < currentStep ? 'bg-highlight/70' : 'bg-white/10'
+                    }`}
+                  />
                 )}
               </div>
             ))}
@@ -855,11 +859,14 @@ export function MultiStepCampaignForm({ user }) {
         </div>
 
         {/* Form Content */}
-        <div className="bg-card-bg rounded-2xl border border-gray-600/50 p-8">
+        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 p-8 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+          <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-highlight/12 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+
           {renderStepContent()}
           
           {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-gray-600/50">
+          <div className="flex justify-between mt-8 pt-6 border-t border-white/10">
             <Button
               variant="outline"
               onClick={goToPrevStep}
@@ -874,7 +881,6 @@ export function MultiStepCampaignForm({ user }) {
               <Button
                 onClick={goToNextStep}
                 disabled={formData.aiSuggestions.loading}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 Next
                 <ChevronRight className="w-4 h-4 ml-2" />
@@ -883,7 +889,6 @@ export function MultiStepCampaignForm({ user }) {
               <Button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="bg-purple-600 hover:bg-purple-700 text-white"
               >
                 {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {isEdit ? 'Update Campaign' : 'Create Campaign'}
