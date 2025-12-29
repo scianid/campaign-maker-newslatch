@@ -8,10 +8,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Play,
-  Sparkles,
   TrendingUp,
   Wand2,
   Zap,
+  Sparkles,
 } from 'lucide-react';
 
 function ImagePlaceholder({ label, aspectClassName = 'aspect-[16/10]', className = '' }) {
@@ -32,9 +32,7 @@ function ImagePlaceholder({ label, aspectClassName = 'aspect-[16/10]', className
         </div>
         <div className="max-w-md px-6">
           <p className="text-sm font-semibold text-white">{label}</p>
-          <p className="mt-1 text-xs text-white/60">
-            Replace with your generated asset (PNG/JPG/SVG)
-          </p>
+          <p className="mt-1 text-xs text-white/60">Replace with your generated asset (PNG/JPG/SVG)</p>
         </div>
       </div>
     </div>
@@ -232,20 +230,20 @@ export function HomePage({ user }) {
           {[
             {
               n: '1',
-              title: 'Describe your offer',
-              desc: 'Tell NewsLatch what you sell and who you target. Add keywords and exclusions.',
+              title: 'Paste Your URL, We Handle the Rest',
+              desc: 'We instantly analyze your public site to understand your tone, offer, and positioning.',
               icon: Wand2,
             },
             {
               n: '2',
-              title: 'Discover aligned headlines',
-              desc: 'AI surfaces trending stories and gives you angles that fit your positioning.',
+              title: 'AI Finds What\'s Driving Demand',
+              desc: 'Our engine scans live, brand-safe news and social trends, matching your product to the headlines that move your audience.',
               icon: Sparkles,
             },
             {
               n: '3',
-              title: 'Publish a converting widget',
-              desc: 'Pick a template, match your brand, embed with one line, and track results.',
+              title: 'Instant Ad Assets, Ready for Review',
+              desc: 'Every day, get new, on-brand ad variants including copy, visuals, and CTAs pre-built for performance. Approve, edit, or skip with one click.',
               icon: Zap,
             },
           ].map((step) => {
@@ -285,100 +283,119 @@ export function HomePage({ user }) {
           </p>
         </div>
 
-        <div className="mx-auto mt-10 grid max-w-6xl items-start gap-8 lg:grid-cols-2">
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 p-8 shadow-[0_16px_40px_rgba(0,0,0,0.25)]">
-            <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-highlight/15 blur-3xl" />
-            <h3 className="text-xl font-bold text-white">Generate creatives that match the moment</h3>
-            <p className="mt-2 text-sm leading-relaxed text-text-paragraph">
-              NewsLatch turns live headlines into platform-ready ads with consistent messaging across formats.
-            </p>
+        <div className="mx-auto mt-10 max-w-6xl">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+            <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-highlight/12 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-highlight/10 blur-3xl" />
 
-            <div className="mt-6 space-y-3">
-              {[
-                'Four formats from one angle',
-                'Fast iteration when news breaks',
-                'Designed to align with your offer',
-              ].map((t) => (
-                <div key={t} className="flex items-start gap-3">
-                  <div className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-highlight/15">
-                    <Check className="h-4 w-4 text-highlight" />
-                  </div>
-                  <p className="text-sm text-text-paragraph">{t}</p>
+            <div className="grid gap-0 lg:grid-cols-2">
+              {/* Left: copy + toggle */}
+              <div className="p-8">
+                <h3 className="text-xl font-bold text-white">Generate creatives that match the moment</h3>
+                <p className="mt-2 text-sm leading-relaxed text-text-paragraph">
+                  NewsLatch turns live headlines into platform-ready ads with consistent messaging across formats.
+                </p>
+
+                <div className="mt-6 space-y-5">
+                  {[
+                    {
+                      title: 'Automatically Generate Relevant Ads',
+                      desc: 'Connect your brand to live events and trends your audience cares about the moment they happen.',
+                    },
+                    {
+                      title: 'Proven to Double CTR',
+                      desc: 'Live-event-aligned creative proven to increase CTRs 2× or more through real-time relevance.',
+                    },
+                    {
+                      title: 'Launch-Ready in 60 Seconds',
+                      desc: 'Get new, on-brand ad variants including copy, visuals, and CTAs pre-built for performance daily.',
+                    },
+                    {
+                      title: 'Higher ROAS Without Extra Spend',
+                      desc: 'Real-time creative beats guesswork every time. Stay relevant without additional ad spend.',
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="flex items-start gap-3">
+                      <div className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-highlight/15">
+                        <Check className="h-4 w-4 text-highlight" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-white">{item.title}</p>
+                        <p className="mt-1 text-sm leading-relaxed text-text-paragraph">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
 
-            <div className="mt-8">
-              <div
-                role="tablist"
-                aria-label="Ad format"
-                className="relative grid grid-cols-4 items-center rounded-full border border-white/10 bg-white/5 p-1"
-              >
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-y-1 left-1 w-[calc(25%-0.5rem)] rounded-full bg-highlight shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-transform duration-200"
-                  style={{ transform: `translateX(${activeAdFormatIndex * 100}%)` }}
-                />
-
-                {adFormats.map((f, idx) => {
-                  const isActive = idx === activeAdFormatIndex;
-                  return (
-                    <button
-                      key={f.key}
-                      type="button"
-                      role="tab"
-                      aria-selected={isActive}
-                      tabIndex={isActive ? 0 : -1}
-                      onClick={() => setActiveAdFormatKey(f.key)}
-                      className={`relative z-10 inline-flex h-9 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-primary-bg ${
-                        isActive ? 'text-button-text' : 'text-white/70 hover:text-white'
-                      }`}
-                    >
-                      {f.label}
-                    </button>
-                  );
-                })}
               </div>
-              <p className="mt-3 text-xs text-white/50">
-                Tip: swap formats to keep the same angle consistent across placements.
-              </p>
-            </div>
-          </div>
 
-          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
-            <div className="pointer-events-none absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-highlight/10 blur-3xl" />
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-white">Preview: {activeAdFormat?.label}</p>
-              <span className="text-xs text-white/50">Image from newslatch.com</span>
-            </div>
-
-            <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-primary-bg/50">
-              <div className="relative">
-                {adImageLoading && (
+              {/* Right: preview */}
+              <div className="border-t border-white/10 bg-primary-bg/30 p-6 lg:border-t-0 lg:border-l">
+                <div>
                   <div
-                    aria-hidden="true"
-                    className="absolute inset-0 animate-pulse bg-gradient-to-b from-white/10 to-white/5"
-                  />
-                )}
-                <img
-                  key={activeAdFormatKey}
-                  src={activeAdFormat?.src}
-                  alt={`${activeAdFormat?.label ?? 'Ad'} format preview`}
-                  className={`w-full transition-opacity duration-200 ${adImageLoading ? 'opacity-0' : 'opacity-100'}`}
-                  loading="eager"
-                  onLoad={() => setAdImageLoading(false)}
-                  onError={() => setAdImageLoading(false)}
-                />
-              </div>
-            </div>
+                    role="tablist"
+                    aria-label="Ad format"
+                    className="relative mx-auto grid w-full max-w-[420px] grid-cols-4 items-center rounded-full border border-white/10 bg-white/5 p-1 sm:w-[80%]"
+                  >
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-y-1 left-1 w-[calc(25%-0.125rem)] rounded-full bg-highlight shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-transform duration-200"
+                      style={{ transform: `translateX(${activeAdFormatIndex * 100}%)` }}
+                    />
 
-            {/* Preload other format images for instant switching */}
-            <div className="hidden" aria-hidden="true">
-              {adFormats
-                .filter((f) => f.key !== activeAdFormatKey)
-                .map((f) => (
-                  <img key={f.key} src={f.src} alt="" loading="eager" />
-                ))}
+                    {adFormats.map((f, idx) => {
+                      const isActive = idx === activeAdFormatIndex;
+                      return (
+                        <button
+                          key={f.key}
+                          type="button"
+                          role="tab"
+                          aria-selected={isActive}
+                          tabIndex={isActive ? 0 : -1}
+                          onClick={() => setActiveAdFormatKey(f.key)}
+                          className={`relative z-10 inline-flex h-9 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-primary-bg ${
+                            isActive ? 'text-button-text' : 'text-white/70 hover:text-white'
+                          }`}
+                        >
+                          {f.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-3 text-xs text-white/50">
+                    Tip: swap formats to keep the same angle consistent across placements.
+                  </p>
+                </div>
+
+                <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-primary-bg/50">
+                  <div className="relative">
+                    {adImageLoading && (
+                      <div
+                        aria-hidden="true"
+                        className="absolute inset-0 animate-pulse bg-gradient-to-b from-white/10 to-white/5"
+                      />
+                    )}
+                    <img
+                      key={activeAdFormatKey}
+                      src={activeAdFormat?.src}
+                      alt={`${activeAdFormat?.label ?? 'Ad'} format preview`}
+                      className={`w-full transition-opacity duration-200 ${adImageLoading ? 'opacity-0' : 'opacity-100'}`}
+                      loading="eager"
+                      onLoad={() => setAdImageLoading(false)}
+                      onError={() => setAdImageLoading(false)}
+                    />
+                  </div>
+                </div>
+
+                {/* Preload other format images for instant switching */}
+                <div className="hidden" aria-hidden="true">
+                  {adFormats
+                    .filter((f) => f.key !== activeAdFormatKey)
+                    .map((f) => (
+                      <img key={f.key} src={f.src} alt="" loading="eager" />
+                    ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>
