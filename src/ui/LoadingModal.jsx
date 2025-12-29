@@ -1,4 +1,4 @@
-import { Loader2, Rss } from 'lucide-react';
+import { Globe, Loader2 } from 'lucide-react';
 
 export function LoadingModal({ isOpen, campaignName }) {
   if (!isOpen) return null;
@@ -10,14 +10,14 @@ export function LoadingModal({ isOpen, campaignName }) {
           {/* Loading Icon */}
           <div className="relative mb-6">
             <div className="w-16 h-16 bg-highlight/20 rounded-full flex items-center justify-center mx-auto">
-              <Rss className="w-8 h-8 text-highlight" />
+              <Globe className="w-8 h-8 text-highlight" />
             </div>
             <Loader2 className="w-6 h-6 text-highlight animate-spin absolute -top-1 -right-1" />
           </div>
           
           {/* Loading Text */}
           <h3 className="text-lg font-semibold text-white mb-2">
-            Fetching RSS Content
+            Fetching news sources
           </h3>
           <p className="text-sm text-text-paragraph mb-4">
             Loading the latest articles from <span className="font-medium text-white">{campaignName}</span>...
@@ -27,15 +27,15 @@ export function LoadingModal({ isOpen, campaignName }) {
           <div className="space-y-2 text-xs text-text-paragraph">
             <div className="flex items-center justify-center gap-2">
               <div className="w-2 h-2 bg-highlight rounded-full animate-pulse"></div>
-              <span>Connecting to RSS feeds</span>
+              <span>Fetching from news sources</span>
             </div>
             <div className="flex items-center justify-center gap-2">
               <div className="w-2 h-2 bg-highlight/80 rounded-full animate-pulse delay-300"></div>
-              <span>Parsing content</span>
+              <span>Reading articles</span>
             </div>
             <div className="flex items-center justify-center gap-2">
               <div className="w-2 h-2 bg-highlight/60 rounded-full animate-pulse delay-700"></div>
-              <span>Organizing articles</span>
+              <span>Preparing your results</span>
             </div>
           </div>
           
