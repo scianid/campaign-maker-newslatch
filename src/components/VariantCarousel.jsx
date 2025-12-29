@@ -291,7 +291,8 @@ export function VariantCarousel({
             size="sm"
             onClick={goToPrevious}
             disabled={totalVariants <= 1}
-            className="p-1 h-9 w-9 text-white/60 hover:text-white"
+            className="p-1 h-9 w-9 rounded-full border border-dashed border-highlight/40 text-highlight/90 bg-highlight/5 hover:bg-highlight/10 hover:border-highlight/70 hover:text-highlight focus-visible:ring-2 focus-visible:ring-highlight/40 disabled:opacity-50 disabled:bg-transparent disabled:border-white/10 disabled:text-white/30"
+            aria-label="Previous variant"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
@@ -300,7 +301,8 @@ export function VariantCarousel({
             size="sm"
             onClick={goToNext}
             disabled={totalVariants <= 1}
-            className="p-1 h-9 w-9 text-white/60 hover:text-white"
+            className="p-1 h-9 w-9 rounded-full border border-dashed border-highlight/40 text-highlight/90 bg-highlight/5 hover:bg-highlight/10 hover:border-highlight/70 hover:text-highlight focus-visible:ring-2 focus-visible:ring-highlight/40 disabled:opacity-50 disabled:bg-transparent disabled:border-white/10 disabled:text-white/30"
+            aria-label="Next variant"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>

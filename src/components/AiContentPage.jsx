@@ -961,67 +961,46 @@ export function AiContentPage({ user }) {
                             /* Ad Preview Content */
                             <div>
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
-                            <div className="flex items-center gap-3">
-                              {/* Translation toggle - only show if translations exist */}
-                              {(item.ad_placement.headline_en || item.ad_placement.body_en) && (
-                                <button
-                                  onClick={() => setShowEnglishTranslation(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
-                                  className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${
-                                    showEnglishTranslation[item.id]
-                                      ? 'bg-highlight text-primary-bg shadow-sm'
-                                      : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'
-                                  }`}
-                                  title="Toggle English translation"
-                                >
-                                  <span className="text-[10px] font-bold">EN</span>
-                                  <span className="hidden sm:inline">Translate</span>
-                                </button>
-                              )}
-                            </div>
-                            
-                            {/* Preview Style Toggle */}
+                            {/* Preview Style Toggle (match Ad Variants UI + placement) */}
                             <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1 w-fit">
                               <button
                                 onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'banner' }))}
-                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                                   (previewStyles[item.id] || 'banner') === 'banner'
-                                    ? 'bg-highlight text-primary-bg' 
+                                    ? 'bg-highlight text-primary-bg'
                                     : 'text-white/60 hover:text-white'
                                 }`}
                               >
                                 <TrendingUp className="w-3 h-3" />
                                 <span className="hidden sm:inline">Banner</span>
-                                <span className="sm:hidden">Banner</span>
                               </button>
                               <button
                                 onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'desktop' }))}
-                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                                   previewStyles[item.id] === 'desktop'
-                                    ? 'bg-highlight text-primary-bg' 
+                                    ? 'bg-highlight text-primary-bg'
                                     : 'text-white/60 hover:text-white'
                                 }`}
                               >
                                 <Monitor className="w-3 h-3" />
                                 <span className="hidden sm:inline">Desktop</span>
-                                <span className="sm:hidden">Web</span>
                               </button>
                               <button
                                 onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'mobile' }))}
-                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                                   previewStyles[item.id] === 'mobile'
-                                    ? 'bg-highlight text-primary-bg' 
+                                    ? 'bg-highlight text-primary-bg'
                                     : 'text-white/60 hover:text-white'
                                 }`}
                               >
                                 <Smartphone className="w-3 h-3" />
                                 <span className="hidden sm:inline">Social</span>
-                                <span className="sm:hidden">Mobile</span>
                               </button>
                               <button
                                 onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'adword' }))}
-                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                                   previewStyles[item.id] === 'adword'
-                                    ? 'bg-highlight text-primary-bg' 
+                                    ? 'bg-highlight text-primary-bg'
                                     : 'text-white/60 hover:text-white'
                                 }`}
                               >
@@ -1030,17 +1009,32 @@ export function AiContentPage({ user }) {
                               </button>
                               <button
                                 onClick={() => setPreviewStyles(prev => ({ ...prev, [item.id]: 'manual' }))}
-                                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                                   previewStyles[item.id] === 'manual'
-                                    ? 'bg-highlight text-primary-bg' 
+                                    ? 'bg-highlight text-primary-bg'
                                     : 'text-white/60 hover:text-white'
                                 }`}
                               >
                                 <Clipboard className="w-3 h-3" />
                                 <span className="hidden sm:inline">Text</span>
-                                <span className="sm:hidden">Copy</span>
                               </button>
                             </div>
+
+                            {/* Translation toggle - only show if translations exist */}
+                            {(item.ad_placement.headline_en || item.ad_placement.body_en) && (
+                              <button
+                                onClick={() => setShowEnglishTranslation(prev => ({ ...prev, [item.id]: !prev[item.id] }))}
+                                className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-all ${
+                                  showEnglishTranslation[item.id]
+                                    ? 'bg-highlight text-primary-bg shadow-sm'
+                                    : 'bg-white/5 text-white/60 hover:text-white hover:bg-white/10'
+                                }`}
+                                title="Toggle English translation"
+                              >
+                                <span className="text-[10px] font-bold">EN</span>
+                                <span className="hidden sm:inline">Translate</span>
+                              </button>
+                            )}
                           </div>
                           
                           {/* Banner/Image Overlay Style */}
