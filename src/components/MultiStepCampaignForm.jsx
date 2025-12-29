@@ -467,7 +467,7 @@ export function MultiStepCampaignForm({ user }) {
         <div>
           <Label htmlFor="url" className="text-white">Product Website Url</Label>
           <p className="mt-1 text-sm text-text-paragraph">
-            NewsLatch AI will analyze this page to generate a brief about the company, the product, and the target audience.
+            Our AI agent will analyze this page to generate a brief about the company, the product, and the target audience.
           </p>
           <Input
             id="url"
@@ -481,7 +481,10 @@ export function MultiStepCampaignForm({ user }) {
         </div>
 
         <div>
-          <Label htmlFor="name" className="text-white">Campaign Name</Label>
+          <Label htmlFor="name" className="text-white">Name the campaign</Label>
+          <p className="mt-1 text-sm text-text-paragraph">
+            This is for your internal reference. You can change it later.
+          </p>
           <Input
             id="name"
             type="text"
@@ -493,20 +496,25 @@ export function MultiStepCampaignForm({ user }) {
           {errors.name && <p className="text-red-400 text-sm mt-1">{errors.name}</p>}
         </div>
 
-        <div className="overflow-hidden rounded-2xl border border-white/10 bg-primary-bg/30">
+        <div className="mt-2">
           <button
             type="button"
             onClick={() => setShowPixelFields(!showPixelFields)}
-            className="w-full flex items-center justify-between p-4 text-left transition-colors hover:bg-white/5"
+            className="group inline-flex items-center gap-2 text-left text-sm font-medium text-white/55 transition-colors hover:text-white/80"
           >
-            <h3 className="text-white font-medium text-sm">Tracking Pixels (Optional)</h3>
-            <ChevronRight className={`w-4 h-4 text-white/50 transition-transform ${
-              showPixelFields ? 'rotate-90' : ''
-            }`} />
+            Tracking pixels
+            <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/50">
+              Optional
+            </span>
+            <ChevronRight
+              className={`h-4 w-4 text-white/45 transition-transform group-hover:text-white/65 ${
+                showPixelFields ? 'rotate-90' : ''
+              }`}
+            />
           </button>
-          
+
           {showPixelFields && (
-            <div className="p-4 pt-0 space-y-4">
+            <div className="mt-3 space-y-4 rounded-2xl border border-white/10 bg-primary-bg/30 p-4">
               <div>
                 <Label htmlFor="impressionPixel" className="text-white">Impression Pixel URL</Label>
                 <Input
@@ -517,8 +525,8 @@ export function MultiStepCampaignForm({ user }) {
                   placeholder="https://tracking.example.com/impression?id=123"
                   className="mt-1"
                 />
-                <p className="text-text-paragraph text-xs mt-1">
-                  Pixel URL that fires when your ad is displayed
+                <p className="mt-1 text-xs text-text-paragraph">
+                  Fires when your ad is displayed.
                 </p>
               </div>
 
@@ -532,8 +540,8 @@ export function MultiStepCampaignForm({ user }) {
                   placeholder="https://tracking.example.com/click?id=123"
                   className="mt-1"
                 />
-                <p className="text-text-paragraph text-xs mt-1">
-                  Pixel URL that fires when your ad is clicked
+                <p className="mt-1 text-xs text-text-paragraph">
+                  Fires when your ad is clicked.
                 </p>
               </div>
             </div>
