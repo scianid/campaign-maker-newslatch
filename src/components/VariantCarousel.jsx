@@ -274,6 +274,69 @@ export function VariantCarousel({
 
   return (
     <div className="bg-card-bg/60 border border-white/10 rounded-3xl p-4">
+      {/* Preview Style Toggle (above title) */}
+      {currentVariant && (
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1">
+            <button
+              onClick={() => setPreviewStyle('banner')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
+                previewStyle === 'banner'
+                  ? 'bg-highlight text-primary-bg'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <TrendingUp className="w-3 h-3" />
+              <span className="hidden sm:inline">Banner</span>
+            </button>
+            <button
+              onClick={() => setPreviewStyle('desktop')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
+                previewStyle === 'desktop'
+                  ? 'bg-highlight text-primary-bg'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Monitor className="w-3 h-3" />
+              <span className="hidden sm:inline">Desktop</span>
+            </button>
+            <button
+              onClick={() => setPreviewStyle('mobile')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
+                previewStyle === 'mobile'
+                  ? 'bg-highlight text-primary-bg'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Smartphone className="w-3 h-3" />
+              <span className="hidden sm:inline">Social</span>
+            </button>
+            <button
+              onClick={() => setPreviewStyle('adword')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
+                previewStyle === 'adword'
+                  ? 'bg-highlight text-primary-bg'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <span className="hidden sm:inline">AdWord</span>
+              <span className="sm:hidden">Ad</span>
+            </button>
+            <button
+              onClick={() => setPreviewStyle('manual')}
+              className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
+                previewStyle === 'manual'
+                  ? 'bg-highlight text-primary-bg'
+                  : 'text-white/60 hover:text-white'
+              }`}
+            >
+              <Clipboard className="w-3 h-3" />
+              <span className="hidden sm:inline">Text</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -312,67 +375,6 @@ export function VariantCarousel({
       {/* Variant Content */}
       {currentVariant && (
         <div className="space-y-4">
-          {/* Preview Style Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1">
-              <button
-                onClick={() => setPreviewStyle('banner')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
-                  previewStyle === 'banner'
-                    ? 'bg-highlight text-primary-bg'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                <TrendingUp className="w-3 h-3" />
-                <span className="hidden sm:inline">Banner</span>
-              </button>
-              <button
-                onClick={() => setPreviewStyle('desktop')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
-                  previewStyle === 'desktop'
-                    ? 'bg-highlight text-primary-bg'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                <Monitor className="w-3 h-3" />
-                <span className="hidden sm:inline">Desktop</span>
-              </button>
-              <button
-                onClick={() => setPreviewStyle('mobile')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
-                  previewStyle === 'mobile'
-                    ? 'bg-highlight text-primary-bg'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                <Smartphone className="w-3 h-3" />
-                <span className="hidden sm:inline">Social</span>
-              </button>
-              <button
-                onClick={() => setPreviewStyle('adword')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
-                  previewStyle === 'adword'
-                    ? 'bg-highlight text-primary-bg'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                <span className="hidden sm:inline">AdWord</span>
-                <span className="sm:hidden">Ad</span>
-              </button>
-              <button
-                onClick={() => setPreviewStyle('manual')}
-                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
-                  previewStyle === 'manual'
-                    ? 'bg-highlight text-primary-bg'
-                    : 'text-white/60 hover:text-white'
-                }`}
-              >
-                <Clipboard className="w-3 h-3" />
-                <span className="hidden sm:inline">Text</span>
-              </button>
-            </div>
-          </div>
-
           {/* Banner Preview */}
           {previewStyle === 'banner' && (
             <div>
@@ -684,31 +686,35 @@ export function VariantCarousel({
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-white/10">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-white/10">
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleFavorite}
                 disabled={updatingFavorite}
-                className={`flex items-center gap-1 text-xs ${
+                title={currentVariant.is_favorite ? 'Favorited' : 'Favorite'}
+                className={`h-8 px-2 flex items-center gap-1 text-xs ${
                   currentVariant.is_favorite 
                     ? 'text-highlight hover:text-highlight/90' 
                     : 'text-white/60 hover:text-highlight'
                 }`}
               >
                 <Star className={`w-3 h-3 ${currentVariant.is_favorite ? 'fill-current' : ''}`} />
-                {currentVariant.is_favorite ? 'Favorited' : 'Favorite'}
+                <span className="hidden sm:inline">
+                  {currentVariant.is_favorite ? 'Favorited' : 'Favorite'}
+                </span>
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onImageGalleryOpen && onImageGalleryOpen(aiItem, currentVariant)}
-                className="flex items-center gap-1 text-xs text-white/60 hover:text-white"
+                title="Gallery"
+                className="h-8 px-2 flex items-center gap-1 text-xs text-white/60 hover:text-white"
               >
                 <ImageIcon className="w-3 h-3" />
-                Gallery
+                <span className="whitespace-nowrap">Gallery</span>
               </Button>
 
               <Button
@@ -716,14 +722,15 @@ export function VariantCarousel({
                 size="sm"
                 onClick={generateImage}
                 disabled={generatingImage}
-                className="flex items-center gap-1 text-xs text-white/60 hover:text-highlight"
+                title={generatingImage ? 'Generating image…' : 'Generate Image'}
+                className="h-8 px-2 flex items-center gap-1 text-xs text-white/60 hover:text-highlight"
               >
                 {generatingImage ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
                 ) : (
                   <Wand2 className="w-3 h-3" />
                 )}
-                Generate Image
+                <span className="whitespace-nowrap">Generate Image</span>
               </Button>
             </div>
 
@@ -732,10 +739,11 @@ export function VariantCarousel({
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300"
+                title="Delete"
+                className="ml-auto h-8 px-2 flex items-center gap-1 text-xs text-red-400 hover:text-red-300"
               >
                 <Trash2 className="w-3 h-3" />
-                Delete
+                <span className="hidden sm:inline">Delete</span>
               </Button>
             )}
           </div>

@@ -959,7 +959,7 @@ export function AiContentPage({ user }) {
                           {/* Tab Content */}
                           {(activeTab[item.id] || 'preview') === 'preview' ? (
                             /* Ad Preview Content */
-                            <div>
+                            <div className="bg-card-bg/60 border border-white/10 rounded-3xl p-4">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                             {/* Preview Style Toggle (match Ad Variants UI + placement) */}
                             <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1 w-fit">
