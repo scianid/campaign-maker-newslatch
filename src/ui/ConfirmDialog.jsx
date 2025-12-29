@@ -5,6 +5,7 @@ import { Button } from './Button';
 export function ConfirmDialog({ 
   isOpen, 
   onClose, 
+  onCancel,
   onConfirm, 
   title, 
   message, 
@@ -15,10 +16,10 @@ export function ConfirmDialog({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4">
-      <div className="bg-primary-bg border border-gray-600 rounded-lg max-w-md w-full shadow-2xl">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+      <div className="bg-primary-bg/95 border border-white/10 rounded-2xl max-w-md w-full shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-600">
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-full ${
               variant === 'danger' ? 'bg-red-500/20' : 'bg-yellow-500/20'
@@ -33,7 +34,7 @@ export function ConfirmDialog({
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-gray-400 hover:text-white"
+            className="text-white/55 hover:text-white"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -41,14 +42,17 @@ export function ConfirmDialog({
 
         {/* Content */}
         <div className="p-4">
-          <p className="text-gray-300 text-sm leading-relaxed">{message}</p>
+          <p className="text-white/80 text-sm leading-relaxed">{message}</p>
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-600 bg-gray-800/30">
+        <div className="flex items-center justify-end gap-3 p-4 border-t border-white/10 bg-white/5">
           <Button 
             variant="outline" 
-            onClick={onClose}
+            onClick={() => {
+              if (onCancel) onCancel();
+              onClose();
+            }}
             className="min-w-[80px]"
           >
             {cancelText}

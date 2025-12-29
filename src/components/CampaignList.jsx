@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
 import { Toggle } from '../ui/Toggle';
-import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, Rss, Search, Zap, Bell } from 'lucide-react';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
+import { Toast } from '../ui/Toast';
+import { Edit3, Trash2, ExternalLink, Calendar, Tag, Globe, Plus, Sparkles, Loader2, AlertCircle, X, Copy, Check, Rss, Search, Eye, Bell } from 'lucide-react';
 import { campaignService, supabase } from '../lib/supabase';
 import { cn } from '../utils/cn';
 import { getCountryDisplayName } from '../constants/locales';
@@ -20,6 +22,7 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [loadingRss, setLoadingRss] = useState(false);
   const [loadingCampaignId, setLoadingCampaignId] = useState(null);
+  const [toast, setToast] = useState({ isOpen: false, message: '', type: 'info' });
   const navigate = useNavigate();
 
   // Load campaigns from Supabase on mount
@@ -41,7 +44,11 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
       setDeleteConfirm({ show: false, campaign: null });
     } catch (error) {
       console.error('Error deleting campaign:', error);
-      alert('Error deleting campaign. Please try again.');
+      setToast({
+        isOpen: true,
+        message: 'Error deleting campaign. Please try again.',
+        type: 'error'
+      });
     }
   };
 
@@ -244,18 +251,18 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
         <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
           {/* Search Bar */}
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/45" />
             <input
               type="text"
               placeholder="Search campaigns..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-10 py-2.5 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-highlight focus:border-highlight bg-card-bg text-white placeholder-gray-400 shadow-sm text-sm"
+              className="w-full h-11 pl-11 pr-11 border border-white/10 rounded-full focus:outline-none focus:ring-2 focus:ring-highlight focus:border-transparent bg-white/5 text-white placeholder-white/40 shadow-[0_10px_30px_rgba(0,0,0,0.25)] text-sm"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 hover:text-white transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-white/45 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -265,7 +272,8 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
           {/* New Campaign Button */}
           <Button 
             onClick={() => navigate('/new')}
-            className="bg-button-primary hover:bg-button-primary/90 text-button-text shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2.5 text-sm sm:px-6 whitespace-nowrap"
+            size="sm"
+            className="shadow-[0_14px_36px_rgba(0,230,208,0.15)] hover:shadow-[0_18px_46px_rgba(0,230,208,0.22)] whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             New Campaign
@@ -305,7 +313,7 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
           <div
             key={campaign.id}
             className={cn(
-              "bg-card-bg rounded-2xl border border-gray-600/50 p-6 transition-all duration-300 shadow-md shadow-black/40 hover:shadow-xl hover:shadow-black/60 hover:border-gray-500 hover:-translate-y-1",
+              "relative rounded-3xl border border-white/10 bg-card-bg/60 p-6 transition-all duration-300 shadow-[0_18px_44px_rgba(0,0,0,0.45)] hover:-translate-y-0.5 hover:border-white/20 hover:shadow-[0_26px_64px_rgba(0,0,0,0.55)]",
               hoveredId === campaign.id && "shadow-lg shadow-black/50"
             )}
             onMouseEnter={() => setHoveredId(campaign.id)}
@@ -344,19 +352,19 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                 <div className="flex items-center justify-between lg:justify-end gap-2">
                   <div className="flex items-center gap-2 text-xs text-text-paragraph">
                     <span className="hidden sm:inline">ID:</span>
-                    <code className="font-mono bg-primary-bg px-1.5 py-0.5 rounded text-gray-300 text-xs break-all">
+                    <code className="font-mono bg-primary-bg/50 border border-white/10 px-2 py-0.5 rounded-lg text-white/70 text-xs break-all">
                       <span className="sm:hidden">{campaign.id.slice(0, 8)}...</span>
                       <span className="hidden sm:inline">{campaign.id}</span>
                     </code>
                     <button
                       onClick={() => handleCopyId(campaign.id)}
-                      className="p-1 hover:bg-gray-600 rounded transition-colors flex-shrink-0"
+                      className="p-1.5 hover:bg-white/5 rounded-full transition-colors flex-shrink-0"
                       title="Copy full campaign ID"
                     >
                       {copiedId === campaign.id ? (
-                        <Check className="w-3 h-3 text-green-600" />
+                        <Check className="w-3.5 h-3.5 text-highlight" />
                       ) : (
-                        <Copy className="w-3 h-3 text-gray-400 hover:text-gray-600" />
+                        <Copy className="w-3.5 h-3.5 text-white/45 hover:text-white" />
                       )}
                     </button>
                   </div>
@@ -365,15 +373,14 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                 {/* Action buttons - responsive grid */}
                 <div className="grid grid-cols-2 lg:flex gap-2 w-full lg:w-auto">
                   <Button
-                    variant="ghost"
+                    variant="dashed"
                     size="sm"
                     onClick={() => showAiContentGeneration(campaign)}
                     disabled={loadingRss && loadingCampaignId === campaign.id}
-                    className={`h-10 px-2 lg:px-3 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md text-xs lg:text-sm ${
-                      loadingRss && loadingCampaignId === campaign.id 
-                        ? 'bg-gray-700 text-orange-300 cursor-not-allowed' 
-                        : 'bg-primary-bg text-orange-400 hover:bg-gray-700 hover:text-orange-300'
-                    }`}
+                    className={cn(
+                      'w-full lg:w-auto justify-center',
+                      loadingRss && loadingCampaignId === campaign.id && 'opacity-70'
+                    )}
                     title={loadingRss && loadingCampaignId === campaign.id ? "Generating AI Content..." : "Generate AI Content"}
                   >
                     {loadingRss && loadingCampaignId === campaign.id ? (
@@ -391,42 +398,44 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                     )}
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => navigateToAiContent(campaign)}
-                    className="h-10 px-2 lg:px-3 bg-primary-bg text-purple-400 hover:bg-gray-700 hover:text-purple-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md text-xs lg:text-sm"
+                    className="w-full lg:w-auto justify-center"
                     title="View AI Content"
                   >
-                    <Zap className="w-4 h-4 mr-1 lg:mr-2" />
+                    <Eye className="w-4 h-4 mr-1 lg:mr-2" />
                     <span className="hidden sm:inline">View Ads</span>
                     <span className="sm:hidden">View</span>
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleEdit(campaign)}
-                    className="h-10 w-full lg:w-10 p-0 lg:p-0 bg-primary-bg text-highlight hover:bg-gray-700 hover:text-highlight/80 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md flex items-center justify-center"
+                    className="w-full lg:w-9 px-0 justify-center border-highlight/25 bg-highlight/5 text-highlight hover:border-highlight/45 hover:bg-highlight/10"
                     title="Edit Campaign"
+                    aria-label="Edit Campaign"
                   >
-                    <Edit3 className="w-4 h-4 lg:w-5 lg:h-5" />
-                    <span className="ml-2 lg:hidden text-xs">Edit</span>
+                    <Edit3 className="w-4 h-4" />
+                    <span className="sr-only">Edit</span>
                   </Button>
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     size="sm"
                     onClick={() => handleDeleteClick(campaign)}
-                    className="h-10 w-full lg:w-10 p-0 lg:p-0 bg-primary-bg text-red-400 hover:bg-gray-700 hover:text-red-300 transition-all duration-200 rounded-lg shadow-sm hover:shadow-md flex items-center justify-center"
+                    className="w-full lg:w-9 px-0 justify-center border-red-400/25 bg-red-500/5 text-red-300 hover:border-red-400/45 hover:bg-red-500/10"
                     title="Delete Campaign"
+                    aria-label="Delete Campaign"
                   >
-                    <Trash2 className="w-4 h-4 lg:w-5 lg:h-5" />
-                    <span className="ml-2 lg:hidden text-xs">Delete</span>
+                    <Trash2 className="w-4 h-4" />
+                    <span className="sr-only">Delete</span>
                   </Button>
                 </div>
               </div>
             </div>
 
             {/* Bottom metadata section */}
-            <div className="pt-4 mt-4 border-t border-gray-600/50 space-y-3">
+            <div className="pt-4 mt-4 border-t border-white/10 space-y-3">
               {/* Tags Row */}
               {campaign.tags && campaign.tags.length > 0 && (
                 <div className="flex items-start gap-2">
@@ -435,12 +444,12 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                     {/* Show fewer tags on mobile */}
                     <div className="flex flex-wrap gap-1 sm:hidden">
                       {campaign.tags.slice(0, 3).map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs break-words">
+                        <Badge key={index} variant="outline" className="text-xs break-words border-white/10 bg-white/5 text-white/75">
                           {highlightText(tag, searchTerm)}
                         </Badge>
                       ))}
                       {campaign.tags.length > 3 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs border-white/10 bg-white/5 text-white/70">
                           +{campaign.tags.length - 3}
                         </Badge>
                       )}
@@ -448,12 +457,12 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                     {/* Show more tags on desktop */}
                     <div className="hidden sm:flex sm:flex-wrap sm:gap-1">
                       {campaign.tags.slice(0, 5).map((tag, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs break-words">
+                        <Badge key={index} variant="outline" className="text-xs break-words border-white/10 bg-white/5 text-white/75">
                           {highlightText(tag, searchTerm)}
                         </Badge>
                       ))}
                       {campaign.tags.length > 5 && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs border-white/10 bg-white/5 text-white/70">
                           +{campaign.tags.length - 5}
                         </Badge>
                       )}
@@ -467,29 +476,29 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                 {/* Countries Row */}
                 {campaign.rss_countries && campaign.rss_countries.length > 0 && (
                   <div className="flex items-start gap-2">
-                    <Globe className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
+                    <Globe className="w-4 h-4 text-highlight/70 flex-shrink-0 mt-0.5" />
                     <div className="flex flex-wrap gap-1 min-w-0">
                       {/* Mobile: show 2, Desktop: show 3 */}
                       <div className="flex flex-wrap gap-1 sm:hidden">
                         {campaign.rss_countries.slice(0, 2).map((countryCode, index) => (
-                          <Badge key={index} variant="outline" className="text-xs bg-green-900/30 text-green-400 border-green-600">
+                          <Badge key={index} variant="outline" className="text-xs border-white/10 bg-white/5 text-white/75">
                             {getCountryDisplayName(countryCode)}
                           </Badge>
                         ))}
                         {campaign.rss_countries.length > 2 && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs border-white/10 bg-white/5 text-white/70">
                             +{campaign.rss_countries.length - 2}
                           </Badge>
                         )}
                       </div>
                       <div className="hidden sm:flex sm:flex-wrap sm:gap-1">
                         {campaign.rss_countries.slice(0, 3).map((countryCode, index) => (
-                          <Badge key={index} variant="outline" className="text-xs bg-green-900/30 text-green-400 border-green-600">
+                          <Badge key={index} variant="outline" className="text-xs border-white/10 bg-white/5 text-white/75">
                             {getCountryDisplayName(countryCode)}
                           </Badge>
                         ))}
                         {campaign.rss_countries.length > 3 && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-xs border-white/10 bg-white/5 text-white/70">
                             +{campaign.rss_countries.length - 3}
                           </Badge>
                         )}
@@ -501,10 +510,10 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                 {/* RSS Categories Row */}
                 {campaign.rss_categories && campaign.rss_categories.length > 0 && (
                   <div className="flex items-start gap-2">
-                    <Rss className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <Rss className="w-4 h-4 text-highlight/70 flex-shrink-0 mt-0.5" />
                     <div className="flex flex-wrap gap-1 min-w-0">
                       {campaign.rss_categories.includes('all') ? (
-                        <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
+                        <Badge variant="outline" className="text-xs border-white/10 bg-white/5 text-white/75">
                           All Categories
                         </Badge>
                       ) : (
@@ -512,24 +521,24 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
                           {/* Mobile: show 2, Desktop: show 3 */}
                           <div className="flex flex-wrap gap-1 sm:hidden">
                             {campaign.rss_categories.slice(0, 2).map((category, index) => (
-                              <Badge key={index} variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600 capitalize">
+                              <Badge key={index} variant="outline" className="text-xs border-white/10 bg-white/5 text-white/75 capitalize">
                                 {highlightText(category, searchTerm)}
                               </Badge>
                             ))}
                             {campaign.rss_categories.length > 2 && (
-                              <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
+                              <Badge variant="outline" className="text-xs border-white/10 bg-white/5 text-white/70">
                                 +{campaign.rss_categories.length - 2}
                               </Badge>
                             )}
                           </div>
                           <div className="hidden sm:flex sm:flex-wrap sm:gap-1">
                             {campaign.rss_categories.slice(0, 3).map((category, index) => (
-                              <Badge key={index} variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600 capitalize">
+                              <Badge key={index} variant="outline" className="text-xs border-white/10 bg-white/5 text-white/75 capitalize">
                                 {highlightText(category, searchTerm)}
                               </Badge>
                             ))}
                             {campaign.rss_categories.length > 3 && (
-                              <Badge variant="outline" className="text-xs bg-blue-900/30 text-blue-400 border-blue-600">
+                              <Badge variant="outline" className="text-xs border-white/10 bg-white/5 text-white/70">
                                 +{campaign.rss_categories.length - 3}
                               </Badge>
                             )}
@@ -542,9 +551,9 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
               </div>
 
               {/* Updates Notification Toggle */}
-              <div className="flex items-center justify-between p-3 bg-gray-800/30 border border-gray-700 rounded-lg">
+              <div className="flex items-center justify-between p-4 bg-primary-bg/30 border border-white/10 rounded-2xl">
                 <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-text-paragraph flex-shrink-0" />
+                  <Bell className="w-4 h-4 text-highlight/70 flex-shrink-0" />
                   <div>
                     <span className="text-sm text-white font-medium">Content Updates</span>
                     {campaign.get_updates && campaign.updates_hour !== undefined && (
@@ -586,49 +595,25 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
         campaignName={rssModal.campaignName}
       />
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirm.show && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <Trash2 className="w-6 h-6 text-red-600" />
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Delete Campaign</h3>
-                <p className="text-sm text-gray-600">This action cannot be undone</p>
-              </div>
-            </div>
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirm.show}
+        onClose={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        title="Delete campaign"
+        message={`Are you sure you want to delete "${deleteConfirm.campaign?.name ?? 'this campaign'}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        variant="danger"
+      />
 
-            <div className="mb-6">
-              <p className="text-gray-700 mb-2">
-                Are you sure you want to delete the campaign:
-              </p>
-              <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg">
-                "{deleteConfirm.campaign?.name}"
-              </p>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                onClick={handleDeleteCancel}
-                variant="outline"
-                className="flex-1"
-              >
-                <X className="w-4 h-4 mr-2" />
-                Cancel
-              </Button>
-              <Button
-                onClick={handleDeleteConfirm}
-                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
-              >
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Toast Notifications */}
+      <Toast
+        isOpen={toast.isOpen}
+        onClose={() => setToast((prev) => ({ ...prev, isOpen: false }))}
+        message={toast.message}
+        type={toast.type}
+      />
     </div>
   );
 }

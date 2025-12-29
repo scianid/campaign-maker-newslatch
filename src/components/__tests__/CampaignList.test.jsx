@@ -29,12 +29,17 @@ vi.mock('lucide-react', () => ({
   Sparkles: () => <div data-testid="sparkles-icon">Sparkles</div>,
   Loader2: () => <div data-testid="loader-icon">Loader2</div>,
   AlertCircle: () => <div data-testid="alert-icon">AlertCircle</div>,
+  AlertTriangle: () => <div data-testid="alert-triangle-icon">AlertTriangle</div>,
   X: () => <div data-testid="x-icon">X</div>,
   Copy: () => <div data-testid="copy-icon">Copy</div>,
   Check: () => <div data-testid="check-icon">Check</div>,
   Rss: () => <div data-testid="rss-icon">Rss</div>,
   Search: () => <div data-testid="search-icon">Search</div>,
-  Zap: () => <div data-testid="zap-icon">Zap</div>
+  Eye: () => <div data-testid="eye-icon">Eye</div>,
+  Bell: () => <div data-testid="bell-icon">Bell</div>,
+  CheckCircle: () => <div data-testid="check-circle-icon">CheckCircle</div>,
+  XCircle: () => <div data-testid="x-circle-icon">XCircle</div>,
+  Info: () => <div data-testid="info-icon">Info</div>
 }));
 
 describe('CampaignList - Integration Tests', () => {

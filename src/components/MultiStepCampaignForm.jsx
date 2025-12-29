@@ -7,6 +7,7 @@ import { Textarea } from '../ui/Textarea';
 import { MultiSelect } from '../ui/MultiSelect';
 import { Select } from '../ui/Select';
 import { Badge } from '../ui/Badge';
+import { ConfirmDialog } from '../ui/ConfirmDialog';
 import { Plus, X, Save, Edit3, ArrowLeft, ChevronLeft, ChevronRight, Sparkles, Loader2, Check, Globe, Rss } from 'lucide-react';
 import { campaignService, supabase } from '../lib/supabase';
 import { SUPPORTED_COUNTRIES, DEFAULT_COUNTRY } from '../constants/locales';
@@ -69,6 +70,11 @@ export function MultiStepCampaignForm({ user }) {
   const [errors, setErrors] = useState({});
   const [newTag, setNewTag] = useState('');
   const [showPixelFields, setShowPixelFields] = useState(false);
+  const [analysisErrorDialog, setAnalysisErrorDialog] = useState({
+    isOpen: false,
+    title: 'Brief generation failed',
+    message: 'Failed to get analysis results. You can continue manually or try again.'
+  });
 
   // Initialize form for editing
   useEffect(() => {
@@ -360,7 +366,11 @@ export function MultiStepCampaignForm({ user }) {
               loading: false
             }
           }));
-          alert('Failed to get analysis results. You can continue manually or try again.');
+          setAnalysisErrorDialog({
+            isOpen: true,
+            title: 'Brief generation failed',
+            message: 'Failed to get analysis results. You can continue manually or try again.'
+          });
         }
       };
 
@@ -379,7 +389,11 @@ export function MultiStepCampaignForm({ user }) {
           loading: false
         }
       }));
-      alert('Failed to start analysis. You can continue manually or try again.');
+      setAnalysisErrorDialog({
+        isOpen: true,
+        title: 'Brief generation failed',
+        message: 'Failed to get analysis results. You can continue manually or try again.'
+      });
     }
   };
 
@@ -897,6 +911,23 @@ export function MultiStepCampaignForm({ user }) {
   return (
     <Layout user={user}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 text-white">
+        <ConfirmDialog
+          isOpen={analysisErrorDialog.isOpen}
+          onClose={() => setAnalysisErrorDialog((prev) => ({ ...prev, isOpen: false }))}
+          onCancel={() => {
+            // Intentionally no-op: user continues manually.
+          }}
+          onConfirm={() => {
+            // Retry brief generation
+            generateAISuggestions();
+          }}
+          title={analysisErrorDialog.title}
+          message={analysisErrorDialog.message}
+          confirmText="Try again"
+          cancelText="Continue manually"
+          variant="warning"
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
