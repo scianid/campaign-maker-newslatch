@@ -141,10 +141,62 @@ export function HomePage({ user }) {
           </div>
 
           <div className="mx-auto mt-14 max-w-5xl">
-            <ImagePlaceholder
-              label="Hero image: NewsLatch Studio dashboard mock (headlines feed + widget preview + conversion metrics)"
-              aspectClassName="aspect-[16/9]"
-            />
+            <div className="relative rounded-3xl border border-white/10 bg-card-bg/40 shadow-[0_28px_90px_rgba(0,0,0,0.55)] backdrop-blur-sm">
+              <div aria-hidden="true" className="pointer-events-none absolute -inset-8 opacity-90">
+                <div className="absolute -top-10 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-highlight/20 blur-3xl" />
+                <div className="absolute -bottom-16 -left-16 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+                <div className="absolute -right-20 top-10 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
+              </div>
+
+              {/* subtle interconnected lines */}
+              <svg
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 h-full w-full opacity-25"
+                viewBox="0 0 1000 600"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <linearGradient id="nlHeroLine" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0" stopColor="rgba(0,230,208,0.0)" />
+                    <stop offset="0.35" stopColor="rgba(0,230,208,0.28)" />
+                    <stop offset="0.7" stopColor="rgba(255,255,255,0.12)" />
+                    <stop offset="1" stopColor="rgba(255,255,255,0.0)" />
+                  </linearGradient>
+                </defs>
+                <path d="M40,470 C210,380 310,420 440,300 C560,190 690,220 830,140" stroke="url(#nlHeroLine)" strokeWidth="2" fill="none" />
+                <path d="M120,520 C260,470 380,500 520,380 C650,270 760,300 920,210" stroke="url(#nlHeroLine)" strokeWidth="2" fill="none" />
+                <path d="M80,220 C220,260 300,200 420,220 C560,250 660,160 820,170" stroke="url(#nlHeroLine)" strokeWidth="2" fill="none" />
+                {[
+                  [140, 520],
+                  [240, 420],
+                  [420, 300],
+                  [520, 380],
+                  [690, 220],
+                  [830, 140],
+                  [920, 210],
+                  [120, 220],
+                  [420, 220],
+                  [820, 170],
+                ].map(([cx, cy], i) => (
+                  <g key={i}>
+                    <circle cx={cx} cy={cy} r="6" fill="rgba(0,230,208,0.12)" />
+                    <circle cx={cx} cy={cy} r="2" fill="rgba(0,230,208,0.55)" />
+                  </g>
+                ))}
+              </svg>
+
+              <div className="relative overflow-hidden rounded-3xl p-3 sm:p-5">
+                <div className="overflow-hidden rounded-2xl border border-white/10 bg-primary-bg/30">
+                  <img
+                    className="w-full h-auto object-contain"
+                    src="https://emvwmwdsaakdnweyhmki.supabase.co/storage/v1/object/public/public-files/newslatch/hero.png"
+                    alt="NewsLatch Studio dashboard preview"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
