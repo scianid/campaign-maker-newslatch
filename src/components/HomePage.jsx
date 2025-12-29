@@ -39,6 +39,69 @@ function ImagePlaceholder({ label, aspectClassName = 'aspect-[16/10]', className
   );
 }
 
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!mq) return;
+
+    const update = () => setReduced(Boolean(mq.matches));
+    update();
+
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', update);
+      return () => mq.removeEventListener('change', update);
+    }
+
+    mq.addListener(update);
+    return () => mq.removeListener(update);
+  }, []);
+
+  return reduced;
+}
+
+function Reveal({ children, className = '', delay = 0 }) {
+  const ref = useRef(null);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (prefersReducedMotion) {
+      setVisible(true);
+      return;
+    }
+
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.18, rootMargin: '0px 0px -10% 0px' }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [prefersReducedMotion]);
+
+  return (
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={`will-change-transform will-change-opacity transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+        visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function HomePage({ user }) {
   const adFormats = useMemo(
     () => [
@@ -113,7 +176,7 @@ export function HomePage({ user }) {
         </div>
 
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 pb-14 sm:pt-20 sm:pb-16">
-          <div className="mx-auto max-w-3xl text-center">
+          <Reveal className="mx-auto max-w-3xl text-center">
             <div className="mx-auto mb-8 inline-flex items-center justify-center rounded-3xl border border-white/10 bg-card-bg/60 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur">
               <img src="/icon.png" alt="NewsLatch Icon" className="h-12 w-12" />
             </div>
@@ -138,9 +201,9 @@ export function HomePage({ user }) {
                 </a>
               </Button>
             </div>
-          </div>
+          </Reveal>
 
-          <div className="mx-auto mt-14 max-w-5xl">
+          <Reveal className="mx-auto mt-14 max-w-5xl" delay={120}>
             <div className="relative">
               <div aria-hidden="true" className="pointer-events-none absolute -inset-10 opacity-90">
                 <div className="absolute -top-10 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-highlight/20 blur-3xl" />
@@ -193,13 +256,13 @@ export function HomePage({ user }) {
                 decoding="async"
               />
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* GALLERY CAROUSEL */}
       <section className="border-y border-white/5 bg-primary-bg/70">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+        <Reveal className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
               Turn Headlines into High-Performance Ads
@@ -262,17 +325,17 @@ export function HomePage({ user }) {
 
             <p className="mt-4 text-center text-xs text-white/50">Swipe or use arrows to browse.</p>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* HOW IT WORKS */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
-        <div className="mx-auto max-w-3xl text-center">
+        <Reveal className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl">How it works</h2>
           <p className="mt-4 text-lg text-text-paragraph">
             From headline discovery to an embeddable widget in minutes.
           </p>
-        </div>
+        </Reveal>
 
         <div className="mx-auto mt-12 max-w-4xl space-y-4">
           {[
@@ -294,11 +357,12 @@ export function HomePage({ user }) {
               desc: 'Every day, get new, on-brand ad variants including copy, visuals, and CTAs pre-built for performance. Approve, edit, or skip with one click.',
               icon: Zap,
             },
-          ].map((step) => {
+          ].map((step, idx) => {
             const Icon = step.icon;
             return (
-              <div
+              <Reveal
                 key={step.n}
+                delay={120 + idx * 80}
                 className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-card-bg/70 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:flex-row sm:items-center"
               >
                 <div className="flex items-center gap-4">
@@ -314,7 +378,7 @@ export function HomePage({ user }) {
                   <h3 className="text-xl font-bold text-white">{step.title}</h3>
                   <p className="mt-1 text-text-paragraph">{step.desc}</p>
                 </div>
-              </div>
+              </Reveal>
             );
           })}
         </div>
@@ -322,16 +386,16 @@ export function HomePage({ user }) {
 
       {/* AD FORMATS */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
-        <div className="mx-auto max-w-3xl text-center">
+        <Reveal className="mx-auto max-w-3xl text-center">
           <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
             Instantly Generated Ads for Every Format
           </h2>
           <p className="mt-4 text-lg text-text-paragraph">
             Ready-to-run ad creatives for any platform in seconds based on breaking news
           </p>
-        </div>
+        </Reveal>
 
-        <div className="mx-auto mt-10 max-w-6xl">
+        <Reveal className="mx-auto mt-10 max-w-6xl" delay={120}>
           <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
             <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-highlight/12 blur-3xl" />
             <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-highlight/10 blur-3xl" />
@@ -446,12 +510,12 @@ export function HomePage({ user }) {
               </div>
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* VIDEO */}
       <section id="video" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
-        <div className="mx-auto max-w-5xl">
+        <Reveal className="mx-auto max-w-5xl">
           <div className="mb-6 text-center">
             <h2 className="text-3xl font-extrabold text-white sm:text-4xl">See it in action</h2>
             <p className="mt-4 text-lg text-text-paragraph">A quick walkthrough of NewsLatch Studio.</p>
@@ -468,14 +532,14 @@ export function HomePage({ user }) {
               />
             </div>
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* FEATURE CARDS */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
         
 
-        <div className="mt-12 rounded-3xl border border-white/10 bg-gradient-to-b from-card-bg/80 to-primary-bg/80 p-10 text-center shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+        <Reveal className="mt-12 rounded-3xl border border-white/10 bg-gradient-to-b from-card-bg/80 to-primary-bg/80 p-10 text-center shadow-[0_24px_60px_rgba(0,0,0,0.35)]" delay={140}>
           <h2 className="text-3xl font-extrabold text-white">Start converting headlines today</h2>
           <p className="mx-auto mt-4 max-w-2xl text-lg text-text-paragraph">
             Sign in and generate your first campaign angles in minutes.
@@ -483,7 +547,7 @@ export function HomePage({ user }) {
           <div className="mt-8 flex justify-center">
             <AuthComponent user={user} />
           </div>
-        </div>
+        </Reveal>
       </section>
     </Layout>
   );
