@@ -14,17 +14,20 @@ export function Toggle({
     sm: {
       switch: 'w-8 h-4',
       thumb: 'w-3 h-3',
-      translate: 'translate-x-4'
+      translate: 'translate-x-4',
+      label: 'text-xs'
     },
     md: {
       switch: 'w-10 h-5',
       thumb: 'w-4 h-4',
-      translate: 'translate-x-5'
+      translate: 'translate-x-5',
+      label: 'text-sm'
     },
     lg: {
       switch: 'w-12 h-6',
       thumb: 'w-5 h-5',
-      translate: 'translate-x-6'
+      translate: 'translate-x-6',
+      label: 'text-sm'
     }
   };
 
@@ -38,19 +41,19 @@ export function Toggle({
       disabled={disabled}
       onClick={() => onChange?.(!checked)}
       className={cn(
-        'relative inline-flex items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 focus:ring-offset-gray-900',
+        'relative inline-flex items-center rounded-full border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-highlight/30 focus:ring-offset-2 focus:ring-offset-primary-bg',
         currentSize.switch,
         checked 
-          ? 'bg-purple-600 hover:bg-purple-700' 
-          : 'bg-gray-600 hover:bg-gray-500',
-        disabled && 'opacity-50 cursor-not-allowed',
+          ? 'bg-highlight border-highlight/40 hover:bg-highlight/90' 
+          : 'bg-white/10 border-white/10 hover:bg-white/15 hover:border-white/20',
+        disabled && 'opacity-50 cursor-not-allowed hover:bg-white/10 hover:border-white/10',
         className
       )}
       {...props}
     >
       <span
         className={cn(
-          'inline-block bg-white rounded-full shadow-lg transform transition-transform duration-200',
+          'inline-block bg-white rounded-full shadow-lg shadow-black/30 transform transition-transform duration-200',
           currentSize.thumb,
           checked ? currentSize.translate : 'translate-x-0.5'
         )}
@@ -70,7 +73,9 @@ export function Toggle({
       {toggleSwitch}
       <span 
         className={cn(
-          'text-sm font-medium text-gray-300',
+          'font-medium',
+          currentSize.label,
+          checked ? 'text-highlight' : 'text-white/60',
           disabled && 'opacity-50'
         )}
       >
