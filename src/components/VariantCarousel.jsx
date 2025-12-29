@@ -239,10 +239,10 @@ export function VariantCarousel({
 
   if (loading) {
     return (
-      <div className="bg-gray-800/20 border border-gray-600/50 rounded-lg p-4">
+      <div className="bg-card-bg/60 border border-white/10 rounded-3xl p-4">
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
-          <span className="ml-2 text-gray-400">Loading variants...</span>
+          <Loader2 className="w-6 h-6 animate-spin text-white/60" />
+          <span className="ml-2 text-white/60">Loading variants...</span>
         </div>
       </div>
     );
@@ -250,20 +250,19 @@ export function VariantCarousel({
 
   if (totalVariants === 0) {
     return (
-      <div className="bg-gray-800/20 border border-gray-600/50 rounded-lg p-8">
+      <div className="bg-card-bg/60 border border-white/10 rounded-3xl p-8">
         <div className="flex flex-col items-center justify-center text-center max-w-sm mx-auto">
-          <div className="w-16 h-16 bg-purple-900/20 rounded-full flex items-center justify-center mb-3">
-            <Wand2 className="w-8 h-8 text-purple-400" />
-          </div>
+          <Wand2 className="w-10 h-10 text-white/80 mb-3" />
           <h3 className="text-base font-semibold text-white mb-2">
             No Ad Variants Yet
           </h3>
-          <p className="text-sm text-gray-400 mb-4">
+          <p className="text-sm text-white/60 mb-4">
             Create A/B testing variations to find what works best.
           </p>
           <Button
             onClick={onGenerateClick}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium px-6 py-2"
+            variant="dashed"
+            className="px-6"
           >
             <Wand2 className="w-4 h-4 mr-2" />
             Generate Variants
@@ -274,14 +273,14 @@ export function VariantCarousel({
   }
 
   return (
-    <div className="bg-gray-800/20 border border-gray-600/50 rounded-lg p-4">
+    <div className="bg-card-bg/60 border border-white/10 rounded-3xl p-4">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-purple-400">
+          <span className="text-sm font-semibold text-highlight">
             🎯 Ad Variants
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-white/60">
             {currentIndex + 1}/{totalVariants}: "{currentVariant?.variant_label}"
             {currentVariant?.is_favorite && <Star className="inline w-3 h-3 ml-1 text-yellow-400 fill-current" />}
           </span>
@@ -292,7 +291,7 @@ export function VariantCarousel({
             size="sm"
             onClick={goToPrevious}
             disabled={totalVariants <= 1}
-            className="p-1 text-gray-400 hover:text-white"
+            className="p-1 h-9 w-9 text-white/60 hover:text-white"
           >
             <ChevronLeft className="w-4 h-4" />
           </Button>
@@ -301,7 +300,7 @@ export function VariantCarousel({
             size="sm"
             onClick={goToNext}
             disabled={totalVariants <= 1}
-            className="p-1 text-gray-400 hover:text-white"
+            className="p-1 h-9 w-9 text-white/60 hover:text-white"
           >
             <ChevronRight className="w-4 h-4" />
           </Button>
@@ -313,13 +312,13 @@ export function VariantCarousel({
         <div className="space-y-4">
           {/* Preview Style Toggle */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1 bg-card-bg border border-gray-600 rounded-md p-1">
+            <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-full p-1">
               <button
                 onClick={() => setPreviewStyle('banner')}
-                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                   previewStyle === 'banner'
-                    ? 'bg-purple-600 text-white' 
-                    : 'text-gray-400 hover:text-gray-300'
+                    ? 'bg-highlight text-primary-bg'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <TrendingUp className="w-3 h-3" />
@@ -327,10 +326,10 @@ export function VariantCarousel({
               </button>
               <button
                 onClick={() => setPreviewStyle('desktop')}
-                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                   previewStyle === 'desktop'
-                    ? 'bg-purple-600 text-white' 
-                    : 'text-gray-400 hover:text-gray-300'
+                    ? 'bg-highlight text-primary-bg'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <Monitor className="w-3 h-3" />
@@ -338,10 +337,10 @@ export function VariantCarousel({
               </button>
               <button
                 onClick={() => setPreviewStyle('mobile')}
-                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                   previewStyle === 'mobile'
-                    ? 'bg-purple-600 text-white' 
-                    : 'text-gray-400 hover:text-gray-300'
+                    ? 'bg-highlight text-primary-bg'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <Smartphone className="w-3 h-3" />
@@ -349,10 +348,10 @@ export function VariantCarousel({
               </button>
               <button
                 onClick={() => setPreviewStyle('adword')}
-                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                   previewStyle === 'adword'
-                    ? 'bg-purple-600 text-white' 
-                    : 'text-gray-400 hover:text-gray-300'
+                    ? 'bg-highlight text-primary-bg'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <span className="hidden sm:inline">AdWord</span>
@@ -360,14 +359,14 @@ export function VariantCarousel({
               </button>
               <button
                 onClick={() => setPreviewStyle('manual')}
-                className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-highlight/40 ${
                   previewStyle === 'manual'
-                    ? 'bg-purple-600 text-white' 
-                    : 'text-gray-400 hover:text-gray-300'
+                    ? 'bg-highlight text-primary-bg'
+                    : 'text-white/60 hover:text-white'
                 }`}
               >
                 <Clipboard className="w-3 h-3" />
-                <span className="hidden sm:inline">Manual</span>
+                <span className="hidden sm:inline">Text</span>
               </button>
             </div>
           </div>
@@ -455,7 +454,7 @@ export function VariantCarousel({
                     <div style={{
                       alignSelf: 'start',
                       padding: '8px 16px',
-                      background: 'linear-gradient(90deg, #00c6ff 0%, #7d2cff 100%)',
+                      background: 'linear-gradient(90deg, #22d3ee 0%, #0ea5e9 100%)',
                       color: '#fff',
                       fontSize: '14px',
                       fontWeight: '600',
@@ -474,9 +473,9 @@ export function VariantCarousel({
           {/* Desktop Preview */}
           {previewStyle === 'desktop' && (
             <div className="bg-white rounded-lg p-4 border border-gray-300 shadow-md">
-              <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-md p-4 border border-blue-200">
+              <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-md p-4 border border-cyan-200">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-sm font-bold">Ad</span>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -498,12 +497,12 @@ export function VariantCarousel({
                         />
                       </div>
                     )}
-                    <button className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md text-sm transition-colors shadow-sm">
+                    <button className="bg-cyan-600 hover:bg-cyan-700 text-white font-medium px-4 py-2 rounded-md text-sm transition-colors shadow-sm">
                       {currentVariant.cta}
                     </button>
                   </div>
                 </div>
-                <div className="flex justify-between items-center mt-3 pt-2 border-t border-blue-300/30">
+                <div className="flex justify-between items-center mt-3 pt-2 border-t border-cyan-300/40">
                   <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
                     Sponsored
                   </span>
@@ -519,7 +518,7 @@ export function VariantCarousel({
                 <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                   <div className="p-3 border-b border-gray-100">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center">
                         <span className="text-white text-xs font-bold">AD</span>
                       </div>
                       <div className="flex-1 min-w-0">
@@ -545,7 +544,7 @@ export function VariantCarousel({
                         }}
                       />
                     )}
-                    <button className="w-full bg-blue-600 text-white font-medium px-4 py-2 rounded-md text-xs">
+                    <button className="w-full bg-cyan-600 text-white font-medium px-4 py-2 rounded-md text-xs">
                       {currentVariant.cta}
                     </button>
                   </div>
@@ -595,10 +594,10 @@ export function VariantCarousel({
 
           {/* Manual/Copy Mode */}
           {previewStyle === 'manual' && (
-            <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 space-y-4">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-4">
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-purple-400 text-sm font-medium">Headline</Label>
+                  <Label className="text-highlight text-sm font-medium">Headline</Label>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -607,7 +606,7 @@ export function VariantCarousel({
                       setCopiedFields(prev => ({ ...prev, headline: true }));
                       setTimeout(() => setCopiedFields(prev => ({ ...prev, headline: false })), 2000);
                     }}
-                    className="h-8 px-2 text-gray-400 hover:text-white"
+                    className="h-8 px-2 text-white/60 hover:text-white"
                   >
                     {copiedFields.headline ? (
                       <><Check className="w-4 h-4 mr-1" /> Copied</>
@@ -616,14 +615,14 @@ export function VariantCarousel({
                     )}
                   </Button>
                 </div>
-                <div className="bg-card-bg border border-gray-600 rounded p-3 text-white text-sm">
+                <div className="bg-primary-bg/60 border border-white/10 rounded-xl p-3 text-white text-sm">
                   {currentVariant.headline}
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-purple-400 text-sm font-medium">Body Text</Label>
+                  <Label className="text-highlight text-sm font-medium">Body Text</Label>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -632,7 +631,7 @@ export function VariantCarousel({
                       setCopiedFields(prev => ({ ...prev, body: true }));
                       setTimeout(() => setCopiedFields(prev => ({ ...prev, body: false })), 2000);
                     }}
-                    className="h-8 px-2 text-gray-400 hover:text-white"
+                    className="h-8 px-2 text-white/60 hover:text-white"
                   >
                     {copiedFields.body ? (
                       <><Check className="w-4 h-4 mr-1" /> Copied</>
@@ -641,14 +640,14 @@ export function VariantCarousel({
                     )}
                   </Button>
                 </div>
-                <div className="bg-card-bg border border-gray-600 rounded p-3 text-white text-sm leading-relaxed">
+                <div className="bg-primary-bg/60 border border-white/10 rounded-xl p-3 text-white text-sm leading-relaxed">
                   {currentVariant.body}
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <Label className="text-purple-400 text-sm font-medium">Call to Action</Label>
+                  <Label className="text-highlight text-sm font-medium">Call to Action</Label>
                   <Button
                     variant="ghost"
                     size="sm"
@@ -657,7 +656,7 @@ export function VariantCarousel({
                       setCopiedFields(prev => ({ ...prev, cta: true }));
                       setTimeout(() => setCopiedFields(prev => ({ ...prev, cta: false })), 2000);
                     }}
-                    className="h-8 px-2 text-gray-400 hover:text-white"
+                    className="h-8 px-2 text-white/60 hover:text-white"
                   >
                     {copiedFields.cta ? (
                       <><Check className="w-4 h-4 mr-1" /> Copied</>
@@ -666,15 +665,15 @@ export function VariantCarousel({
                     )}
                   </Button>
                 </div>
-                <div className="bg-card-bg border border-gray-600 rounded p-3 text-white text-sm font-medium">
+                <div className="bg-primary-bg/60 border border-white/10 rounded-xl p-3 text-white text-sm font-medium">
                   {currentVariant.cta}
                 </div>
               </div>
 
               {currentVariant.tone && (
-                <div className="pt-4 border-t border-gray-600/50">
-                  <Label className="text-gray-400 text-xs font-medium mb-2 block">Tone</Label>
-                  <div className="bg-purple-900/20 border border-purple-600/30 rounded p-2 text-purple-300 text-xs">
+                <div className="pt-4 border-t border-white/10">
+                  <Label className="text-white/60 text-xs font-medium mb-2 block">Tone</Label>
+                  <div className="bg-highlight/10 border border-highlight/25 rounded-xl p-2 text-highlight text-xs">
                     {currentVariant.tone}
                   </div>
                 </div>
@@ -683,7 +682,7 @@ export function VariantCarousel({
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-600/30">
+          <div className="flex items-center justify-between pt-3 border-t border-white/10">
             <div className="flex items-center gap-2">
               <Button
                 variant="ghost"
@@ -692,8 +691,8 @@ export function VariantCarousel({
                 disabled={updatingFavorite}
                 className={`flex items-center gap-1 text-xs ${
                   currentVariant.is_favorite 
-                    ? 'text-yellow-400 hover:text-yellow-300' 
-                    : 'text-gray-400 hover:text-yellow-400'
+                    ? 'text-highlight hover:text-highlight/90' 
+                    : 'text-white/60 hover:text-highlight'
                 }`}
               >
                 <Star className={`w-3 h-3 ${currentVariant.is_favorite ? 'fill-current' : ''}`} />
@@ -704,7 +703,7 @@ export function VariantCarousel({
                 variant="ghost"
                 size="sm"
                 onClick={() => onImageGalleryOpen && onImageGalleryOpen(aiItem, currentVariant)}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-white"
+                className="flex items-center gap-1 text-xs text-white/60 hover:text-white"
               >
                 <ImageIcon className="w-3 h-3" />
                 Gallery
@@ -715,7 +714,7 @@ export function VariantCarousel({
                 size="sm"
                 onClick={generateImage}
                 disabled={generatingImage}
-                className="flex items-center gap-1 text-xs text-gray-400 hover:text-purple-400"
+                className="flex items-center gap-1 text-xs text-white/60 hover:text-highlight"
               >
                 {generatingImage ? (
                   <Loader2 className="w-3 h-3 animate-spin" />
@@ -743,15 +742,15 @@ export function VariantCarousel({
 
       {/* Dots Navigation */}
       {totalVariants > 1 && (
-        <div className="flex items-center justify-center gap-1 mt-3 pt-3 border-t border-gray-600/30">
+        <div className="flex items-center justify-center gap-1 mt-3 pt-3 border-t border-white/10">
           {variants.map((_, index) => (
             <button
               key={index}
               onClick={() => goToIndex(index)}
               className={`w-2 h-2 rounded-full transition-colors ${
                 index === currentIndex 
-                  ? 'bg-purple-400' 
-                  : 'bg-gray-600 hover:bg-gray-500'
+                  ? 'bg-highlight' 
+                  : 'bg-white/20 hover:bg-white/35'
               }`}
             />
           ))}

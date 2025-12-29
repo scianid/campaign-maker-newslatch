@@ -583,7 +583,7 @@ export function AiContentPage({ user }) {
             <div className="h-6 w-px bg-white/10 hidden sm:block"></div>
             <div className="min-w-0">
               <h1 className="text-xl sm:text-2xl font-semibold tracking-tight text-white truncate">
-                {campaign?.name ? `AI Content · ${campaign.name}` : 'AI Content'}
+                {campaign?.name ? `Generated Ads · ${campaign.name}` : 'AI Content'}
               </h1>
               <p className="text-sm text-white/60 truncate">
                 Review headlines, ad previews, variants, and landing pages
@@ -1037,7 +1037,7 @@ export function AiContentPage({ user }) {
                                 }`}
                               >
                                 <Clipboard className="w-3 h-3" />
-                                <span className="hidden sm:inline">Manual</span>
+                                <span className="hidden sm:inline">Text</span>
                                 <span className="sm:hidden">Copy</span>
                               </button>
                             </div>
@@ -1448,7 +1448,7 @@ export function AiContentPage({ user }) {
                             </div>
                           )}
 
-                          {/* Manual Copy Style */}
+                          {/* Text Copy Style */}
                           {previewStyles[item.id] === 'manual' && (
                             <div className="bg-gray-800/30 border border-gray-600 rounded-lg p-4 space-y-4">
                               {/* Headline */}
