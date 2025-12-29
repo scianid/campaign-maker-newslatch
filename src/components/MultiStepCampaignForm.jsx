@@ -102,7 +102,7 @@ export function MultiStepCampaignForm({ user }) {
           newErrors.name = 'Campaign name is required';
         }
         if (!formData.url.trim()) {
-          newErrors.url = 'Company URL is required';
+          newErrors.url = 'Product Website Url is required';
         } else if (!isValidUrl(formData.url)) {
           newErrors.url = 'Please enter a valid URL';
         }
@@ -136,6 +136,55 @@ export function MultiStepCampaignForm({ user }) {
     } catch (_) {
       return false;
     }
+  };
+
+  const deriveCampaignNameFromUrl = (rawUrl) => {
+    if (!rawUrl) return '';
+
+    const candidate = String(rawUrl).trim();
+    if (!candidate) return '';
+
+    const tryParse = (value) => {
+      try {
+        return new URL(value);
+      } catch {
+        return null;
+      }
+    };
+
+    const parsed = tryParse(candidate) ?? tryParse(`https://${candidate}`);
+    if (!parsed?.hostname) return '';
+
+    let hostname = parsed.hostname.toLowerCase();
+    hostname = hostname.replace(/^www\./, '');
+
+    const parts = hostname.split('.').filter(Boolean);
+    if (parts.length === 0) return '';
+
+    let base;
+    if (parts.length <= 2) {
+      base = parts[0];
+    } else {
+      const last = parts[parts.length - 1];
+      const secondLast = parts[parts.length - 2];
+
+      // Handle common public-suffix patterns like "co.uk", "com.au".
+      const commonSecondLevel = new Set(['co', 'com', 'net', 'org', 'gov', 'ac']);
+      const looksLikeCountry = last.length === 2;
+
+      if (looksLikeCountry && commonSecondLevel.has(secondLast) && parts.length >= 3) {
+        base = parts[parts.length - 3];
+      } else {
+        base = secondLast;
+      }
+    }
+
+    const sanitized = String(base)
+      .toLowerCase()
+      .replace(/[^a-z0-9-]+/g, '')
+      .replace(/^-+|-+$/g, '');
+
+    return sanitized;
   };
 
   // Generate AI suggestions based on URL using async job
@@ -395,16 +444,34 @@ export function MultiStepCampaignForm({ user }) {
 
   // Update form data
   const updateFormData = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }));
+    const shouldAutofillName = field === 'url' && !formData.name.trim();
+    const derivedName = shouldAutofillName ? deriveCampaignNameFromUrl(value) : '';
+
+    setFormData((prev) => {
+      const next = {
+        ...prev,
+        [field]: value,
+      };
+
+      if (field === 'url' && !String(prev.name ?? '').trim() && derivedName) {
+        next.name = derivedName;
+      }
+
+      return next;
+    });
     
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
         [field]: undefined
+      }));
+    }
+
+    if (field === 'url' && derivedName && errors.name) {
+      setErrors(prev => ({
+        ...prev,
+        name: undefined
       }));
     }
   };
@@ -586,120 +653,129 @@ export function MultiStepCampaignForm({ user }) {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Selected Tags Summary */}
-          <div className="rounded-2xl border border-white/10 bg-primary-bg/30 p-4">
-            <h4 className="text-white font-medium mb-2">Selected Tags</h4>
-            <div className="flex flex-wrap gap-2">
-              {formData.tags.map((tag) => (
-                <Badge 
-                  key={tag} 
-                  variant="outline" 
-                  className={`text-xs ${
-                    (formData.aiSuggestions.tags || []).includes(tag)
-                      ? 'bg-highlight/10 text-highlight border-highlight/30'
-                      : 'bg-white/5 text-white/80 border-white/15'
-                  }`}
-                >
-                  {(formData.aiSuggestions.tags || []).includes(tag) ? '🤖' : '✏️'} {tag}
-                </Badge>
-              ))}
-              {formData.tags.length === 0 && (
-                <p className="text-text-paragraph text-sm">No tags selected yet</p>
-              )}
+          {/* Tags (compact) */}
+          <div className="rounded-3xl border border-white/10 bg-primary-bg/30 p-5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-highlight" />
+                  <h3 className="text-base font-semibold text-white">Tags</h3>
+                </div>
+                <p className="mt-1 text-sm text-text-paragraph">
+                  Pick a few keywords so NewsLatch can match you to the right stories.
+                </p>
+              </div>
+              <div className="text-sm text-white/60">
+                Selected: <span className="font-semibold text-white">{formData.tags.length}</span>
+              </div>
             </div>
-            
-            {errors.tags && <p className="text-red-400 text-sm mt-2">{errors.tags}</p>}
-            
-            <div className="mt-3">
-              <p className="text-sm text-text-paragraph">
-                Total selected: {formData.tags.length} tag{formData.tags.length !== 1 ? 's' : ''} 
-                ({formData.tags.filter(tag => (formData.aiSuggestions.tags || []).includes(tag)).length} AI suggested, 
-                {formData.tags.filter(tag => !(formData.aiSuggestions.tags || []).includes(tag)).length} custom)
-              </p>
-            </div>
-          </div>
 
-          {/* Custom Tags Input */}
-          <div>
-            <Label className="text-white mb-3 flex items-center gap-2">
-              <Plus className="w-4 h-4 text-highlight" />
-              Add Custom Tags
-            </Label>
-            <p className="text-text-paragraph text-sm mb-3">
-              Add your own tags that aren't in the AI suggestions below
-            </p>
-            
-            <div className="flex gap-2">
-              <Input
-                type="text"
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={handleTagKeyPress}
-                placeholder="Enter custom tag..."
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                onClick={addCustomTag}
-                disabled={!newTag.trim() || formData.tags.includes(newTag.trim().toLowerCase()) || (formData.aiSuggestions.tags || []).includes(newTag.trim().toLowerCase())}
-                variant="outline"
-                className="px-4"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            {/* Display custom tags (those not in AI suggestions) */}
-            {formData.tags.filter(tag => !(formData.aiSuggestions.tags || []).includes(tag)).length > 0 && (
-              <div className="mt-3">
-                <p className="text-sm text-text-paragraph mb-2">Your custom tags:</p>
-                <div className="flex flex-wrap gap-2">
-                  {formData.tags
-                    .filter(tag => !(formData.aiSuggestions.tags || []).includes(tag))
-                    .map((tag) => (
-                      <div
-                        key={tag}
-                        className="inline-flex items-center gap-1 rounded-full border border-highlight/30 bg-highlight/10 px-3 py-1 text-sm text-highlight"
-                      >
-                        {tag}
-                        <button
-                          onClick={() => removeCustomTag(tag)}
-                          className="ml-1 rounded-full p-0.5 transition-colors hover:bg-highlight/15"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
+            {errors.tags && <p className="mt-3 text-sm text-red-400">{errors.tags}</p>}
+
+            <div className="mt-4 grid gap-4 lg:grid-cols-3">
+              <div className="lg:col-span-3">
+                <p className="text-xs font-semibold text-white/60">Custom tag</p>
+                <div className="mt-2 flex gap-2">
+                  <Input
+                    type="text"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyPress={handleTagKeyPress}
+                    placeholder="Add a custom tag"
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    onClick={addCustomTag}
+                    disabled={
+                      !newTag.trim() ||
+                      formData.tags.includes(newTag.trim().toLowerCase()) ||
+                      (formData.aiSuggestions.tags || []).includes(newTag.trim().toLowerCase())
+                    }
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add
+                  </Button>
                 </div>
               </div>
-            )}
-          </div>
 
-          {/* AI Suggested Tags */}
-          <div>
-            <Label className="text-white mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-highlight" />
-              AI Suggested Tags
-            </Label>
-            <p className="text-text-paragraph text-sm mb-3">
-              Click to select tags that best represent the product
-            </p>
-            
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-              {(formData.aiSuggestions.tags || []).map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`p-3 rounded-lg border text-sm font-medium transition-all ${
-                    formData.tags.includes(tag)
-                      ? 'bg-highlight border-highlight text-button-text'
-                      : 'bg-card-bg/60 border-white/10 text-white/80 hover:border-highlight/40'
-                  }`}
-                >
-                  {formData.tags.includes(tag) && <Check className="w-3 h-3 inline mr-1" />}
-                  {tag}
-                </button>
-              ))}
+              <div className="rounded-2xl border border-white/10 bg-card-bg/30 p-4 lg:col-span-2">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5 text-highlight" />
+                    <p className="text-xs font-semibold text-white/80">AI Suggestions</p>
+                  </div>
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-white/70">
+                    {(formData.aiSuggestions.tags || []).length}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-white/55">Click a suggestion to add.</p>
+
+                <div className="mt-2 max-h-52 overflow-auto pr-1">
+                  {(formData.aiSuggestions.tags || []).length === 0 ? (
+                    <p className="text-sm text-text-paragraph">No suggestions yet.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {(formData.aiSuggestions.tags || []).map((tag) => {
+                        const selected = formData.tags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => toggleTag(tag)}
+                            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                              selected
+                                ? 'border-highlight/70 bg-highlight/10 text-highlight'
+                                : 'border-white/10 bg-white/5 text-white/75 hover:border-highlight/40 hover:bg-white/10'
+                            }`}
+                          >
+                            {selected ? <Check className="h-3 w-3" /> : <Plus className="h-3 w-3 opacity-70" />}
+                            <span className="max-w-[22ch] truncate">{tag}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-highlight/20 bg-highlight/5 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs font-semibold text-white/80">Selected</p>
+                  <span className="rounded-full border border-highlight/25 bg-highlight/10 px-2 py-0.5 text-[11px] font-semibold text-highlight">
+                    {formData.tags.length}
+                  </span>
+                </div>
+                <p className="mt-1 text-xs text-white/55">Click a tag to remove.</p>
+
+                <div className="mt-2 flex max-h-40 flex-wrap gap-2 overflow-auto pr-1">
+                  {formData.tags.length === 0 ? (
+                    <p className="text-sm text-text-paragraph">No tags yet.</p>
+                  ) : (
+                    formData.tags.map((tag) => {
+                      const isAi = (formData.aiSuggestions.tags || []).includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => toggleTag(tag)}
+                          className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                            isAi
+                              ? 'border-highlight/45 bg-highlight/15 text-highlight hover:bg-highlight/20'
+                              : 'border-white/15 bg-white/5 text-white/85 hover:bg-white/10'
+                          }`}
+                          title="Remove tag"
+                        >
+                          <span className="max-w-[18ch] truncate">{tag}</span>
+                          <X className="h-3 w-3 opacity-80" />
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
