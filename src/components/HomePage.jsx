@@ -141,11 +141,11 @@ export function HomePage({ user }) {
           </div>
 
           <div className="mx-auto mt-14 max-w-5xl">
-            <div className="relative rounded-3xl border border-white/10 bg-card-bg/40 shadow-[0_28px_90px_rgba(0,0,0,0.55)] backdrop-blur-sm">
-              <div aria-hidden="true" className="pointer-events-none absolute -inset-8 opacity-90">
+            <div className="relative">
+              <div aria-hidden="true" className="pointer-events-none absolute -inset-10 opacity-90">
                 <div className="absolute -top-10 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-highlight/20 blur-3xl" />
                 <div className="absolute -bottom-16 -left-16 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
-                <div className="absolute -right-20 top-10 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
+                <div className="absolute -right-24 top-10 h-72 w-72 rounded-full bg-white/5 blur-3xl" />
               </div>
 
               {/* subtle interconnected lines */}
@@ -185,17 +185,13 @@ export function HomePage({ user }) {
                 ))}
               </svg>
 
-              <div className="relative overflow-hidden rounded-3xl p-3 sm:p-5">
-                <div className="overflow-hidden rounded-2xl border border-white/10 bg-primary-bg/30">
-                  <img
-                    className="w-full h-auto object-contain"
-                    src="https://emvwmwdsaakdnweyhmki.supabase.co/storage/v1/object/public/public-files/newslatch/hero.png"
-                    alt="NewsLatch Studio dashboard preview"
-                    loading="eager"
-                    decoding="async"
-                  />
-                </div>
-              </div>
+              <img
+                className="relative z-10 w-full h-auto rounded-2xl object-contain shadow-[0_40px_120px_rgba(0,0,0,0.60)]"
+                src="https://emvwmwdsaakdnweyhmki.supabase.co/storage/v1/object/public/public-files/newslatch/hero.png"
+                alt="NewsLatch Studio dashboard preview"
+                loading="eager"
+                decoding="async"
+              />
             </div>
           </div>
         </div>
