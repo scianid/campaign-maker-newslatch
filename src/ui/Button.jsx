@@ -1,26 +1,31 @@
 import { forwardRef } from 'react';
+import { Slot } from '@radix-ui/react-slot';
 import { cn } from '../utils/cn';
 
-export const Button = forwardRef(({ className, variant = 'default', size = 'default', ...props }, ref) => {
+export const Button = forwardRef(
+  ({ className, variant = 'default', size = 'default', asChild = false, ...props }, ref) => {
   const variants = {
-    default: 'bg-highlight text-button-text hover:bg-highlight/80',
-    outline: 'border border-gray-600 bg-card-bg hover:bg-gray-600 text-white',
-    ghost: 'hover:bg-card-bg text-white',
+    default: 'bg-button-primary text-button-text hover:bg-button-primary/90',
+    outline: 'border border-white/15 bg-white/5 hover:bg-white/10 text-white',
+    ghost: 'bg-transparent text-white hover:bg-white/5',
     destructive: 'bg-red-600 text-white hover:bg-red-700'
   };
 
   const sizes = {
-    default: 'h-10 px-4 py-2',
-    sm: 'h-8 px-3 py-1 text-sm',
-    lg: 'h-12 px-8 py-3'
+    default: 'h-11 px-6 text-sm',
+    sm: 'h-9 px-4 text-sm',
+    lg: 'h-12 px-8 text-base',
+    icon: 'h-11 w-11 p-0'
   };
 
+  const Comp = asChild ? Slot : 'button';
+
   return (
-    <button
+    <Comp
       className={cn(
-        'inline-flex items-center justify-center rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight disabled:opacity-50 disabled:pointer-events-none',
+        'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full font-semibold leading-none tracking-[-0.01em] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-primary-bg disabled:pointer-events-none disabled:opacity-50 [&>svg]:h-4 [&>svg]:w-4 [&>svg]:shrink-0',
         variants[variant],
-        sizes[size],
+        sizes[size] ?? sizes.default,
         className
       )}
       ref={ref}

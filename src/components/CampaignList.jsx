@@ -265,10 +265,9 @@ export function CampaignList({ campaigns = [], onEdit, onDelete }) {
           {/* New Campaign Button */}
           <Button 
             onClick={() => navigate('/new')}
-            className="bg-button-primary hover:bg-button-primary/80 text-button-text hover:text-button-text shadow-lg hover:shadow-xl transition-all duration-300 font-semibold px-4 py-2.5 text-sm sm:px-6 whitespace-nowrap"
-            style={{ color: 'rgb(41, 41, 61)' }}
+            className="bg-button-primary hover:bg-button-primary/90 text-button-text shadow-lg hover:shadow-xl transition-all duration-300 px-4 py-2.5 text-sm sm:px-6 whitespace-nowrap"
           >
-            <Plus className="w-4 h-4 mr-2" />
+            <Plus className="w-4 h-4" />
             New Campaign
           </Button>
         </div>

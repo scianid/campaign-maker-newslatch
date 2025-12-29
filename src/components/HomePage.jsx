@@ -1,82 +1,531 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AuthComponent } from './AuthComponent';
 import { Layout } from './Layout';
-import { Megaphone, Sparkles, Target, TrendingUp, Shield } from 'lucide-react';
+import { Button } from '../ui/Button';
+import {
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Sparkles,
+  TrendingUp,
+  Wand2,
+  Zap,
+} from 'lucide-react';
+
+function ImagePlaceholder({ label, aspectClassName = 'aspect-[16/10]', className = '' }) {
+  return (
+    <div
+      role="img"
+      aria-label={label}
+      className={`relative ${aspectClassName} w-full overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-white/10 to-white/5 shadow-[0_24px_60px_rgba(0,0,0,0.45)] ${className}`}
+    >
+      <div className="absolute inset-0 opacity-70">
+        <div className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-highlight/25 blur-3xl" />
+        <div className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+      </div>
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-primary-bg/50 px-4 py-2 text-xs font-semibold text-white/80 backdrop-blur">
+          <Sparkles className="h-4 w-4 text-highlight" />
+          Image placeholder
+        </div>
+        <div className="max-w-md px-6">
+          <p className="text-sm font-semibold text-white">{label}</p>
+          <p className="mt-1 text-xs text-white/60">
+            Replace with your generated asset (PNG/JPG/SVG)
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function HomePage({ user }) {
+  const adFormats = useMemo(
+    () => [
+      {
+        key: 'display',
+        label: 'Display',
+        src: 'https://newslatch.com/ad-formats/display.png',
+      },
+      {
+        key: 'social',
+        label: 'Social',
+        src: 'https://newslatch.com/ad-formats/social.png',
+      },
+      {
+        key: 'adwords',
+        label: 'AdWord',
+        src: 'https://newslatch.com/ad-formats/adwords.png',
+      },
+      {
+        key: 'banner',
+        label: 'Banner',
+        src: 'https://newslatch.com/ad-formats/banner.png',
+      },
+    ],
+    []
+  );
+
+  const [activeAdFormatKey, setActiveAdFormatKey] = useState(adFormats[0]?.key ?? 'display');
+  const [adImageLoading, setAdImageLoading] = useState(true);
+
+  const galleryImages = useMemo(
+    () => [
+      'https://newslatch.com/4NewslatchStories.png',
+      'https://newslatch.com/1NewslatchStories.png',
+      'https://newslatch.com/2NewslatchStories.png',
+      'https://newslatch.com/8NewslatchStories.png',
+      'https://newslatch.com/5NewslatchStories.png',
+      'https://newslatch.com/3NewslatchStories.png',
+      'https://newslatch.com/6NewslatchStories.png',
+      'https://newslatch.com/7NewslatchStories.png',
+    ],
+    []
+  );
+
+  const galleryRef = useRef(null);
+
+  const scrollGalleryBy = (direction) => {
+    const el = galleryRef.current;
+    if (!el) return;
+    const amount = Math.max(320, Math.floor(el.clientWidth * 0.85));
+    el.scrollBy({ left: direction * amount, behavior: 'smooth' });
+  };
+
+  const activeAdFormatIndex = Math.max(
+    0,
+    adFormats.findIndex((f) => f.key === activeAdFormatKey)
+  );
+  const activeAdFormat = adFormats[activeAdFormatIndex] ?? adFormats[0];
+
+  useEffect(() => {
+    setAdImageLoading(true);
+  }, [activeAdFormatKey]);
+
   return (
     <Layout user={user}>
-      {/* Hero Section */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-20">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-card-bg rounded-3xl mb-8 shadow-lg">
-            <img 
-              src="/icon.png" 
-              alt="NewsLatch Icon" 
-              className="w-12 h-12"
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute -top-48 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-highlight/20 blur-3xl" />
+          <div className="absolute top-24 right-[-120px] h-[420px] w-[420px] rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="absolute bottom-[-220px] left-[-180px] h-[520px] w-[520px] rounded-full bg-white/5 blur-3xl" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-16 pb-14 sm:pt-20 sm:pb-16">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="mx-auto mb-8 inline-flex items-center justify-center rounded-3xl border border-white/10 bg-card-bg/60 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur">
+              <img src="/icon.png" alt="NewsLatch Icon" className="h-12 w-12" />
+            </div>
+
+            <h1 className="text-5xl font-extrabold tracking-tight text-white sm:text-6xl">
+              NewsLatch Studio
+            </h1>
+            <h2 className="mt-4 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              AI turns headlines into higher conversions
+            </h2>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-text-paragraph">
+              Find stories your audience already cares about, generate campaign angles, and embed a widget that turns
+              attention into leads.
+            </p>
+
+            <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+              <AuthComponent user={user} />
+              <Button asChild variant="outline" className="px-6 py-3">
+                <a href="#video">
+                  Watch demo
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              </Button>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-14 max-w-5xl">
+            <ImagePlaceholder
+              label="Hero image: NewsLatch Studio dashboard mock (headlines feed + widget preview + conversion metrics)"
+              aspectClassName="aspect-[16/9]"
             />
           </div>
-          
-          <h1 className="text-5xl md:text-6xl font-bold text-white">
-            NewsLatch Studio
-          </h1>         
-           <h2 className="text-4xl md:text-4xl font-bold text-white mb-6">
-            AI Turns Headlines Into Higher Conversions
-          </h2>
-          
-          <p className="text-xl text-text-paragraph mb-8 max-w-3xl mx-auto leading-relaxed">
-            Whether you're selling skincare or software, NewsLatch AI finds trending headlines aligned with your offer.
-          </p>
+        </div>
+      </section>
 
-          <div className="mb-12">
+      {/* GALLERY CAROUSEL */}
+      <section className="border-y border-white/5 bg-primary-bg/70">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14 sm:py-16">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
+              Turn Headlines into High-Performance Ads
+            </h2>
+            <p className="mt-4 text-lg text-text-paragraph">
+              See how brands are turning today&apos;s headlines into high-performing ad campaigns with Newslatch
+            </p>
+          </div>
+
+          <div className="relative mt-10">
+            {/* Edge fades */}
+            <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 w-10 bg-gradient-to-r from-primary-bg/90 to-transparent" />
+            <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 w-10 bg-gradient-to-l from-primary-bg/90 to-transparent" />
+
+            {/* Controls */}
+            <div className="absolute right-0 top-[-52px] flex items-center gap-2">
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                aria-label="Previous gallery"
+                onClick={() => scrollGalleryBy(-1)}
+              >
+                <ChevronLeft />
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                aria-label="Next gallery"
+                onClick={() => scrollGalleryBy(1)}
+              >
+                <ChevronRight />
+              </Button>
+            </div>
+
+            {/* Scroll area */}
+            <div
+              ref={galleryRef}
+              className="flex snap-x snap-mandatory gap-5 overflow-x-auto pb-2 pt-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+              style={{ WebkitOverflowScrolling: 'touch' }}
+            >
+              {galleryImages.map((src, idx) => (
+                <div
+                  key={src}
+                  className="snap-start shrink-0"
+                  style={{ width: 'min(520px, 86vw)' }}
+                >
+                  <div className="aspect-[5/4] overflow-hidden rounded-3xl border border-white/10 bg-card-bg/40 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+                    <img
+                      src={src}
+                      alt={`NewsLatch story example ${idx + 1}`}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <p className="mt-4 text-center text-xs text-white/50">Swipe or use arrows to browse.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">How it works</h2>
+          <p className="mt-4 text-lg text-text-paragraph">
+            From headline discovery to an embeddable widget in minutes.
+          </p>
+        </div>
+
+        <div className="mx-auto mt-12 max-w-4xl space-y-4">
+          {[
+            {
+              n: '1',
+              title: 'Describe your offer',
+              desc: 'Tell NewsLatch what you sell and who you target. Add keywords and exclusions.',
+              icon: Wand2,
+            },
+            {
+              n: '2',
+              title: 'Discover aligned headlines',
+              desc: 'AI surfaces trending stories and gives you angles that fit your positioning.',
+              icon: Sparkles,
+            },
+            {
+              n: '3',
+              title: 'Publish a converting widget',
+              desc: 'Pick a template, match your brand, embed with one line, and track results.',
+              icon: Zap,
+            },
+          ].map((step) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={step.n}
+                className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-card-bg/70 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:flex-row sm:items-center"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-highlight text-button-text font-extrabold">
+                    {step.n}
+                  </div>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+                    <Icon className="h-5 w-5 text-highlight" />
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold text-white">{step.title}</h3>
+                  <p className="mt-1 text-text-paragraph">{step.desc}</p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* AD FORMATS */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
+            Instantly Generated Ads for Every Format
+          </h2>
+          <p className="mt-4 text-lg text-text-paragraph">
+            Ready-to-run ad creatives for any platform in seconds based on breaking news
+          </p>
+        </div>
+
+        <div className="mx-auto mt-10 grid max-w-6xl items-start gap-8 lg:grid-cols-2">
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 p-8 shadow-[0_16px_40px_rgba(0,0,0,0.25)]">
+            <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-highlight/15 blur-3xl" />
+            <h3 className="text-xl font-bold text-white">Generate creatives that match the moment</h3>
+            <p className="mt-2 text-sm leading-relaxed text-text-paragraph">
+              NewsLatch turns live headlines into platform-ready ads with consistent messaging across formats.
+            </p>
+
+            <div className="mt-6 space-y-3">
+              {[
+                'Four formats from one angle',
+                'Fast iteration when news breaks',
+                'Designed to align with your offer',
+              ].map((t) => (
+                <div key={t} className="flex items-start gap-3">
+                  <div className="mt-0.5 inline-flex h-7 w-7 items-center justify-center rounded-full bg-highlight/15">
+                    <Check className="h-4 w-4 text-highlight" />
+                  </div>
+                  <p className="text-sm text-text-paragraph">{t}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8">
+              <div
+                role="tablist"
+                aria-label="Ad format"
+                className="relative grid grid-cols-4 items-center rounded-full border border-white/10 bg-white/5 p-1"
+              >
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-y-1 left-1 w-[calc(25%-0.5rem)] rounded-full bg-highlight shadow-[0_10px_28px_rgba(0,0,0,0.25)] transition-transform duration-200"
+                  style={{ transform: `translateX(${activeAdFormatIndex * 100}%)` }}
+                />
+
+                {adFormats.map((f, idx) => {
+                  const isActive = idx === activeAdFormatIndex;
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      tabIndex={isActive ? 0 : -1}
+                      onClick={() => setActiveAdFormatKey(f.key)}
+                      className={`relative z-10 inline-flex h-9 items-center justify-center gap-2 rounded-full px-3 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-highlight focus-visible:ring-offset-2 focus-visible:ring-offset-primary-bg ${
+                        isActive ? 'text-button-text' : 'text-white/70 hover:text-white'
+                      }`}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="mt-3 text-xs text-white/50">
+                Tip: swap formats to keep the same angle consistent across placements.
+              </p>
+            </div>
+          </div>
+
+          <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 p-6 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+            <div className="pointer-events-none absolute -bottom-28 -left-24 h-72 w-72 rounded-full bg-highlight/10 blur-3xl" />
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm font-semibold text-white">Preview: {activeAdFormat?.label}</p>
+              <span className="text-xs text-white/50">Image from newslatch.com</span>
+            </div>
+
+            <div className="mt-4 overflow-hidden rounded-2xl border border-white/10 bg-primary-bg/50">
+              <div className="relative">
+                {adImageLoading && (
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-0 animate-pulse bg-gradient-to-b from-white/10 to-white/5"
+                  />
+                )}
+                <img
+                  key={activeAdFormatKey}
+                  src={activeAdFormat?.src}
+                  alt={`${activeAdFormat?.label ?? 'Ad'} format preview`}
+                  className={`w-full transition-opacity duration-200 ${adImageLoading ? 'opacity-0' : 'opacity-100'}`}
+                  loading="eager"
+                  onLoad={() => setAdImageLoading(false)}
+                  onError={() => setAdImageLoading(false)}
+                />
+              </div>
+            </div>
+
+            {/* Preload other format images for instant switching */}
+            <div className="hidden" aria-hidden="true">
+              {adFormats
+                .filter((f) => f.key !== activeAdFormatKey)
+                .map((f) => (
+                  <img key={f.key} src={f.src} alt="" loading="eager" />
+                ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* VIDEO */}
+      <section id="video" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-6 text-center">
+            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">See it in action</h2>
+            <p className="mt-4 text-lg text-text-paragraph">A quick walkthrough of NewsLatch Studio.</p>
+          </div>
+
+          <div className="relative">
+            <div className="overflow-hidden rounded-[28px] border border-white/10 bg-black/20 shadow-[0_24px_60px_rgba(0,0,0,0.45)]">
+              <video
+                className="aspect-video w-full"
+                src="https://emvwmwdsaakdnweyhmki.supabase.co/storage/v1/object/public/public-files/newslatch/newslatch.mp4"
+                controls
+                playsInline
+                preload="metadata"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHY */}
+      <section className="bg-primary-bg/70 border-y border-white/5">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+          <div className="mx-auto max-w-3xl text-center">
+            <h2 className="text-3xl font-extrabold text-white sm:text-4xl">Why NewsLatch?</h2>
+            <p className="mt-4 text-lg text-text-paragraph">
+              Faster research, sharper angles, and a widget built to convert.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                title: 'Find timely angles',
+                desc: 'Turn live trends into relevant hooks for your audience.',
+              },
+              {
+                title: 'Ship faster',
+                desc: 'Go from idea to embeddable widget without extra tools.',
+              },
+              {
+                title: 'Stay on-brand',
+                desc: 'Customize templates, colors, and layouts to match your site.',
+              },
+              {
+                title: 'Measure lift',
+                desc: 'Track engagement and conversion impact for each angle.',
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-3xl border border-white/10 bg-card-bg/60 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.25)]"
+              >
+                <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-highlight/15">
+                  <Check className="h-5 w-5 text-highlight" />
+                </div>
+                <h3 className="text-lg font-bold text-white">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-text-paragraph">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 flex justify-center">
             <AuthComponent user={user} />
           </div>
         </div>
+      </section>
 
-        {/* How It Works - 3 Steps */}
-        <div className="mb-20">
-          <h2 className="text-3xl font-bold text-white text-center mb-12">How It Works</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-card-bg rounded-2xl p-8 border border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-center">
-              <div className="w-16 h-16 bg-highlight rounded-full flex items-center justify-center mb-6 mx-auto">
-                <span className="text-2xl font-bold text-primary-bg">1</span>
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Describe Your Offer</h3>
-              <p className="text-text-paragraph">
-                Enter your product or service, plus any keywords or verticals you're targeting.
-              </p>
-            </div>
+      {/* TESTIMONIAL */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">What users say</h2>
+          <p className="mt-4 text-lg text-text-paragraph">Replace this with your real testimonial copy later.</p>
+        </div>
 
-            <div className="bg-card-bg rounded-2xl p-8 border border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-center">
-              <div className="w-16 h-16 bg-highlight rounded-full flex items-center justify-center mb-6 mx-auto">
-                <span className="text-2xl font-bold text-primary-bg">2</span>
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">AI Finds Live, Relevant News</h3>
-              <p className="text-text-paragraph">
-                Our AI engine surface the most relevant news headlines that relate to your offer.
-              </p>
-            </div>
-
-            <div className="bg-card-bg rounded-2xl p-8 border border-gray-600/50 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 text-center">
-              <div className="w-16 h-16 bg-highlight rounded-full flex items-center justify-center mb-6 mx-auto">
-                <span className="text-2xl font-bold text-primary-bg">3</span>
-              </div>
-              <h3 className="text-xl font-semibold text-white mb-4">Drop in a High-Converting Widget</h3>
-              <p className="text-text-paragraph">
-                Choose a layout, match your brand colors, and embed with one line of code.
-              </p>
-            </div>
+        <div className="mx-auto mt-10 max-w-3xl rounded-3xl border border-white/10 bg-card-bg/70 p-10 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+          <p className="text-lg italic leading-relaxed text-white/90">
+            “NewsLatch helped us turn breaking stories into campaign angles our audience actually clicked. The widget
+            shipped fast and our landing page engagement jumped immediately.”
+          </p>
+          <div className="mt-6 text-sm text-text-paragraph">
+            <span className="font-semibold text-white">Ariana</span> · Growth Lead
+          </div>
+          <div className="mt-6 flex justify-center gap-2" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className={`h-2 w-2 rounded-full ${i === 1 ? 'bg-highlight' : 'bg-white/15'}`}
+              />
+            ))}
           </div>
         </div>
+      </section>
 
-        {/* CTA Section */}
-        <div className="text-center bg-card-bg border border-gray-600/50 rounded-3xl p-12 shadow-2xl hover:shadow-black/60 transition-all duration-300">
-          <h2 className="text-3xl font-bold mb-4 text-white">Start Converting Headlines Today</h2>
-          <p className="text-xl text-text-paragraph mb-8 max-w-2xl mx-auto">
-            Join thousands of marketers using AI-powered headlines to boost their conversion rates.
-          </p>
-          <AuthComponent user={user} />
+      {/* FEATURE CARDS */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16 sm:pb-20">
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            {
+              title: 'Generate angles',
+              desc: 'Turn a headline into hooks, claims, and safe talking points.',
+              icon: Sparkles,
+            },
+            {
+              title: 'Build widgets',
+              desc: 'Pick templates that fit your page and your offer.',
+              icon: Wand2,
+            },
+            {
+              title: 'Track performance',
+              desc: 'Understand what’s working and scale winners.',
+              icon: TrendingUp,
+            },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.title}
+                className="rounded-3xl border border-white/10 bg-card-bg/60 p-8 shadow-[0_16px_40px_rgba(0,0,0,0.25)]"
+              >
+                <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-highlight/15">
+                  <Icon className="h-6 w-6 text-highlight" />
+                </div>
+                <h3 className="text-xl font-bold text-white">{item.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-text-paragraph">{item.desc}</p>
+              </div>
+            );
+          })}
         </div>
-      </div>
+
+        <div className="mt-12 rounded-3xl border border-white/10 bg-gradient-to-b from-card-bg/80 to-primary-bg/80 p-10 text-center shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+          <h2 className="text-3xl font-extrabold text-white">Start converting headlines today</h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg text-text-paragraph">
+            Sign in and generate your first campaign angles in minutes.
+          </p>
+          <div className="mt-8 flex justify-center">
+            <AuthComponent user={user} />
+          </div>
+        </div>
+      </section>
     </Layout>
   );
 }

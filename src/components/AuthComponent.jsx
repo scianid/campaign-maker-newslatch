@@ -210,17 +210,20 @@ export function AuthComponent({ user, onAuthChange }) {
                     <p className="text-xs text-gray-500 mt-1">Used for AI operations</p>
                   </div>
                 )}
-                <button
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
                   onClick={() => {
                     setShowUserMenu(false);
                     handleSignOut();
                   }}
                   disabled={loading}
-                  className="flex items-center gap-2 w-full px-4 py-2 text-left text-gray-300 hover:text-white hover:bg-gray-700/30"
+                  className="w-full justify-start rounded-none px-4 py-2 text-gray-300 hover:text-white"
                 >
                   <LogOut className="w-4 h-4" />
                   Sign Out
-                </button>
+                </Button>
               </div>
             </div>
           )}
@@ -314,12 +317,12 @@ export function AuthComponent({ user, onAuthChange }) {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-highlight hover:bg-highlight/80 text-white"
+              className="w-full"
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <LogIn className="w-4 h-4 mr-2" />
+                <LogIn className="w-4 h-4" />
               )}
               {isSignUp ? 'Create Account' : 'Sign In'}
             </Button>
@@ -353,8 +356,7 @@ export function AuthComponent({ user, onAuthChange }) {
   return (
     <Button
       onClick={() => setShowAuthForm(true)}
-      className="bg-highlight hover:bg-highlight/80 text-button-text flex items-center gap-2 font-semibold"
-      style={{ color: 'rgb(41, 41, 61)' }}
+      variant="default"
     >
       <LogIn className="w-4 h-4" />
       Sign In
