@@ -461,7 +461,7 @@ export function EditCampaignForm({ user }) {
 
               {/* RSS Categories */}
               <div>
-              <Label className="text-white mb-3">RSS Feed Categories</Label>
+              <Label className="text-white mb-3">Categories</Label>
               <MultiSelect
                 options={RSS_CATEGORIES}
                 value={formData.rssCategories}

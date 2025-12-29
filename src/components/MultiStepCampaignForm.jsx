@@ -622,8 +622,8 @@ export function MultiStepCampaignForm({ user }) {
   const renderStep2 = () => (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold text-white mb-2">AI-Powered Suggestions</h2>
-        <p className="text-text-paragraph">Based on your company URL, here are our intelligent recommendations</p>
+        <h2 className="text-2xl font-bold text-white mb-2">AI-Powered Brief Suggestion</h2>
+        <p className="text-text-paragraph">Based on your URL, here are our intelligent recommendations</p>
       </div>
 
       {formData.aiSuggestions.loading ? (
@@ -849,16 +849,19 @@ export function MultiStepCampaignForm({ user }) {
     <div className="space-y-6">
       <div className="text-center mb-8">
         <h2 className="text-2xl font-bold text-white mb-2">Target Settings</h2>
-        <p className="text-text-paragraph">Configure your target countries and RSS feed categories</p>
+        <p className="text-text-paragraph">Configure your target countries and categories.</p>
       </div>
 
       <div className="space-y-6">
         {/* Target Countries */}
         <div>
-          <Label className="text-white mb-3 flex items-center gap-2">
+          <Label className="text-white mb-1 flex items-center gap-2">
             <Globe className="w-4 h-4 text-highlight" />
             Target Countries
           </Label>
+          <p className="text-text-paragraph text-sm mb-3">
+            Choose where you want NewsLatch to find relevant stories and target distribution.
+          </p>
           <MultiSelect
             options={SUPPORTED_COUNTRIES.map(country => ({ value: country.code, label: country.label }))}
             value={formData.rssCountries}
@@ -871,10 +874,13 @@ export function MultiStepCampaignForm({ user }) {
 
         {/* RSS Categories */}
         <div>
-          <Label className="text-white mb-3 flex items-center gap-2">
+          <Label className="text-white mb-1 flex items-center gap-2">
             <Rss className="w-4 h-4 text-highlight" />
-            RSS Feed Categories
+            Categories
           </Label>
+          <p className="text-text-paragraph text-sm mb-3">
+            Select the news topics you want to monitor so we can match your campaign to the right articles.
+          </p>
           <MultiSelect
             options={RSS_CATEGORIES}
             value={formData.rssCategories}
@@ -943,41 +949,46 @@ export function MultiStepCampaignForm({ user }) {
         </div>
 
         {/* Form Content */}
-        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 p-8 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
-          <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-highlight/12 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+        <div className="relative overflow-visible rounded-3xl border border-white/10 bg-card-bg/60 p-8 shadow-[0_24px_60px_rgba(0,0,0,0.35)]">
+          {/* Background glows (clipped to card, without clipping dropdown menus) */}
+          <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl">
+            <div className="absolute -top-24 -right-24 h-72 w-72 rounded-full bg-highlight/12 blur-3xl" />
+            <div className="absolute -bottom-32 -left-24 h-80 w-80 rounded-full bg-cyan-400/10 blur-3xl" />
+          </div>
 
-          {renderStepContent()}
-          
-          {/* Navigation Buttons */}
-          <div className="flex justify-between mt-8 pt-6 border-t border-white/10">
-            <Button
-              variant="outline"
-              onClick={goToPrevStep}
-              disabled={currentStep === 1}
-              className={currentStep === 1 ? 'invisible' : ''}
-            >
-              <ChevronLeft className="w-4 h-4 mr-2" />
-              Previous
-            </Button>
+          <div className="relative z-10">
+            {renderStepContent()}
 
-            {currentStep < totalSteps ? (
+            {/* Navigation Buttons */}
+            <div className="flex justify-between mt-8 pt-6 border-t border-white/10">
               <Button
-                onClick={goToNextStep}
-                disabled={formData.aiSuggestions.loading}
+                variant="outline"
+                onClick={goToPrevStep}
+                disabled={currentStep === 1}
+                className={currentStep === 1 ? 'invisible' : ''}
               >
-                Next
-                <ChevronRight className="w-4 h-4 ml-2" />
+                <ChevronLeft className="w-4 h-4 mr-2" />
+                Previous
               </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={loading}
-              >
-                {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                {isEdit ? 'Update Campaign' : 'Create Campaign'}
-              </Button>
-            )}
+
+              {currentStep < totalSteps ? (
+                <Button
+                  onClick={goToNextStep}
+                  disabled={formData.aiSuggestions.loading}
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4 ml-2" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={loading}
+                >
+                  {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {isEdit ? 'Update Campaign' : 'Create Campaign'}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
