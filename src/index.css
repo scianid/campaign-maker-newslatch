@@ -62,31 +62,31 @@
   appearance: none;
   width: 20px;
   height: 20px;
-  background: linear-gradient(135deg, #a855f7, #6366f1);
-  border: 2px solid #fff;
+  background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+  border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 2px 10px rgba(34, 211, 238, 0.35);
   transition: all 0.2s ease;
 }
 
 .slider-with-notches::-webkit-slider-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.6);
+  box-shadow: 0 4px 14px rgba(34, 211, 238, 0.5);
 }
 
 .slider-with-notches::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  background: linear-gradient(135deg, #a855f7, #6366f1);
-  border: 2px solid #fff;
+  background: linear-gradient(135deg, #22d3ee, #0ea5e9);
+  border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.4);
+  box-shadow: 0 2px 10px rgba(34, 211, 238, 0.35);
   transition: all 0.2s ease;
 }
 
 .slider-with-notches::-moz-range-thumb:hover {
   transform: scale(1.15);
-  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.6);
+  box-shadow: 0 4px 14px rgba(34, 211, 238, 0.5);
 }

@@ -98,19 +98,21 @@ export function VariantGeneratorModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-primary-bg border border-gray-600 rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-card-bg/80 border border-white/10 rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-600">
+        <div className="flex items-center justify-between p-4 border-b border-white/10">
           <div className="flex items-center gap-2">
-            <Wand2 className="w-5 h-5 text-purple-400" />
+            <div className="w-9 h-9 bg-highlight/10 border border-highlight/25 rounded-full flex items-center justify-center">
+              <Wand2 className="w-5 h-5 text-highlight" />
+            </div>
             <h3 className="text-lg font-semibold text-white">Generate Variants</h3>
           </div>
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-gray-400 hover:text-white"
+            className="text-white/60 hover:text-white"
           >
             <X className="w-4 h-4" />
           </Button>
@@ -144,12 +146,12 @@ export function VariantGeneratorModal({
           )}
 
           {/* Original Content Preview */}
-          <div className="bg-gray-800/30 border border-gray-600/50 rounded-lg p-3">
-            <h4 className="text-sm font-medium text-gray-300 mb-2">Original Content</h4>
+          <div className="bg-white/5 border border-white/10 rounded-2xl p-3">
+            <h4 className="text-sm font-medium text-white/80 mb-2">Original Content</h4>
             <p className="text-xs text-white font-medium mb-1 line-clamp-2">
               {aiItem.headline}
             </p>
-            <p className="text-xs text-gray-400 line-clamp-2">
+            <p className="text-xs text-white/60 line-clamp-2">
               {aiItem.description}
             </p>
           </div>
@@ -162,13 +164,13 @@ export function VariantGeneratorModal({
                   Number of variants
                 </label>
                 <div className="group relative">
-                  <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 border border-gray-600 rounded-lg text-xs text-gray-300 shadow-lg z-10">
+                  <Info className="w-4 h-4 text-white/50 cursor-help" />
+                  <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-primary-bg border border-white/10 rounded-2xl text-xs text-white/70 shadow-2xl z-10">
                     Choose how many alternative versions to generate. Each variant will test different angles of your message.
                   </div>
                 </div>
               </div>
-              <span className="text-2xl font-bold text-purple-400">
+              <span className="text-2xl font-bold text-highlight">
                 {options.count}
               </span>
             </div>
@@ -182,9 +184,9 @@ export function VariantGeneratorModal({
                 step="1"
                 value={options.count}
                 onChange={(e) => setOptions(prev => ({ ...prev, count: parseInt(e.target.value) }))}
-                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer slider-with-notches"
+                className="w-full h-2 bg-white/10 rounded-lg appearance-none cursor-pointer slider-with-notches"
                 style={{
-                  background: `linear-gradient(to right, #a855f7 0%, #a855f7 ${((options.count - 2) / 3) * 100}%, #374151 ${((options.count - 2) / 3) * 100}%, #374151 100%)`
+                  background: `linear-gradient(to right, #22d3ee 0%, #22d3ee ${((options.count - 2) / 3) * 100}%, rgba(255,255,255,0.12) ${((options.count - 2) / 3) * 100}%, rgba(255,255,255,0.12) 100%)`
                 }}
               />
               
@@ -196,14 +198,14 @@ export function VariantGeneratorModal({
                     onClick={() => setOptions(prev => ({ ...prev, count }))}
                     className={`flex flex-col items-center gap-1 cursor-pointer transition-all ${
                       options.count === count 
-                        ? 'text-purple-400' 
-                        : 'text-gray-500 hover:text-gray-300'
+                        ? 'text-highlight' 
+                        : 'text-white/40 hover:text-white/70'
                     }`}
                   >
                     <div className={`w-1 h-3 rounded-full ${
                       options.count === count 
-                        ? 'bg-purple-400' 
-                        : 'bg-gray-600'
+                        ? 'bg-highlight' 
+                        : 'bg-white/20'
                     }`}></div>
                     <span className="text-xs font-medium">{count}</span>
                   </button>
@@ -219,8 +221,8 @@ export function VariantGeneratorModal({
                 What to regenerate
               </label>
               <div className="group relative">
-                <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 border border-gray-600 rounded-lg text-xs text-gray-300 shadow-lg z-10">
+                <Info className="w-4 h-4 text-white/50 cursor-help" />
+                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-primary-bg border border-white/10 rounded-2xl text-xs text-white/70 shadow-2xl z-10">
                   Select which parts of the ad to vary. Uncheck elements you want to keep consistent across all variants.
                 </div>
               </div>
@@ -238,9 +240,9 @@ export function VariantGeneratorModal({
                     onChange={(e) => 
                       setOptions(prev => ({ ...prev, [focus.key]: e.target.checked }))
                     }
-                    className="w-4 h-4 rounded border-gray-600 bg-gray-700 text-purple-500 focus:ring-purple-500"
+                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-highlight focus:ring-highlight/40 focus:ring-2"
                   />
-                  <span className="text-gray-300">{focus.label}</span>
+                  <span className="text-white/80">{focus.label}</span>
                 </label>
               ))}
             </div>
@@ -253,8 +255,8 @@ export function VariantGeneratorModal({
                 Tones to explore
               </label>
               <div className="group relative">
-                <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-2 bg-gray-900 border border-gray-600 rounded-lg text-xs text-gray-300 shadow-lg z-10">
+                <Info className="w-4 h-4 text-white/50 cursor-help" />
+                <div className="absolute left-0 bottom-full mb-2 hidden group-hover:block w-64 p-3 bg-primary-bg border border-white/10 rounded-2xl text-xs text-white/70 shadow-2xl z-10">
                   Select one or more tones to test. Each variant will use a different tone to appeal to different audience segments.
                 </div>
               </div>
@@ -271,10 +273,14 @@ export function VariantGeneratorModal({
                 return (
                   <Button
                     key={tone.value}
-                    variant={options.tones.includes(tone.value) ? 'primary' : 'outline'}
+                    variant="ghost"
                     size="sm"
                     onClick={() => handleToneToggle(tone.value)}
-                    className="text-xs flex items-center gap-1.5"
+                    className={`text-xs flex items-center gap-1.5 ${
+                      options.tones.includes(tone.value)
+                        ? 'border-2 border-highlight/70 bg-highlight/15 text-highlight hover:bg-highlight/20 ring-1 ring-highlight/20 shadow-sm'
+                        : 'border-2 border-transparent bg-transparent text-white/70 hover:text-white'
+                    }`}
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {tone.label}
@@ -286,7 +292,7 @@ export function VariantGeneratorModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between gap-3 p-4 border-t border-gray-600 bg-gray-800/30">
+        <div className="flex items-center justify-between gap-3 p-4 border-t border-white/10 bg-white/5">
           <Button 
             variant="outline" 
             onClick={onClose} 
@@ -298,7 +304,7 @@ export function VariantGeneratorModal({
           <Button 
             onClick={handleGenerate}
             disabled={generating || options.tones.length === 0}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-highlight text-primary-bg hover:bg-highlight/90 border border-highlight/30 font-semibold py-3 px-6 shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {generating ? (
               <>
