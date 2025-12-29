@@ -7,6 +7,8 @@ export const Button = forwardRef(
   const variants = {
     default: 'bg-button-primary text-button-text hover:bg-button-primary/90',
     outline: 'border border-white/15 bg-white/5 hover:bg-white/10 text-white',
+    dashed:
+      'border border-dashed border-highlight/55 bg-highlight/5 text-highlight hover:border-highlight/80 hover:bg-highlight/10',
     ghost: 'bg-transparent text-white hover:bg-white/5',
     destructive: 'bg-red-600 text-white hover:bg-red-700'
   };

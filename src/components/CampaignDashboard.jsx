@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CampaignList } from './CampaignList';
 import { Layout } from './Layout';
 import { Button } from '../ui/Button';
-import { Plus, Sparkles, Loader2, AlertCircle } from 'lucide-react';
+import { Plus, AlertCircle } from 'lucide-react';
 import { campaignService } from '../lib/supabase';
 
 export function CampaignDashboard({ user }) {
@@ -84,25 +84,30 @@ export function CampaignDashboard({ user }) {
           <div>
             {/* Welcome Section for Empty State */}
             {campaigns.length === 0 && (
-              <div className="text-center mb-12">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-card-bg border border-gray-600/50 rounded-3xl mb-6">
-                  <Sparkles className="w-10 h-10 text-highlight" />
+              <div className="mb-12">
+                <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-card-bg/60 p-8 shadow-[0_24px_60px_rgba(0,0,0,0.35)] sm:p-10">
+                  <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-highlight/12 blur-3xl" />
+                  <div className="pointer-events-none absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+
+                  <div className="mx-auto max-w-3xl text-center">
+                    <h2 className="text-3xl font-extrabold text-white sm:text-4xl">
+                      No campaigns yet
+                    </h2>
+                    <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-text-paragraph">
+                      Create your first campaign to ride trending social and news waves!
+                    </p>
+
+                    <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                      <Button onClick={() => navigate('/new')} variant="dashed" size="lg">
+                        <Plus className="h-4 w-4" />
+                        Create campaign
+                      </Button>
+                      <Button onClick={loadCampaigns} variant="outline" size="lg">
+                        Refresh
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Ready to create your first campaign?
-                </h2>
-                <p className="text-lg text-text-paragraph mb-8 max-w-2xl mx-auto">
-                  Start building amazing campaigns! Add URLs, organize with tags, 
-                  configure RSS feed categories, and track everything in one place.
-                </p>
-                <Button 
-                  onClick={() => navigate('/new')}
-                  size="lg"
-                  className="bg-gradient-to-r from-highlight to-purple-600 hover:from-highlight/90 hover:to-purple-700 shadow-xl hover:shadow-2xl transform hover:-translate-y-0.5 transition-all duration-300"
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create Your First Campaign
-                </Button>
               </div>
             )}
 
