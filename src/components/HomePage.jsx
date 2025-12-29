@@ -358,19 +358,15 @@ export function HomePage({ user }) {
               icon: Zap,
             },
           ].map((step, idx) => {
-            const Icon = step.icon;
             return (
               <Reveal
                 key={step.n}
                 delay={120 + idx * 80}
                 className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-card-bg/70 p-6 shadow-[0_16px_40px_rgba(0,0,0,0.35)] backdrop-blur sm:flex-row sm:items-center"
               >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-highlight text-button-text font-extrabold">
+                <div className="flex items-center">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-highlight text-highlight font-extrabold">
                     {step.n}
-                  </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-                    <Icon className="h-5 w-5 text-highlight" />
                   </div>
                 </div>
 
