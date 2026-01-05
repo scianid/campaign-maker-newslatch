@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthComponent } from './components/AuthComponent';
 import { HomePage } from './components/HomePage';
+import { LoginPage } from './components/LoginPage';
 import { MultiStepCampaignForm } from './components/MultiStepCampaignForm';
 import { EditCampaignForm } from './components/EditCampaignForm';
 import { CampaignDashboard } from './components/CampaignDashboard';
@@ -125,6 +126,11 @@ function App() {
         <Route 
           path="/" 
           element={user ? <Navigate to="/campaigns" replace /> : <HomePage user={user} />} 
+        />
+        
+        <Route 
+          path="/login" 
+          element={<LoginPage user={user} />} 
         />
         
         <Route 
