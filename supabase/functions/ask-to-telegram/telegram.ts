@@ -40,6 +40,70 @@ export async function sendTelegramMessage(
     };
   }
 
+  const MAX_LENGTH = 3900;
+
+  // If message is too long, split it into multiple messages
+  if (text.length > MAX_LENGTH) {
+    const chunks: string[] = [];
+    let remaining = text;
+
+    while (remaining.length > 0) {
+      if (remaining.length <= MAX_LENGTH) {
+        chunks.push(remaining);
+        break;
+      }
+
+      // Try to find a good break point (newline, space, etc.)
+      let splitIndex = MAX_LENGTH;
+      const lastNewline = remaining.lastIndexOf('\n', MAX_LENGTH);
+      const lastSpace = remaining.lastIndexOf(' ', MAX_LENGTH);
+
+      if (lastNewline > MAX_LENGTH * 0.8) {
+        splitIndex = lastNewline + 1;
+      } else if (lastSpace > MAX_LENGTH * 0.8) {
+        splitIndex = lastSpace + 1;
+      }
+
+      chunks.push(remaining.substring(0, splitIndex));
+      remaining = remaining.substring(splitIndex);
+    }
+
+    // Send all chunks, but only add reply markup to the last one
+    let lastResponse: TelegramSendMessageResponse = { ok: false };
+    for (let i = 0; i < chunks.length; i++) {
+      const isLast = i === chunks.length - 1;
+      const chunkMarkup = isLast ? replyMarkup : undefined;
+      
+      lastResponse = await sendSingleTelegramMessage(
+        token,
+        chatId,
+        chunks[i],
+        chunkMarkup,
+      );
+
+      if (!lastResponse.ok) {
+        return lastResponse;
+      }
+
+      // Small delay between messages to avoid rate limiting
+      if (!isLast) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
+
+    return lastResponse;
+  }
+
+  // Message is short enough, send normally
+  return sendSingleTelegramMessage(token, chatId, text, replyMarkup);
+}
+
+async function sendSingleTelegramMessage(
+  token: string,
+  chatId: string,
+  text: string,
+  replyMarkup?: InlineKeyboardMarkup,
+): Promise<TelegramSendMessageResponse> {
   const url = `https://api.telegram.org/bot${token}/sendMessage`;
 
   const payload: Record<string, unknown> = {
@@ -85,6 +149,7 @@ export async function sendTelegramPhoto(
     };
   }
 
+  const MAX_CAPTION_LENGTH = 1024;
   const url = `https://api.telegram.org/bot${token}/sendPhoto`;
 
   const payload: Record<string, unknown> = {
@@ -92,11 +157,21 @@ export async function sendTelegramPhoto(
     photo: photoUrl,
   };
 
+  let photoCaption: string | undefined;
+  let remainingText: string | undefined;
+
   if (caption && caption.trim().length > 0) {
-    payload.caption = caption;
+    if (caption.length > MAX_CAPTION_LENGTH) {
+      // Truncate caption and save remaining text
+      photoCaption = caption.substring(0, MAX_CAPTION_LENGTH - 3) + '...';
+      remainingText = caption;
+    } else {
+      photoCaption = caption;
+    }
+    payload.caption = photoCaption;
   }
 
-  if (replyMarkup) {
+  if (replyMarkup && !remainingText) {
     payload.reply_markup = replyMarkup;
   }
 
@@ -113,6 +188,13 @@ export async function sendTelegramPhoto(
       status: res.status,
       data,
     });
+    return data;
+  }
+
+  // If caption was too long, send the full text as a follow-up message
+  if (remainingText) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return await sendTelegramMessage(chatId, remainingText, replyMarkup);
   }
 
   return data;
@@ -133,6 +215,7 @@ export async function sendTelegramPhotoFile(
     };
   }
 
+  const MAX_CAPTION_LENGTH = 1024;
   const url = `https://api.telegram.org/bot${token}/sendPhoto`;
   const form = new FormData();
   form.set('chat_id', chatId);
@@ -141,11 +224,21 @@ export async function sendTelegramPhotoFile(
   const blob = new Blob([file.bytes], { type: file.contentType || 'application/octet-stream' });
   form.set('photo', blob, filename);
 
+  let photoCaption: string | undefined;
+  let remainingText: string | undefined;
+
   if (caption && caption.trim().length > 0) {
-    form.set('caption', caption);
+    if (caption.length > MAX_CAPTION_LENGTH) {
+      // Truncate caption and save remaining text
+      photoCaption = caption.substring(0, MAX_CAPTION_LENGTH - 3) + '...';
+      remainingText = caption;
+    } else {
+      photoCaption = caption;
+    }
+    form.set('caption', photoCaption);
   }
 
-  if (replyMarkup) {
+  if (replyMarkup && !remainingText) {
     form.set('reply_markup', JSON.stringify(replyMarkup));
   }
 
@@ -161,6 +254,13 @@ export async function sendTelegramPhotoFile(
       status: res.status,
       data,
     });
+    return data;
+  }
+
+  // If caption was too long, send the full text as a follow-up message
+  if (remainingText) {
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return await sendTelegramMessage(chatId, remainingText, replyMarkup);
   }
 
   return data;
