@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.task-service]
 verify_jwt = false
+
+[functions.argus-server]
+verify_jwt = false
