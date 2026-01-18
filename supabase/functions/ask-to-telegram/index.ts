@@ -113,16 +113,12 @@ Deno.serve(async (req: Request) => {
     const keyboard = {
       inline_keyboard: [[
         {
-          text: 'Publish',
-          callback_data: `publish:${submit.queryId}`,
-        },
-        {
-          text: 'Make variants',
-          callback_data: `variants:${submit.queryId}`,
+          text: 'View In Publisher',
+          url: `https://publisher.newslatch.com/?post=${answer.trim()}`,
         },
         {
           text: 'View in Argus',
-          url: `http://34.165.46.113:8081/ask/${submit.queryId}`,
+          url: `https://argus.newslatch.com/ask/${submit.queryId}`,
         },
       ]],
     };
