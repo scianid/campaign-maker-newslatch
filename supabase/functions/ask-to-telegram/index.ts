@@ -114,7 +114,7 @@ Deno.serve(async (req: Request) => {
       inline_keyboard: [[
         {
           text: 'View In Publisher',
-          url: `https://publisher.newslatch.com/?post=${answer.trim()}`,
+          url: `https://publisher.newslatch.com/?post=${encodeURIComponent(answer.trim())}`,
         },
         {
           text: 'View in Argus',
