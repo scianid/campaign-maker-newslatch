@@ -110,19 +110,6 @@ Deno.serve(async (req: Request) => {
       });
     }
 
-    const keyboard = {
-      inline_keyboard: [[
-        {
-          text: 'View In Publisher',
-          url: `https://publisher.newslatch.com/?post=${encodeURIComponent(answer.trim())}`,
-        },
-        {
-          text: 'View in Argus',
-          url: `https://argus.newslatch.com/ask/${submit.queryId}`,
-        },
-      ]],
-    };
-
     let selectedImage: { imageUrl: string; sourceUrl: string } | null = null;
     let captionTruncated = false;
 
@@ -186,6 +173,25 @@ Deno.serve(async (req: Request) => {
         console.log('ℹ️ withPhoto enabled but no coreArticles present; sending text message');
       }
     }
+
+    // Build publisher URL with image parameter if available
+    const publisherParams = new URLSearchParams({ post: answer.trim() });
+    if (selectedImage?.imageUrl) {
+      publisherParams.set('image', selectedImage.imageUrl);
+    }
+
+    const keyboard = {
+      inline_keyboard: [[
+        {
+          text: 'View In Publisher',
+          url: `https://publisher.newslatch.com/?${publisherParams.toString()}`,
+        },
+        {
+          text: 'View in Argus',
+          url: `https://argus.newslatch.com/ask/${submit.queryId}`,
+        },
+      ]],
+    };
 
     console.log('📣 Sending to Telegram channel', { channelId });
     const tg = await sendTelegramMessage(channelId, answer, keyboard);
