@@ -113,6 +113,21 @@ Deno.serve(async (req: Request) => {
     let selectedImage: { imageUrl: string; sourceUrl: string } | null = null;
     let captionTruncated = false;
 
+    // Build keyboard early so it can be used in both photo and text messages
+    const publisherParams = new URLSearchParams({ post: answer.trim() });
+    const keyboard = {
+      inline_keyboard: [[
+        {
+          text: 'View In Publisher',
+          url: `https://publisher.newslatch.com/?${publisherParams.toString()}`,
+        },
+        {
+          text: 'View in Argus',
+          url: `https://argus.newslatch.com/ask/${submit.queryId}`,
+        },
+      ]],
+    };
+
   // Prefer a single-message Telegram post when withPhoto is enabled and an image is found.
     if (withPhoto) {
       if (Array.isArray(coreArticles) && coreArticles.length > 0) {
@@ -128,8 +143,25 @@ Deno.serve(async (req: Request) => {
 
         if (downloaded) {
           selectedImage = { sourceUrl: downloaded.sourceUrl, imageUrl: downloaded.imageUrl };
+          selectedImage = { sourceUrl: downloaded.sourceUrl, imageUrl: downloaded.imageUrl };
           const { caption, truncated } = truncateTelegramCaption(answer);
           captionTruncated = truncated;
+
+          // Update keyboard with image parameter
+          const photoPublisherParams = new URLSearchParams({ post: answer.trim() });
+          photoPublisherParams.set('image', downloaded.imageUrl);
+          const photoKeyboard = {
+            inline_keyboard: [[
+              {
+                text: 'View In Publisher',
+                url: `https://publisher.newslatch.com/?${photoPublisherParams.toString()}`,
+              },
+              {
+                text: 'View in Argus',
+                url: `https://argus.newslatch.com/ask/${submit.queryId}`,
+              },
+            ]],
+          };
 
           console.log('📸 Sending Telegram photo with caption + buttons', {
             channelId,
@@ -145,7 +177,7 @@ Deno.serve(async (req: Request) => {
               filename: 'social-image',
             },
             caption,
-            keyboard,
+            photoKeyboard,
           );
 
           if (!photo.ok) {
@@ -173,25 +205,6 @@ Deno.serve(async (req: Request) => {
         console.log('ℹ️ withPhoto enabled but no coreArticles present; sending text message');
       }
     }
-
-    // Build publisher URL with image parameter if available
-    const publisherParams = new URLSearchParams({ post: answer.trim() });
-    if (selectedImage?.imageUrl) {
-      publisherParams.set('image', selectedImage.imageUrl);
-    }
-
-    const keyboard = {
-      inline_keyboard: [[
-        {
-          text: 'View In Publisher',
-          url: `https://publisher.newslatch.com/?${publisherParams.toString()}`,
-        },
-        {
-          text: 'View in Argus',
-          url: `https://argus.newslatch.com/ask/${submit.queryId}`,
-        },
-      ]],
-    };
 
     console.log('📣 Sending to Telegram channel', { channelId });
     const tg = await sendTelegramMessage(channelId, answer, keyboard);
