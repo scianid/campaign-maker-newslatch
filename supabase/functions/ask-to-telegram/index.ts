@@ -70,7 +70,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const includeSources = body.includeSources ?? true;
-    const pollIntervalMs = Math.max(500, Math.min(body.pollIntervalMs ?? 2000, 10000));
+    const pollIntervalMs = Math.max(500, Math.min(body.pollIntervalMs ?? 5000, 10000));
     const timeoutMs = Math.max(5_000, Math.min(body.timeoutMs ?? 120_000, 600_000));
     const withPhoto = typeof body.withPhoto === 'boolean' ? body.withPhoto : false;
 

@@ -111,6 +111,8 @@ export async function pollUntilCompleted(
     return { res, body, data };
   };
 
+  let pollCount = 0;
+
   while (true) {
     const elapsedMs = Date.now() - startedAt;
     if (elapsedMs > opts.timeoutMs) {
@@ -124,11 +126,40 @@ export async function pollUntilCompleted(
       });
     }
 
-    const { res, body, data } = await fetchStatus();
+    pollCount++;
+    console.log(`🔄 Polling ASK [${pollCount}] queryId=${queryId} elapsedMs=${elapsedMs}`);
+
+    let res: Response, body: unknown, data: AskCompletedResponse;
+    try {
+      ({ res, body, data } = await fetchStatus());
+    } catch (fetchErr) {
+      console.error(`❌ ASK status fetch error on poll ${pollCount}`, {
+        queryId,
+        elapsedMs,
+        error: fetchErr instanceof Error ? fetchErr.message : fetchErr,
+        stack: fetchErr instanceof Error ? fetchErr.stack : undefined,
+      });
+      throw fetchErr;
+    }
+
     lastBody = body;
     lastStatus = typeof data?.status === 'string' ? data.status : null;
 
+    const progress = (data as Record<string, unknown>)?.progress as Record<string, unknown> | undefined;
+    console.log(`📊 ASK poll ${pollCount} response`, {
+      queryId,
+      httpStatus: res.status,
+      askStatus: lastStatus,
+      elapsedMs,
+      currentStep: progress?.currentStep,
+      iteration: progress?.iteration,
+      toolsCalled: Array.isArray(progress?.toolsCalled) ? progress.toolsCalled.length : undefined,
+      articlesFound: progress?.articlesFound,
+      clustersFound: progress?.clustersFound,
+    });
+
     if (!res.ok) {
+      console.error(`❌ ASK status non-OK response on poll ${pollCount}`, { queryId, httpStatus: res.status, body });
       throw new AskApiError('ASK status failed', res.status, body);
     }
 
@@ -140,6 +171,7 @@ export async function pollUntilCompleted(
       // Wait 5s and re-fetch once to pick up the remaining data.
       if (!hasCoreArticles) {
         const remainingMs = opts.timeoutMs - (Date.now() - startedAt);
+        console.log('⏸️ COMPLETED but no coreArticles yet; waiting before re-fetch', { queryId, remainingMs });
         if (remainingMs > 0) {
           const delayMs = Math.min(5000, remainingMs);
           await new Promise((r) => setTimeout(r, delayMs));
@@ -147,30 +179,38 @@ export async function pollUntilCompleted(
 
         const retryElapsedMs = Date.now() - startedAt;
         if (retryElapsedMs <= opts.timeoutMs) {
+          console.log('🔄 Re-fetching ASK status after COMPLETED delay', { queryId, retryElapsedMs });
           const retry = await fetchStatus();
           lastBody = retry.body;
           lastStatus = typeof retry.data?.status === 'string' ? retry.data.status : null;
+          console.log('📊 Re-fetch result', { queryId, askStatus: lastStatus });
 
           if (!retry.res.ok) {
             throw new AskApiError('ASK status failed', retry.res.status, retry.body);
           }
 
           if (retry.data?.status === 'COMPLETED') {
+            console.log('✅ Re-fetch confirmed COMPLETED', { queryId, coreArticlesCount: (retry.data?.result?.coreArticles as unknown[])?.length ?? 0 });
             return retry.data;
           }
 
           if (retry.data?.status === 'FAILED') {
+            console.error('❌ ASK query FAILED on re-fetch', { queryId, data: retry.data });
             throw new Error(`ASK query FAILED: ${JSON.stringify(retry.data)}`);
           }
 
           // If it regressed to non-terminal status, continue polling normally.
+          console.log('⚠️ ASK regressed from COMPLETED to non-terminal on re-fetch; continuing poll', { queryId, status: lastStatus });
         }
+      } else {
+        console.log('✅ ASK COMPLETED with coreArticles', { queryId, coreArticlesCount: coreArticles.length });
       }
 
       return data;
     }
 
     if (data.status === 'FAILED') {
+      console.error('❌ ASK query FAILED', { queryId, data });
       throw new Error(`ASK query FAILED: ${JSON.stringify(data)}`);
     }
 
