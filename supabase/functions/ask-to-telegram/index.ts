@@ -76,11 +76,52 @@ Deno.serve(async (req: Request) => {
 
     const requestedTelegramChannelId = normalizeTelegramChatId(body.telegram_channel_id);
 
-    console.log('📨 Submitting ASK question');
-    const submit = await submitQuestion(question, includeSources, inboundApiKey);
+    const maxRetries = 2;
 
-    console.log('⏳ Polling ASK status', { queryId: submit.queryId, pollIntervalMs, timeoutMs });
-    const completed = await pollUntilCompleted(submit.queryId, { pollIntervalMs, timeoutMs }, inboundApiKey);
+    console.log('🚀 Starting ask-to-telegram process', {
+      questionLength: question.length,
+      includeSources,
+      pollIntervalMs,
+      timeoutMs,
+      withPhoto,
+      maxRetries,
+      requestedTelegramChannelId,
+    });
+
+    let completed: Awaited<ReturnType<typeof pollUntilCompleted>>;
+    let lastQueryId: string | undefined;
+
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      console.log(`📨 Submitting ASK question (attempt ${attempt}/${maxRetries})`);
+      const submit = await submitQuestion(question, includeSources, inboundApiKey);
+      lastQueryId = submit.queryId;
+      console.log('✅ ASK question submitted successfully', { queryId: submit.queryId, attempt });
+
+      console.log('⏳ Polling ASK status', { queryId: submit.queryId, pollIntervalMs, timeoutMs, attempt });
+      try {
+        completed = await pollUntilCompleted(submit.queryId, { pollIntervalMs, timeoutMs }, inboundApiKey);
+        console.log('✅ ASK polling completed', {
+          queryId: submit.queryId,
+          attempt,
+          status: completed?.status,
+          hasAnswer: !!completed?.result?.answer,
+          coreArticlesCount: completed?.result?.coreArticles?.length ?? 0,
+        });
+        break; // success — exit retry loop
+      } catch (pollError) {
+        const isTimeout = pollError instanceof AskApiError && pollError.status === 504;
+        if (isTimeout && attempt < maxRetries) {
+          console.warn(`⏱️ ASK polling timed out on attempt ${attempt}/${maxRetries}; retrying with a new query`, {
+            queryId: submit.queryId,
+            elapsedMs: (pollError.body as Record<string, unknown>)?.elapsedMs,
+            lastStatus: (pollError.body as Record<string, unknown>)?.lastStatus,
+          });
+          continue;
+        }
+        // Non-timeout error or final attempt — rethrow to outer catch
+        throw pollError;
+      }
+    }
 
     const channelId =
       requestedTelegramChannelId ??
@@ -88,8 +129,10 @@ Deno.serve(async (req: Request) => {
 
     const answer = completed?.result?.answer;
     if (!answer || answer.trim().length === 0) {
+      console.error('❌ No answer in ASK response', { queryId: lastQueryId, completed });
       return createErrorResponse('No answer in response', 'COMPLETED response had no result.answer', 502);
     }
+    console.log('📝 Answer received', { answerLength: answer.trim().length });
 
     const coreArticles = completed?.result?.coreArticles;
     const hasSources = Array.isArray(coreArticles) && coreArticles.length > 0;
@@ -98,10 +141,10 @@ Deno.serve(async (req: Request) => {
     // In that case, skip sending to Telegram.
     if (includeSources && !hasSources) {
       console.log('ℹ️ℹ️ℹ️ No sources in ASK response; skipping Telegram send', {
-        queryId: submit.queryId,
+        queryId: lastQueryId,
       });
       return createSuccessResponse({
-        queryId: submit.queryId,
+        queryId: lastQueryId,
         askStatus: completed.status,
         includeSources,
         withPhoto,
@@ -123,15 +166,16 @@ Deno.serve(async (req: Request) => {
         },
         {
           text: 'View in Argus',
-          url: `https://argus.newslatch.com/ask/${submit.queryId}`,
+          url: `https://argus.newslatch.com/ask/${lastQueryId}`,
         },
       ]],
     };
 
   // Prefer a single-message Telegram post when withPhoto is enabled and an image is found.
     if (withPhoto) {
+      console.log('🖼️ withPhoto enabled, attempting to find image');
       if (Array.isArray(coreArticles) && coreArticles.length > 0) {
-        console.log('🖼️ withPhoto enabled; racing coreArticles for social image', {
+        console.log('🔍 Racing coreArticles for social image', {
           candidates: coreArticles.length,
         });
         const downloaded = await firstDownloadedSocialImageFromCoreArticles(coreArticles, {
@@ -140,6 +184,7 @@ Deno.serve(async (req: Request) => {
           perImageTimeoutMs: 12000,
           maxImageBytes: 8_000_000,
         });
+        console.log('🖼️ Image download attempt completed', { found: !!downloaded });
 
         if (downloaded) {
           selectedImage = { sourceUrl: downloaded.sourceUrl, imageUrl: downloaded.imageUrl };
@@ -158,7 +203,7 @@ Deno.serve(async (req: Request) => {
               },
               {
                 text: 'View in Argus',
-                url: `https://argus.newslatch.com/ask/${submit.queryId}`,
+                url: `https://argus.newslatch.com/ask/${lastQueryId}`,
               },
             ]],
           };
@@ -179,12 +224,19 @@ Deno.serve(async (req: Request) => {
             caption,
             photoKeyboard,
           );
+          console.log('📸 Telegram photo send attempt completed', { ok: photo.ok });
 
           if (!photo.ok) {
-            console.warn('⚠️ Telegram photo send failed; falling back to text message', {
+            console.error('❌ Telegram photo send failed; falling back to text message', {
               description: photo.description,
+              error: photo.error_code,
+              fullResponse: photo,
             });
           } else {
+            console.log('✅ Photo sent successfully to Telegram', {
+              message_id: photo.result?.message_id,
+              chat_id: photo.result?.chat?.id,
+            });
             return createSuccessResponse({
               queryId: submit.queryId,
               askStatus: completed.status,
@@ -199,23 +251,33 @@ Deno.serve(async (req: Request) => {
             });
           }
         } else {
-          console.log('ℹ️ No social image found in coreArticles; sending text message');
+          console.log('ℹ️ No social image found in coreArticles; falling back to text message');
         }
       } else {
         console.log('ℹ️ withPhoto enabled but no coreArticles present; sending text message');
       }
     }
 
-    console.log('📣 Sending to Telegram channel', { channelId });
+    console.log('📣 Sending text message to Telegram channel', { channelId, answerLength: answer.length });
     const tg = await sendTelegramMessage(channelId, answer, keyboard);
+    console.log('📣 Telegram text send attempt completed', { ok: tg.ok });
 
     if (!tg.ok) {
+      console.error('❌ Telegram text message send failed', {
+        description: tg.description,
+        error_code: tg.error_code,
+        fullResponse: tg,
+      });
       return createErrorResponse(
         'Telegram send failed',
         tg.description ?? 'sendMessage returned ok=false',
         502,
       );
     }
+    console.log('✅ Text message sent successfully to Telegram', {
+      message_id: tg.result?.message_id,
+      chat_id: tg.result?.chat?.id,
+    });
 
     return createSuccessResponse({
       queryId: submit.queryId,
@@ -231,6 +293,11 @@ Deno.serve(async (req: Request) => {
     });
   } catch (error) {
     if (error instanceof AskApiError) {
+      console.error('❌ ASK API error', {
+        status: error.status,
+        body: error.body,
+        stack: error.stack,
+      });
       return createErrorResponse(
         'ASK API error',
         typeof error.body === 'string' ? error.body : JSON.stringify(error.body),
@@ -238,7 +305,12 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    console.error('❌ ask-to-telegram error:', error);
+    console.error('❌ ask-to-telegram unexpected error:', {
+      error,
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      type: error?.constructor?.name,
+    });
     return createErrorResponse(
       'Internal server error',
       error instanceof Error ? error.message : 'Unknown error',

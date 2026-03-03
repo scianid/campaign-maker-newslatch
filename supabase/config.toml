@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.argus-server]
 verify_jwt = false
+
+[functions.publisher-server]
+verify_jwt = false
