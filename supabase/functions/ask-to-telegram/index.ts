@@ -88,7 +88,7 @@ Deno.serve(async (req: Request) => {
       requestedTelegramChannelId,
     });
 
-    let completed: Awaited<ReturnType<typeof pollUntilCompleted>>;
+    let completed!: Awaited<ReturnType<typeof pollUntilCompleted>>;
     let lastQueryId: string | undefined;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -238,7 +238,7 @@ Deno.serve(async (req: Request) => {
               chat_id: photo.result?.chat?.id,
             });
             return createSuccessResponse({
-              queryId: submit.queryId,
+              queryId: lastQueryId,
               askStatus: completed.status,
               withPhoto,
               captionTruncated,
@@ -280,7 +280,7 @@ Deno.serve(async (req: Request) => {
     });
 
     return createSuccessResponse({
-      queryId: submit.queryId,
+      queryId: lastQueryId,
       askStatus: completed.status,
       withPhoto,
       captionTruncated,
