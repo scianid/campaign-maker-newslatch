@@ -58,6 +58,7 @@ Deno.serve(async (req: Request) => {
       channelId?: string;
       telegram_channel_id?: string;
       withPhoto?: boolean;
+      withKeyboard?: boolean;
     };
 
     if (!body || typeof body.question !== 'string') {
@@ -73,6 +74,7 @@ Deno.serve(async (req: Request) => {
     const pollIntervalMs = Math.max(500, Math.min(body.pollIntervalMs ?? 5000, 10000));
     const timeoutMs = Math.max(5_000, Math.min(body.timeoutMs ?? 120_000, 600_000));
     const withPhoto = typeof body.withPhoto === 'boolean' ? body.withPhoto : false;
+    const withKeyboard = typeof body.withKeyboard === 'boolean' ? body.withKeyboard : true;
 
     const requestedTelegramChannelId = normalizeTelegramChatId(body.telegram_channel_id);
 
@@ -84,6 +86,7 @@ Deno.serve(async (req: Request) => {
       pollIntervalMs,
       timeoutMs,
       withPhoto,
+      withKeyboard,
       maxRetries,
       requestedTelegramChannelId,
     });
@@ -222,7 +225,7 @@ Deno.serve(async (req: Request) => {
               filename: 'social-image',
             },
             caption,
-            photoKeyboard,
+            withKeyboard ? photoKeyboard : undefined,
           );
           console.log('📸 Telegram photo send attempt completed', { ok: photo.ok });
 
@@ -259,7 +262,7 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log('📣 Sending text message to Telegram channel', { channelId, answerLength: answer.length });
-    const tg = await sendTelegramMessage(channelId, answer, keyboard);
+    const tg = await sendTelegramMessage(channelId, answer, withKeyboard ? keyboard : undefined);
     console.log('📣 Telegram text send attempt completed', { ok: tg.ok });
 
     if (!tg.ok) {
