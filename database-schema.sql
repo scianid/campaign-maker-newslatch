@@ -133,3 +133,11 @@ CREATE TABLE public.rss_feeds (
   country ARRAY,
   CONSTRAINT rss_feeds_pkey PRIMARY KEY (id)
 );
+CREATE TABLE public.post_memories (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  memory_key text NOT NULL,
+  topic_summary text NOT NULL,
+  created_at timestamp with time zone NOT NULL DEFAULT now(),
+  CONSTRAINT post_memories_pkey PRIMARY KEY (id)
+);
+CREATE INDEX post_memories_key_time_idx ON public.post_memories (memory_key, created_at DESC);

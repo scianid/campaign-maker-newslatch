@@ -9,8 +9,23 @@ import { handleCors, createErrorResponse, createSuccessResponse } from '../rss-f
 import { AskApiError, pollUntilCompleted, submitQuestion } from './ask-api.ts';
 import { sendTelegramMessage, sendTelegramPhotoFile } from './telegram.ts';
 import { firstDownloadedSocialImageFromCoreArticles } from './social-image.ts';
+import { getRecentTopics, saveTopicMemory, summarizePost } from './memory.ts';
 
 const DEFAULT_CHANNEL_ID = '-1003280682258';
+
+/** Summarises a post and persists the 1-line topic to post_memories. Non-fatal. */
+async function saveMemoryAsync(memoryKey: string, answer: string): Promise<void> {
+  try {
+    const topic = await summarizePost(answer);
+    await saveTopicMemory(memoryKey, topic);
+    console.log('🧠 Memory saved', { memoryKey, topic });
+  } catch (err) {
+    console.error('❌ Failed to save post memory (non-fatal)', {
+      memoryKey,
+      error: err instanceof Error ? err.message : err,
+    });
+  }
+}
 
 function truncateTelegramCaption(text: string): { caption: string; truncated: boolean } {
   // Telegram caption limit is 1024 characters for photos.
@@ -49,6 +64,8 @@ Deno.serve(async (req: Request) => {
         400,
       );
     }
+
+    const memoryKey = req.headers.get('x-memory-key')?.trim() || null;
 
     const body = await req.json().catch(() => null) as null | {
       question?: string;
@@ -89,14 +106,31 @@ Deno.serve(async (req: Request) => {
       withKeyboard,
       maxRetries,
       requestedTelegramChannelId,
+      memoryKey,
     });
+
+    // If a memory key is provided, fetch recent topics and append them to the
+    // Argus question so it can avoid duplicating already-covered subjects.
+    let questionForArgus = question;
+    if (memoryKey) {
+      const recentTopics = await getRecentTopics(memoryKey, 10);
+      if (recentTopics.length > 0) {
+        const topicList = recentTopics.map((t) => `- ${t}`).join('\n');
+        questionForArgus =
+          `${question}\n\nThese are the last ${recentTopics.length} posts that we've made, please avoid these topics specifically so no duplications are made!\n${topicList}`;
+        console.log('🧠 Injecting recent topics into Argus question', {
+          memoryKey,
+          topicsCount: recentTopics.length,
+        });
+      }
+    }
 
     let completed!: Awaited<ReturnType<typeof pollUntilCompleted>>;
     let lastQueryId: string | undefined;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       console.log(`📨 Submitting ASK question (attempt ${attempt}/${maxRetries})`);
-      const submit = await submitQuestion(question, includeSources, inboundApiKey);
+      const submit = await submitQuestion(questionForArgus, includeSources, inboundApiKey);
       lastQueryId = submit.queryId;
       console.log('✅ ASK question submitted successfully', { queryId: submit.queryId, attempt });
 
@@ -240,6 +274,9 @@ Deno.serve(async (req: Request) => {
               message_id: photo.result?.message_id,
               chat_id: photo.result?.chat?.id,
             });
+            if (memoryKey) {
+              EdgeRuntime.waitUntil(saveMemoryAsync(memoryKey, answer));
+            }
             return createSuccessResponse({
               queryId: lastQueryId,
               askStatus: completed.status,
@@ -282,6 +319,9 @@ Deno.serve(async (req: Request) => {
       chat_id: tg.result?.chat?.id,
     });
 
+    if (memoryKey) {
+      EdgeRuntime.waitUntil(saveMemoryAsync(memoryKey, answer));
+    }
     return createSuccessResponse({
       queryId: lastQueryId,
       askStatus: completed.status,
