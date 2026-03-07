@@ -63,7 +63,11 @@ export async function summarizePost(answer: string): Promise<string> {
       messages: [
         {
           role: 'system',
-          content: `Write a concise factual headline (max 20 words) summarizing the core topic of the following post. Format: "Subject — specific detail" (e.g. "Apple releases new MacBook Pro — M5 chip"). Reply with only the headline, no punctuation at the end, no quotes, no extra text.`,
+          content: `Write a concise factual headline (max 20 words) summarizing the core topic of the following post.
+          Format: "Subject — specific detail" 
+          (e.g. "Apple releases new MacBook Pro — M5 chip"). 
+          Make sure to mention the subject of the post in the beginning (e.g. a company, a personality etc), followed by a specific detail.
+          Reply with only the headline, no punctuation at the end, no quotes, no extra text.`,
         },
         { role: 'user', content: answer },
       ],
