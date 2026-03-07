@@ -122,7 +122,11 @@ Deno.serve(async (req: Request) => {
           memoryKey,
           topicsCount: recentTopics.length,
         });
+      } else {
+        console.log('🧠 Memory key present but no previous topics found; sending question as-is', { memoryKey });
       }
+    } else {
+      console.log('🧠 No memory key provided; memory feature disabled for this request');
     }
 
     let completed!: Awaited<ReturnType<typeof pollUntilCompleted>>;

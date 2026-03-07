@@ -21,6 +21,7 @@ export async function getRecentTopics(
   memoryKey: string,
   limit: number = MEMORY_LIMIT,
 ): Promise<string[]> {
+  console.log('🧠 [memory] Fetching recent topics', { memoryKey, limit });
   const supabase = getSupabaseClient();
 
   const { data, error } = await supabase
@@ -31,11 +32,13 @@ export async function getRecentTopics(
     .limit(limit);
 
   if (error) {
-    console.error('❌ Failed to fetch recent topics from post_memories', { error, memoryKey });
+    console.error('❌ [memory] Failed to fetch recent topics from post_memories', { error, memoryKey });
     return [];
   }
 
-  return (data ?? []).map((row: { topic_summary: string }) => row.topic_summary);
+  const topics = (data ?? []).map((row: { topic_summary: string }) => row.topic_summary);
+  console.log('🧠 [memory] Recent topics fetched', { memoryKey, count: topics.length, topics });
+  return topics;
 }
 
 /**
@@ -43,6 +46,7 @@ export async function getRecentTopics(
  * Throws on failure — caller should handle errors.
  */
 export async function summarizePost(answer: string): Promise<string> {
+  console.log('🧠 [memory] Summarizing post via OpenAI', { answerLength: answer.length });
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!openaiApiKey) {
     throw new Error('OPENAI_API_KEY environment variable not set');
@@ -59,7 +63,7 @@ export async function summarizePost(answer: string): Promise<string> {
       messages: [
         {
           role: 'system',
-          content: 'Summarize the following post in a single short sentence. Reply with only the sentence — no extra text, no quotes.',
+          content: `Summarize the following post in a single short sentence, that makes it very clear to know what this post it about. Reply with only the sentence — no extra text, no quotes.`,
         },
         { role: 'user', content: answer },
       ],
@@ -67,17 +71,22 @@ export async function summarizePost(answer: string): Promise<string> {
     }),
   });
 
+  console.log('🧠 [memory] OpenAI summarize response status', { status: res.status });
+
   if (!res.ok) {
     const errorText = await res.text();
+    console.error('❌ [memory] OpenAI summarize request failed', { status: res.status, errorText });
     throw new Error(`OpenAI API error: ${res.status} - ${errorText}`);
   }
 
   const data = await res.json();
   const summary: string = data.choices?.[0]?.message?.content?.trim();
   if (!summary) {
+    console.error('❌ [memory] OpenAI returned an empty summary', { data });
     throw new Error('OpenAI returned an empty summary');
   }
 
+  console.log('🧠 [memory] Summary generated', { summary });
   return summary;
 }
 
@@ -86,6 +95,7 @@ export async function summarizePost(answer: string): Promise<string> {
  * Throws on failure — caller should handle errors.
  */
 export async function saveTopicMemory(memoryKey: string, topic: string): Promise<void> {
+  console.log('🧠 [memory] Saving topic to post_memories', { memoryKey, topic });
   const supabase = getSupabaseClient();
 
   const { error } = await supabase
@@ -93,7 +103,9 @@ export async function saveTopicMemory(memoryKey: string, topic: string): Promise
     .insert({ memory_key: memoryKey, topic_summary: topic });
 
   if (error) {
-    console.error('❌ Failed to save topic memory to post_memories', { error, memoryKey });
+    console.error('❌ [memory] Failed to save topic memory to post_memories', { error, memoryKey, topic });
     throw error;
   }
+
+  console.log('✅ [memory] Topic saved successfully', { memoryKey, topic });
 }
