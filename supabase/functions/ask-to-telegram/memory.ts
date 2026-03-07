@@ -67,7 +67,6 @@ export async function summarizePost(answer: string): Promise<string> {
         },
         { role: 'user', content: answer },
       ],
-      max_tokens: 100,
     }),
   });
 
