@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FileText, Target, User, Menu, X, Settings } from 'lucide-react';
+import { FileText, Target, User, Menu, X, Settings, Zap } from 'lucide-react';
 import { AuthComponent } from './AuthComponent';
 import { Button } from '../ui/Button';
 import { useState, useEffect } from 'react';
@@ -53,6 +53,11 @@ export function Header({ user, children }) {
       path: '/pages',
       label: 'Landing Pages',
       icon: FileText
+    },
+    {
+      path: '/ad-bridge',
+      label: 'AdBridge',
+      icon: Zap
     }
   ];
 

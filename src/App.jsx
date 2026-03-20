@@ -11,6 +11,7 @@ import { LandingPagesPage } from './components/LandingPagesPage';
 import { EditLandingPage } from './components/EditLandingPage';
 import { PublicLandingPageViewer } from './components/PublicLandingPageViewer';
 import { AdminPage } from './components/AdminPage';
+import { AdBridgePage } from './components/AdBridgePage';
 import { CookieConsent } from './components/CookieConsent';
 import { authService } from './lib/supabase';
 import { Megaphone } from 'lucide-react';
@@ -198,6 +199,15 @@ function App() {
           element={
             <ProtectedRoute user={user}>
               <AdminPage user={user} />
+            </ProtectedRoute>
+          } 
+        />
+
+        <Route 
+          path="/ad-bridge" 
+          element={
+            <ProtectedRoute user={user}>
+              <AdBridgePage user={user} />
             </ProtectedRoute>
           } 
         />

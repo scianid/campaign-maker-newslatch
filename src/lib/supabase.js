@@ -218,3 +218,88 @@ export const campaignService = {
     return data
   }
 }
+
+// AdBridge: argus ad-generation job & results persistence
+export const argusAdService = {
+  async saveJob({ argus_job_id, target_geo, status, total_campaigns, completed_campaigns = 0 }) {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
+
+    const { data, error } = await supabase
+      .from('argus_ad_jobs')
+      .insert([{
+        user_id: user.id,
+        argus_job_id,
+        target_geo,
+        status,
+        total_campaigns,
+        completed_campaigns,
+      }])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async updateJob(id, updates) {
+    const { data, error } = await supabase
+      .from('argus_ad_jobs')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  // urlMap: { [campaignId]: { url, companyName, ... } }
+  async saveResults(jobDbId, campaigns, urlMap) {
+    const rows = campaigns
+      .filter(c => c.status === 'COMPLETED')
+      .map(c => ({
+        job_id: jobDbId,
+        campaign_id: c.campaignId,
+        source_url: urlMap[c.campaignId]?.url || null,
+        company_name: urlMap[c.campaignId]?.companyName || null,
+        ad_header: c.adHeader || null,
+        ad_body: c.adBody || null,
+        click_bait: c.clickBait || null,
+        call_to_action: c.callToAction || null,
+        ad_image_prompt: c.adImagePrompt || null,
+        urgency_score: c.urgencyScore ?? null,
+        quality_score: c.qualityScore ?? null,
+        bridge_type: c.bridgeType || null,
+        sources_links: c.sourcesLinks || null,
+        bridge_foundation: c.bridgeFoundation || null,
+        status: c.status,
+      }))
+
+    if (rows.length === 0) return
+
+    const { error } = await supabase.from('argus_ad_results').insert(rows)
+    if (error) throw error
+  },
+
+  async getJobs() {
+    const { data, error } = await supabase
+      .from('argus_ad_jobs')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    if (error) throw error
+    return data || []
+  },
+
+  async getJobResults(jobId) {
+    const { data, error } = await supabase
+      .from('argus_ad_results')
+      .select('*')
+      .eq('job_id', jobId)
+      .order('created_at', { ascending: true })
+
+    if (error) throw error
+    return data || []
+  },
+}
