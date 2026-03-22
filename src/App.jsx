@@ -238,6 +238,7 @@ function App() {
           <Route path="review" element={<Navigate to="/ad-bridge-v2/generating" replace />} />
           <Route path="results" element={<AdBridgeResultsPageV2 user={user} />} />
           <Route path="history" element={<AdBridgeHistoryPageV2 user={user} />} />
+          <Route path="history/:jobId" element={<AdBridgeHistoryPageV2 user={user} />} />
         </Route>
 
         {/* Catch all route */}

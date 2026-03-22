@@ -18,6 +18,14 @@ export default {
         'button-text': '#04161A',
         'text-paragraph': '#B8C1D9',
       },
+      keyframes: {
+        shimmer: {
+          '100%': { transform: 'translateX(200%)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 1.4s infinite',
+      },
     },
   },
   plugins: [],

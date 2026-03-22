@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   ArrowRight,
+  ChevronDown,
   Copy,
   Download,
   ExternalLink,
@@ -20,6 +21,13 @@ export function AdBridgeResultsPageV2() {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('all');
   const [sort, setSort] = useState('score');
+  const [openDrawers, setOpenDrawers] = useState(new Set());
+
+  const toggleDrawer = id => setOpenDrawers(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
   const {
     adResults,
     analyzedMap,
@@ -152,50 +160,97 @@ export function AdBridgeResultsPageV2() {
           {filteredResults.map((card, index) => {
             const info = analyzedMap[card.campaignId] || {};
             const qualityTone = (card.qualityScore ?? 0) >= 80 ? 'excellent' : 'great';
+            const isDrawerOpen = openDrawers.has(card.campaignId);
 
             return (
-              <article key={card.campaignId} className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
-                <div className="relative border-b border-slate-200 bg-gradient-to-br from-blue-700 via-blue-600 to-blue-400 p-6 text-white">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.18),transparent_35%)]" />
-                  <div className="relative flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-bold uppercase tracking-[0.2em] text-blue-100">Variation {index + 1}</p>
-                      <h2 className="mt-2 text-xl font-bold leading-tight">{card.adHeader || 'Untitled creative'}</h2>
-                      <p className="mt-2 text-sm text-blue-100">
-                        {info.companyName || 'Unknown company'}
-                        {card.bridgeType ? ` • ${formatBridgeType(card.bridgeType)}` : ''}
-                      </p>
-                    </div>
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold shadow-sm ${qualityClasses(qualityTone)}`}>
-                      {qualityTone === 'excellent' ? <Star className="h-3.5 w-3.5 fill-current" /> : <ThumbsUp className="h-3.5 w-3.5" />}
-                      Quality: {card.qualityScore ?? '—'}
+              <article key={card.campaignId} className="flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+                {/* Top bar: variation number, company name, quality & urgency badges */}
+                <div className="flex items-center gap-3 border-b border-slate-100 px-5 py-3">
+                  <span className="shrink-0 text-xs font-bold uppercase tracking-wider text-slate-400">
+                    #{index + 1}
+                  </span>
+                  <span className="flex-1 truncate text-sm font-semibold text-slate-700">
+                    {info.companyName || 'Unknown company'}
+                  </span>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${qualityClasses(qualityTone)}`}>
+                      Q {card.qualityScore ?? '—'}
+                    </span>
+                    <span className="rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-bold text-blue-700">
+                      U {card.urgencyScore ?? '—'}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex flex-1 flex-col p-6 lg:p-8">
-                  <div className="mb-4 flex items-center justify-between gap-4">
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Urgency {card.urgencyScore ?? '—'}</span>
-                    <div className="flex items-center gap-2">
-                      {info.url && (
-                        <a href={info.url} target="_blank" rel="noopener noreferrer" className="rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-blue-700" title="Open source URL">
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      )}
-                      <button onClick={() => copyToClipboard(buildFbCopy(card))} className="rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-blue-700" title="Quick copy">
-                        <Copy className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
+                {/* Main content: ad header + ad body */}
+                <div className="flex-1 p-5">
+                  <h2 className="mb-3 text-base font-bold leading-snug text-slate-900">
+                    {card.adHeader || 'Untitled creative'}
+                  </h2>
+                  <p className="text-sm leading-6 text-slate-600">
+                    {card.adBody || 'No ad body available.'}
+                  </p>
+                </div>
 
-                  <p className="mb-3 text-sm font-semibold leading-6 text-slate-800">{card.callToAction || 'No CTA available'}</p>
-                  <p className="mb-6 flex-1 text-sm leading-6 text-slate-600">{card.adBody || 'No ad body returned for this creative.'}</p>
-
-                  <button onClick={() => copyToClipboard(buildFbCopy(card))} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-100 px-4 py-3 text-sm font-bold text-blue-700 hover:bg-slate-200">
-                    Copy for FB
-                    <ArrowRight className="h-4 w-4" />
+                {/* Footer: copy button + drawer toggle */}
+                <div className="flex items-center gap-2 px-5 pb-5">
+                  <button
+                    onClick={() => copyToClipboard(buildFbCopy(card))}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-blue-700"
+                  >
+                    <Copy className="h-4 w-4" />
+                    Copy to Clipboard
+                  </button>
+                  <button
+                    onClick={() => toggleDrawer(card.campaignId)}
+                    className="inline-flex items-center gap-1 rounded-xl border border-slate-200 px-3 py-3 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50"
+                    title="Sources & image prompt"
+                  >
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isDrawerOpen ? 'rotate-180' : ''}`} />
+                    <span className="hidden sm:inline">Sources</span>
                   </button>
                 </div>
+
+                {/* Drawer: sources + image prompt */}
+                {isDrawerOpen && (
+                  <div className="space-y-4 border-t border-slate-100 bg-slate-50 px-5 py-4">
+                    {(info.url || (Array.isArray(card.sourcesLinks) && card.sourcesLinks.length > 0)) && (
+                      <div>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Sources</p>
+                        <ul className="space-y-1">
+                          {info.url && (
+                            <li>
+                              <a href={info.url} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full items-center gap-1.5 truncate text-xs text-blue-700 hover:underline">
+                                <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                                {info.url}
+                              </a>
+                            </li>
+                          )}
+                          {Array.isArray(card.sourcesLinks) &&
+                            card.sourcesLinks
+                              .filter(l => l !== info.url)
+                              .map((link, i) => (
+                                <li key={i}>
+                                  <a href={link} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full items-center gap-1.5 truncate text-xs text-blue-700 hover:underline">
+                                    <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                                    {link}
+                                  </a>
+                                </li>
+                              ))}
+                        </ul>
+                      </div>
+                    )}
+                    {card.adImagePrompt && (
+                      <div>
+                        <p className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-400">Image Prompt</p>
+                        <p className="text-xs leading-5 text-slate-600">{card.adImagePrompt}</p>
+                      </div>
+                    )}
+                    {!info.url && !card.sourcesLinks?.length && !card.adImagePrompt && (
+                      <p className="text-xs italic text-slate-400">No additional data available.</p>
+                    )}
+                  </div>
+                )}
               </article>
             );
           })}

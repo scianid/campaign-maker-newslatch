@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Bolt,
@@ -86,6 +87,7 @@ export function AdBridgeGeneratingPageV2() {
     argusProgress,
     adResults,
     adStatus,
+    activeJobDbId,
     completedCount,
     failedCount,
     generatingError,
@@ -95,6 +97,15 @@ export function AdBridgeGeneratingPageV2() {
     startGeneration,
     toggleExcluded,
   } = useAdBridgeV2();
+
+  useEffect(() => {
+    if (pipelineStage === 'completed') {
+      const target = activeJobDbId
+        ? `/ad-bridge-v2/history/${activeJobDbId}`
+        : '/ad-bridge-v2/history';
+      navigate(target, { replace: true });
+    }
+  }, [pipelineStage, activeJobDbId, navigate]);
 
   const resultsByCampaignId = Object.fromEntries(
     adResults.map(result => [result.campaignId, result]),
