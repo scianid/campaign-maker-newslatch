@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthComponent } from './components/AuthComponent';
 import { HomePage } from './components/HomePage';
 import { LoginPage } from './components/LoginPage';
@@ -11,7 +11,12 @@ import { LandingPagesPage } from './components/LandingPagesPage';
 import { EditLandingPage } from './components/EditLandingPage';
 import { PublicLandingPageViewer } from './components/PublicLandingPageViewer';
 import { AdminPage } from './components/AdminPage';
+import { AdBridgeGeneratingPageV2 } from './components/AdBridgeGeneratingPageV2';
 import { AdBridgePage } from './components/AdBridgePage';
+import { AdBridgeHistoryPageV2 } from './components/AdBridgeHistoryPageV2';
+import { AdBridgePageV2 } from './components/AdBridgePageV2';
+import { AdBridgeResultsPageV2 } from './components/AdBridgeResultsPageV2';
+import { AdBridgeV2Provider } from './components/AdBridgeV2Provider';
 import { CookieConsent } from './components/CookieConsent';
 import { authService } from './lib/supabase';
 import { Megaphone } from 'lucide-react';
@@ -59,6 +64,14 @@ function Layout({ user, children }) {
         </div>
       </footer>
     </div>
+  );
+}
+
+function AdBridgeV2Layout() {
+  return (
+    <AdBridgeV2Provider>
+      <Outlet />
+    </AdBridgeV2Provider>
   );
 }
 
@@ -211,6 +224,21 @@ function App() {
             </ProtectedRoute>
           } 
         />
+
+        <Route
+          path="/ad-bridge-v2"
+          element={
+            <ProtectedRoute user={user}>
+              <AdBridgeV2Layout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<AdBridgePageV2 user={user} />} />
+          <Route path="generating" element={<AdBridgeGeneratingPageV2 user={user} />} />
+          <Route path="review" element={<Navigate to="/ad-bridge-v2/generating" replace />} />
+          <Route path="results" element={<AdBridgeResultsPageV2 user={user} />} />
+          <Route path="history" element={<AdBridgeHistoryPageV2 user={user} />} />
+        </Route>
 
         {/* Catch all route */}
         <Route path="*" element={<Navigate to="/" replace />} />

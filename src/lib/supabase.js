@@ -302,4 +302,13 @@ export const argusAdService = {
     if (error) throw error
     return data || []
   },
+
+  async deleteJob(jobId) {
+    const { error } = await supabase
+      .from('argus_ad_jobs')
+      .delete()
+      .eq('id', jobId)
+
+    if (error) throw error
+  },
 }
