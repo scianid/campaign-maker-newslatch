@@ -354,6 +354,22 @@ export function AdBridgeGeneratingPageV2() {
 
               {pipelineStage === 'review' && (
                 <div className="space-y-6">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={async () => {
+                        const started = await startGeneration();
+                        if (started) {
+                          navigate('/ad-bridge-v2/generating');
+                        }
+                      }}
+                      disabled={includedCount === 0}
+                      className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-700 to-blue-500 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-300/40 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <Sparkles className="h-4 w-4" />
+                      Generate ads for {includedCount} URL{includedCount !== 1 ? 's' : ''}
+                    </button>
+                  </div>
+
                   <div className="grid grid-cols-3 gap-3">
                     {[
                       ['Analyzed', completedCount, 'bg-emerald-500'],
