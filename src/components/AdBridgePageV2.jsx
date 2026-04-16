@@ -10,17 +10,9 @@ import {
   Link,
   Upload,
   AlertTriangle,
-  Check,
 } from 'lucide-react';
 import { useAdBridgeV2 } from './AdBridgeV2Provider';
-
-const GEO_OPTIONS = [
-  { code: 'GLOBAL', label: 'Global', kind: 'global' },
-  { code: 'US', label: 'USA', kind: 'flag', flagUrl: 'https://flagcdn.com/w40/us.png' },
-  { code: 'GB', label: 'UK', kind: 'flag', flagUrl: 'https://flagcdn.com/w40/gb.png' },
-  { code: 'DE', label: 'Germany', kind: 'flag', flagUrl: 'https://flagcdn.com/w40/de.png' },
-  { code: 'FR', label: 'France', kind: 'flag', flagUrl: 'https://flagcdn.com/w40/fr.png' },
-];
+import { GeoSelect } from '../ui/GeoSelect';
 
 export function AdBridgePageV2() {
   const navigate = useNavigate();
@@ -196,36 +188,7 @@ export function AdBridgePageV2() {
               <div className="space-y-5">
                 <div>
                   <label className="mb-2.5 block text-sm font-semibold text-slate-600">Target GEO</label>
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    {GEO_OPTIONS.map(geo => {
-                      const active = geo.code === targetGeo;
-                      return (
-                        <button
-                          key={geo.code}
-                          onClick={() => setTargetGeo(geo.code)}
-                          className={[
-                            'flex items-center gap-2.5 rounded-xl border px-3 py-2.5 text-left text-sm transition-colors',
-                            active
-                              ? 'border-blue-600 bg-blue-50 text-blue-800'
-                              : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-100',
-                          ].join(' ')}
-                        >
-                          {geo.kind === 'flag' ? (
-                            <img
-                              src={geo.flagUrl}
-                              alt={`${geo.label} flag`}
-                              className="h-4 w-6 rounded-[2px] object-cover shadow-sm"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <Globe className="h-4 w-4 text-inherit" />
-                          )}
-                          <span className="font-semibold">{geo.label}</span>
-                          {active && <Check className="ml-auto h-4 w-4" />}
-                        </button>
-                      );
-                    })}
-                  </div>
+                  <GeoSelect value={targetGeo} onChange={setTargetGeo} />
                 </div>
 
                 <div>
